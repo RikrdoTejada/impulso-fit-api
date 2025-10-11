@@ -2,9 +2,9 @@ package com.impulsofit.dto.response;
 
 import java.time.Instant;
 
-public record UserResponse(
+public record FollowResponse(
         Long id,
-        String username,
-        String email,
+        Long followerId,
+        Long followingId,
         Instant createdAt
-) {}
+) { }

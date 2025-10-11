@@ -1,29 +1,44 @@
 package com.impulsofit.controller;
 
-import com.impulsofit.model.Follow;
+import com.impulsofit.dto.response.FollowResponse;
 import com.impulsofit.service.FollowService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/users/{userId}")
-@RequiredArgsConstructor
+@RequestMapping("/api/v1/users")
 public class FollowController {
+
     private final FollowService service;
 
-    // Seguir usuario
-    @PostMapping("/follow")
-    public ResponseEntity<?> seguir(@PathVariable Long userId, @RequestParam Long seguidoId) {
-        Follow f = service.seguir(userId, seguidoId);
-        if (f == null) return ResponseEntity.status(HttpStatus.CONFLICT).body("Ya lo sigues");
-        return ResponseEntity.status(HttpStatus.CREATED).body(f);
+    public FollowController(FollowService service) {
+        this.service = service;
+    }
+
+    // Seguir a un usuario
+    @PostMapping("/{userId}/follow/{targetId}")
+    public ResponseEntity<FollowResponse> follow(@PathVariable Long userId, @PathVariable Long targetId) {
+        return ResponseEntity.ok(service.follow(userId, targetId));
     }
 
     // Dejar de seguir
-    @PostMapping("/unfollow")
-    public ResponseEntity<?> dejarDeSeguir(@PathVariable Long userId, @RequestParam Long seguidoId) {
-        service.dejarDeSeguir(userId, seguidoId);
-        return ResponseEntity.ok("Has dejado de seguir al usuario");
+    @DeleteMapping("/{userId}/follow/{targetId}")
+    public ResponseEntity<Void> unfollow(@PathVariable Long userId, @PathVariable Long targetId) {
+        service.unfollow(userId, targetId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // Mis seguidores
+    @GetMapping("/{userId}/followers")
+    public ResponseEntity<List<FollowResponse>> followers(@PathVariable Long userId) {
+        return ResponseEntity.ok(service.followersOf(userId));
+    }
+
+    // A quién sigo
+    @GetMapping("/{userId}/following")
+    public ResponseEntity<List<FollowResponse>> following(@PathVariable Long userId) {
+        return ResponseEntity.ok(service.followingOf(userId));
     }
 }
