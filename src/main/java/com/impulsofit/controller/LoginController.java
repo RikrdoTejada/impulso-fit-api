@@ -1,27 +1,20 @@
 package com.impulsofit.controller;
 
-import com.impulsofit.model.Usuario;
-import com.impulsofit.repository.UsuarioRepository;
+import com.impulsofit.dto.request.LoginRequest;
+import com.impulsofit.dto.response.LoginResponse;
+import com.impulsofit.service.LoginService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
-
 @RestController
-@RequestMapping("auth")
+@RequestMapping("/auth")
 public class LoginController {
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private LoginService loginService;
 
     @PostMapping("/login")
-    public String login(@RequestBody Usuario loginData) {
-        Optional<Usuario> usuario = usuarioRepository.findByEmail(loginData.getEmail());
-
-        if (usuario.isPresent() && usuario.get().getContrasena().equals(loginData.getContrasena())) {
-            return "Inicio de sesión exitoso: " + usuario.get().getNombre();
-        } else {
-            return "Credenciales incorrectas";
-        }
+    public LoginResponse login(@RequestBody LoginRequest loginDTO) {
+        return loginService.login(loginDTO);
     }
 }
