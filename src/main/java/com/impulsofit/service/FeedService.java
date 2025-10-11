@@ -4,6 +4,7 @@ import com.impulsofit.dto.response.*;
 import com.impulsofit.model.Publicacion;
 import com.impulsofit.repository.*;
 import org.springframework.stereotype.Service;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -14,19 +15,36 @@ public class FeedService {
     private final ComentarioRepository comentarioRepository;
     private final ListaSeguidoRepository listaSeguidoRepository;
     private final MembresiaGrupoRepository membresiaGrupoRepository;
+    private final GrupoService grupoService;
 
     public FeedService(PublicacionRepository publicacionRepository,
                        ComentarioRepository comentarioRepository,
                        ListaSeguidoRepository listaSeguidoRepository,
-                       MembresiaGrupoRepository membresiaGrupoRepository) {
+                       MembresiaGrupoRepository membresiaGrupoRepository,
+                       GrupoService grupoService) {
         this.publicacionRepository = publicacionRepository;
         this.comentarioRepository = comentarioRepository;
         this.listaSeguidoRepository = listaSeguidoRepository;
         this.membresiaGrupoRepository = membresiaGrupoRepository;
+        this.grupoService = grupoService;
     }
 
+    // Método original (solo publicaciones)
     public List<FeedResponseDTO> obtenerFeed(Long idUsuario) {
-        List<Long> idsUsuarios = listaSeguidoRepository.findIdsSeguidosByUsuario(idUsuario);
+        return obtenerPublicacionesFeed(idUsuario);
+    }
+
+    // Nuevo método que incluye publicaciones + grupos populares
+    public FeedCompletoDTO obtenerFeedCompleto(Long idUsuario) {
+        List<FeedResponseDTO> publicaciones = obtenerPublicacionesFeed(idUsuario);
+        List<GrupoPopularDTO> gruposPopulares = grupoService.obtenerGruposPopularesParaUsuario(idUsuario);
+
+        return new FeedCompletoDTO(publicaciones, gruposPopulares);
+    }
+
+    // Método privado para obtener solo publicaciones
+    private List<FeedResponseDTO> obtenerPublicacionesFeed(Long idUsuario) {
+        List<Long> idsUsuarios = listaSeguidoRepository.findSeguidosIdsPorUsuario(idUsuario);
         List<Long> idsGrupos = membresiaGrupoRepository.findIdsGruposByUsuario(idUsuario);
 
         List<Publicacion> publicaciones;
