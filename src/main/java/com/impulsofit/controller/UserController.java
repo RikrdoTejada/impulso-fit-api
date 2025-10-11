@@ -1,30 +1,27 @@
 package com.impulsofit.controller;
 
-import com.impulsofit.model.User;
+import com.impulsofit.dto.request.UserRequest;
+import com.impulsofit.dto.response.UserResponse;
 import com.impulsofit.service.UserService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 @RestController
-@RequestMapping("/users")
-@RequiredArgsConstructor
+@RequestMapping("/api/v1/users")
 public class UserController {
-    private final UserService service;
 
-    @GetMapping
-    public List<User> listar() { return service.listar(); }
+    private final UserService userService;
+    public UserController(UserService userService) { this.userService = userService; }
 
     @PostMapping
-    public ResponseEntity<User> crear(@RequestBody User u) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.crear(u));
+    public ResponseEntity<UserResponse> create(@RequestBody UserRequest user) {
+        UserResponse saved = userService.create(user);
+        return ResponseEntity.ok(saved);
     }
 
-    // Eliminar cuenta (baja lógica)
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> eliminar(@PathVariable Long id) {
-        service.darDeBaja(id);
-        return ResponseEntity.ok("Cuenta eliminada correctamente");
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        userService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }
