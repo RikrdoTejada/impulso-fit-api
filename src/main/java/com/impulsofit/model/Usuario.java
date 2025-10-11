@@ -1,31 +1,4 @@
 package com.impulsofit.model;
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.time.LocalDate;
-
-@Entity
-@Table(name = "usuario")
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 
 public class Usuario {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_usuario;
-    @Column
-    private String nombre;
-    @Column
-    private String email;
-    @Column
-    private String contrasena;
-    @Column
-    private Integer edad;
-    @Column
-    private String genero;
-    @Column
-    private LocalDate fecha_registro;
 }
