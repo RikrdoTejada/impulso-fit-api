@@ -18,15 +18,7 @@ public class RetoService {
         return retoRepository.findAll();
     }
 
-    public Optional<Reto> obtenerPorId(Long idReto) {
-        return retoRepository.findById(idReto);
-    }
-
-    public Reto guardar(Reto reto) {
-        return retoRepository.save(reto);
-    }
-
-    public void eliminar(Long idReto) {
-        retoRepository.deleteById(idReto);
+    public Optional<Reto> obtenerPorId(Long id) {
+        return retoRepository.findById(id);
     }
 }

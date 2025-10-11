@@ -14,17 +14,15 @@ public class ParticipacionReto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_participacion")
     private Long idParticipacion;
 
     @ManyToOne
-    @JoinColumn(name = "id_usuario", nullable = false)
+    @JoinColumn(name = "id_usuario")
     private Usuario usuario;
 
     @ManyToOne
-    @JoinColumn(name = "id_reto", nullable = false)
+    @JoinColumn(name = "id_reto")
     private Reto reto;
 
-    @Column(name = "fecha_union")
     private LocalDateTime fechaUnion;
 }

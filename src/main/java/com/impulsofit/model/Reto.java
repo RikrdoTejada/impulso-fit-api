@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "reto")
 @Getter
@@ -12,13 +14,7 @@ public class Reto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_reto")
     private Long idReto;
-
-    @Column(nullable = false)
-    private String titulo;
-
-    private String descripcion;
 
     @ManyToOne
     @JoinColumn(name = "id_grupo")
@@ -26,5 +22,10 @@ public class Reto {
 
     @ManyToOne
     @JoinColumn(name = "id_usuario")
-    private Usuario usuario;
+    private Usuario creador;
+
+    private String titulo;
+    private String descripcion;
+    private LocalDate fechaInicio;
+    private LocalDate fechaFin;
 }
