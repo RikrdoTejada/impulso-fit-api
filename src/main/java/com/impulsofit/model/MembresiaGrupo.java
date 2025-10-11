@@ -7,23 +7,23 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "participacion_reto")
+@Table(name = "membresia_grupo")
 @Getter
 @Setter
-public class ParticipacionReto {
+public class MembresiaGrupo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_participacion")
-    private Long idParticipacion;
+    @Column(name = "id_membresia")
+    private Long idMembresia;
 
     @ManyToOne
     @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
     @ManyToOne
-    @JoinColumn(name = "id_reto", nullable = false)
-    private Reto reto;
+    @JoinColumn(name = "id_grupo", nullable = false)
+    private Grupo grupo;
 
     @Column(name = "fecha_union")
     private LocalDateTime fechaUnion;

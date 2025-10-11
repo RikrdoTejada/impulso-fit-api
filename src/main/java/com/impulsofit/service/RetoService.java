@@ -1,0 +1,32 @@
+package com.impulsofit.service;
+
+import com.impulsofit.model.Reto;
+import com.impulsofit.repository.RetoRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class RetoService {
+
+    @Autowired
+    private RetoRepository retoRepository;
+
+    public List<Reto> listarRetos() {
+        return retoRepository.findAll();
+    }
+
+    public Optional<Reto> obtenerPorId(Long idReto) {
+        return retoRepository.findById(idReto);
+    }
+
+    public Reto guardar(Reto reto) {
+        return retoRepository.save(reto);
+    }
+
+    public void eliminar(Long idReto) {
+        retoRepository.deleteById(idReto);
+    }
+}
