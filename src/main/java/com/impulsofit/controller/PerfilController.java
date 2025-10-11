@@ -1,7 +1,9 @@
 package com.impulsofit.controller;
 
-import com.impulsofit.model.Perfil;
+import com.impulsofit.dto.request.PerfilRequest;
+import com.impulsofit.dto.response.PerfilResponse;
 import com.impulsofit.service.PerfilService;
+import com.impulsofit.exception.BusinessRuleException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,9 +18,13 @@ public class PerfilController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Perfil> editarPerfil(@PathVariable Long id, @RequestBody Perfil datosActualizados) {
-        return perfilService.actualizarPerfil(id, datosActualizados)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<PerfilResponse> editarPerfil(@PathVariable Long id,
+                                                       @RequestBody PerfilRequest request) {
+        try {
+            PerfilResponse actualizado = perfilService.actualizarPerfil(id, request);
+            return ResponseEntity.ok(actualizado);
+        } catch (BusinessRuleException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

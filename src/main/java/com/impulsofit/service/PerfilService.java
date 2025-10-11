@@ -1,8 +1,12 @@
 package com.impulsofit.service;
 
+import com.impulsofit.dto.request.PerfilRequest;
+import com.impulsofit.dto.response.PerfilResponse;
+import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.model.Perfil;
 import com.impulsofit.repository.PerfilRepository;
 import org.springframework.stereotype.Service;
+
 import java.util.Optional;
 
 @Service
@@ -14,14 +18,33 @@ public class PerfilService {
         this.perfilRepository = perfilRepository;
     }
 
-    public Optional<Perfil> actualizarPerfil(Long idPerfil, Perfil datosActualizados) {
-        return perfilRepository.findById(idPerfil).map(perfil -> {
-            perfil.setNombre(datosActualizados.getNombre());
-            perfil.setApellido(datosActualizados.getApellido());
-            perfil.setBiografia(datosActualizados.getBiografia());
-            perfil.setUbicacion(datosActualizados.getUbicacion());
-            perfil.setFotoPerfil(datosActualizados.getFotoPerfil());
-            return perfilRepository.save(perfil);
-        });
+    public PerfilResponse actualizarPerfil(Long idPerfil, PerfilRequest request) {
+        Perfil perfil = perfilRepository.findById(idPerfil)
+                .orElseThrow(() -> new BusinessRuleException("Perfil no encontrado"));
+
+        // Business rule: nombre obligatorio
+        if (request.getNombre() == null || request.getNombre().isBlank()) {
+            throw new BusinessRuleException("El nombre de usuario no puede estar vacío.");
+        }
+
+        // Actualizar campos
+        perfil.setNombre(request.getNombre());
+        perfil.setApellido(request.getApellido());
+        perfil.setBiografia(request.getBiografia());
+        perfil.setUbicacion(request.getUbicacion());
+        perfil.setFotoPerfil(request.getFotoPerfil());
+
+        perfilRepository.save(perfil);
+
+        // Convertir a Response
+        PerfilResponse response = new PerfilResponse();
+        response.setIdPerfil(perfil.getIdPerfil());
+        response.setNombre(perfil.getNombre());
+        response.setApellido(perfil.getApellido());
+        response.setBiografia(perfil.getBiografia());
+        response.setUbicacion(perfil.getUbicacion());
+        response.setFotoPerfil(perfil.getFotoPerfil());
+        return response;
     }
 }
+
