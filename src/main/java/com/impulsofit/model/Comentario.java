@@ -4,40 +4,44 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "comentarios")
 public class Comentario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, length = 300)
     private String contenido;
 
-    private LocalDateTime fechaCreacion = LocalDateTime.now();
-
-    @ManyToOne
-    @JoinColumn(name = "usuario_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
-    @ManyToOne
-    @JoinColumn(name = "publicacion_grupo_id")
-    private PublicacionGrupo publicacionGrupo;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "publicacion_id", nullable = false)
+    private PublicacionGeneral publicacion;
 
+    @Column(nullable = false)
+    private LocalDateTime fechaCreacion = LocalDateTime.now();
+
+    // Constructor vacío
     public Comentario() {}
 
-    public Comentario(String contenido, Usuario usuario, PublicacionGrupo publicacionGrupo) {
+    // Constructor con campos
+    public Comentario(String contenido, Usuario usuario, PublicacionGeneral publicacion) {
         this.contenido = contenido;
         this.usuario = usuario;
-        this.publicacionGrupo = publicacionGrupo;
+        this.publicacion = publicacion;
     }
 
-    // Getters y Setters
+    // Getters y setters
     public Long getId() { return id; }
     public String getContenido() { return contenido; }
     public void setContenido(String contenido) { this.contenido = contenido; }
-    public LocalDateTime getFechaCreacion() { return fechaCreacion; }
-    public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
     public Usuario getUsuario() { return usuario; }
     public void setUsuario(Usuario usuario) { this.usuario = usuario; }
-    public PublicacionGrupo getPublicacionGrupo() { return publicacionGrupo; }
-    public void setPublicacionGrupo(PublicacionGrupo publicacionGrupo) { this.publicacionGrupo = publicacionGrupo; }
+    public PublicacionGeneral getPublicacion() { return publicacion; }
+    public void setPublicacion(PublicacionGeneral publicacion) { this.publicacion = publicacion; }
+    public LocalDateTime getFechaCreacion() { return fechaCreacion; }
 }

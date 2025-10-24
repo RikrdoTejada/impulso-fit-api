@@ -1,50 +1,58 @@
 package com.impulsofit.controller;
 
+import com.impulsofit.dto.request.ComentarioRequestDTO;
+import com.impulsofit.dto.response.ComentarioResponseDTO;
 import com.impulsofit.model.Comentario;
-import com.impulsofit.model.PublicacionGrupo;
+import com.impulsofit.model.PublicacionGeneral;
 import com.impulsofit.model.Usuario;
-import com.impulsofit.repository.ComentarioRepository;
-import com.impulsofit.repository.PublicacionGrupoRepository;
-import com.impulsofit.repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.impulsofit.service.ComentarioService;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/comentarios")
+@RequestMapping("/api/comentarios")
 public class ComentarioController {
 
-    @Autowired
-    private ComentarioRepository comentarioRepository;
+    private final ComentarioService comentarioService;
 
-    @Autowired
-    private PublicacionGrupoRepository publicacionGrupoRepository;
-
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    // Crear un comentario en una publicación de grupo
-    @PostMapping("/grupo/{publicacionId}/usuario/{usuarioId}")
-    public Comentario crearComentario(@PathVariable Long publicacionId,
-                                      @PathVariable Long usuarioId,
-                                      @RequestBody String contenido) {
-
-        PublicacionGrupo publicacion = publicacionGrupoRepository.findById(publicacionId)
-                .orElseThrow(() -> new RuntimeException("Publicación no encontrada"));
-
-        Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        Comentario comentario = new Comentario(contenido, usuario, publicacion);
-        return comentarioRepository.save(comentario);
+    public ComentarioController(ComentarioService comentarioService) {
+        this.comentarioService = comentarioService;
     }
 
-    // Obtener comentarios de una publicación de grupo
-    @GetMapping("/grupo/{publicacionId}")
-    public List<Comentario> obtenerComentarios(@PathVariable Long publicacionId) {
-        PublicacionGrupo publicacion = publicacionGrupoRepository.findById(publicacionId)
-                .orElseThrow(() -> new RuntimeException("Publicación no encontrada"));
-        return comentarioRepository.findByPublicacionGrupoOrderByFechaCreacionAsc(publicacion);
+    @GetMapping("/publicacion/{id}")
+    public List<ComentarioResponseDTO> listarPorPublicacion(@PathVariable Long id) {
+        return comentarioService.listarPorPublicacion(id).stream()
+                .map(c -> new ComentarioResponseDTO(
+                        c.getId(),
+                        c.getContenido(),
+                        c.getUsuario().getNombre(),
+                        c.getFechaCreacion()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    @PostMapping
+    public ComentarioResponseDTO crearComentario(@RequestBody ComentarioRequestDTO dto) {
+        Usuario usuario = new Usuario();
+        usuario.setId(dto.getUsuarioId());
+
+        PublicacionGeneral publicacion = new PublicacionGeneral();
+        publicacion.setId(dto.getPublicacionId());
+
+        Comentario comentario = new Comentario(dto.getContenido(), usuario, publicacion);
+        Comentario guardado = comentarioService.crearComentario(comentario);
+
+        return new ComentarioResponseDTO(
+                guardado.getId(),
+                guardado.getContenido(),
+                guardado.getUsuario().getNombre(),
+                guardado.getFechaCreacion()
+        );
+    }
+
+    @DeleteMapping("/{id}")
+    public void eliminarComentario(@PathVariable Long id) {
+        comentarioService.eliminarComentario(id);
     }
 }
