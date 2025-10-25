@@ -14,9 +14,12 @@ import lombok.NoArgsConstructor;
 public class Unidad {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_unidad;
-    @Column
+    @Column(name = "id_unidad")
+    private Long idUnidad;
+
+    @Column(name = "nombre")
     private String nombre;
-    @Column
+
+    @Column(name = "uso")
     private String uso;
 }

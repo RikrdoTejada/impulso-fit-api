@@ -3,10 +3,10 @@ package com.impulsofit.dto.response;
 import java.time.LocalDate;
 
 public record RetoResponse(
-        Long id_reto,
-        String grupoNombre,
-    String usuarioNombre,
-    String unidadNombre,
+    Long id_reto,
+    String grupoNombre,
+    String creadorNombre,
+    String unidad,
     String nombre,
     String descripcion,
     String objetivo,
