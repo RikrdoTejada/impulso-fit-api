@@ -17,7 +17,8 @@ import java.time.LocalDate;
 public class Reto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_reto;
+    @Column(name = "id_reto")
+    private Long idReto;
 
     @ManyToOne
     @JoinColumn(name = "id_grupo", nullable = false)
@@ -25,20 +26,24 @@ public class Reto {
 
     @ManyToOne
     @JoinColumn(name = "id_usuario_creador", nullable = false)
-    private Usuario usuario_creador;
+    private Usuario creador;
 
     @ManyToOne
     @JoinColumn(name = "id_unidad", nullable = false)
     private Unidad unidad;
 
-    @Column
+    @Column(name = "nombre", nullable = false)
     private String nombre;
-    @Column
+
+    @Column(name = "descripcion")
     private String descripcion;
-    @Column
+
+    @Column(name = "objetivo")
     private String objetivo;
-    @Column
-    private LocalDate fecha_inicio;
-    @Column
-    private LocalDate fecha_fin;
+
+    @Column(name = "fecha_inicio")
+    private LocalDate fechaInicio;
+
+    @Column(name = "fecha_fin")
+    private LocalDate fechaFin;
 }

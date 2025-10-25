@@ -23,7 +23,7 @@ public class UnidadService {
         Unidad saved = unidadRepository.save(unidadEntity);
 
         return new UnidadResponse(
-                saved.getId_unidad(),
+                saved.getIdUnidad(),
                 saved.getNombre(),
                 saved.getUso()
         );

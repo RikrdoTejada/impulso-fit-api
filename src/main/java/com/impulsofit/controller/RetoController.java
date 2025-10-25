@@ -2,7 +2,6 @@ package com.impulsofit.controller;
 
 import com.impulsofit.dto.request.RetoRequest;
 import com.impulsofit.dto.response.RetoResponse;
-import com.impulsofit.model.Reto;
 import com.impulsofit.service.RetoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,13 +22,24 @@ public class RetoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Reto>> findAll() {
+    public ResponseEntity<List<RetoResponse>> findAll() {
         return ResponseEntity.ok(retoService.findAll());
     }
 
+    @GetMapping({"/search/by-group/{id}"})
+    public ResponseEntity<List<RetoResponse>> findByGrupoId(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(retoService.findByGrupo_Id_grupo(id));
+    }
+
+    @GetMapping({"/search/by-creator/{id}"})
+    public ResponseEntity<List<RetoResponse>> findByCreadorId(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(retoService.findByCreador_Id(id));
+    }
+
     @PutMapping("{id}")
-    public ResponseEntity<Reto> update(@PathVariable Long id, @RequestBody Reto r) {
-        return ResponseEntity.ok(retoService.update(id, r));
+    public ResponseEntity<RetoResponse> update(@PathVariable Long id, @RequestBody RetoRequest r) {
+        RetoResponse updated = retoService.update(id, r);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("{id}")

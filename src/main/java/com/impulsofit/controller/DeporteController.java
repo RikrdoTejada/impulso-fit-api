@@ -6,8 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
 @RestController
-@RequestMapping("/deporte")
+@RequestMapping("/sport")
 @RequiredArgsConstructor
 public class DeporteController {
     private final DeporteService deporteService;

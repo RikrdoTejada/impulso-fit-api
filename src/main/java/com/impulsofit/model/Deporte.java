@@ -15,9 +15,12 @@ public class Deporte
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Column
+    @Column(name = "id_deporte")
+    private Long idDeporte;
+
+    @Column(name = "nombre")
     private String nombre;
-    @Column
+
+    @Column(name = "tipo_deporte")
     private String tipo;
 }

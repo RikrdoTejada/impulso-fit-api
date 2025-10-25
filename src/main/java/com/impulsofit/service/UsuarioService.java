@@ -2,6 +2,7 @@ package com.impulsofit.service;
 
 import com.impulsofit.dto.request.UsuarioRequest;
 import com.impulsofit.dto.response.UsuarioResponse;
+import com.impulsofit.exception.AlreadyExistsException;
 import com.impulsofit.exception.ResourceNotFoundException;
 import com.impulsofit.model.Usuario;
 import com.impulsofit.repository.UsuarioRepository;
@@ -18,24 +19,28 @@ public class UsuarioService {
     @Transactional
     public UsuarioResponse create(UsuarioRequest usuario) {
 
+        if (usuarioRepository.existsByEmailIgnoreCase(usuario.email())) {
+            throw new AlreadyExistsException("Ya existe un usuario con el correo: " + usuario.email());
+        }
+
         Usuario usuarioEntity = new Usuario();
         usuarioEntity.setNombre(usuario.nombre());
         usuarioEntity.setEmail(usuario.email());
         usuarioEntity.setContrasena(usuario.contrasena());
         usuarioEntity.setEdad(usuario.edad());
         usuarioEntity.setGenero(usuario.genero());
-        usuarioEntity.setFecha_registro(usuario.fecha_registro());
+        usuarioEntity.setFechaRegistro(usuario.fecha_registro());
 
         Usuario saved = usuarioRepository.save(usuarioEntity);
 
         return new UsuarioResponse(
-                saved.getId_usuario(),
+                saved.getIdUsuario(),
                 saved.getNombre(),
                 saved.getEmail(),
                 saved.getContrasena(),
                 saved.getEdad(),
                 saved.getGenero(),
-                saved.getFecha_registro()
+                saved.getFechaRegistro()
         );
     }
     @Transactional

@@ -1,5 +1,6 @@
 package com.impulsofit.model;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,17 +16,19 @@ import java.time.LocalDate;
 public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_usuario;
-    @Column
+    @Column(name = "id_usuario")
+    private Long idUsuario;
+    @Column(name = "nombre", nullable = false)
     private String nombre;
-    @Column
+    @Column(name = "email", nullable = false)
+    @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message = "Formato de email inválido")
     private String email;
-    @Column
+    @Column(name = "contrasena", nullable = false)
     private String contrasena;
-    @Column
+    @Column(name = "edad")
     private Integer edad;
-    @Column
+    @Column(name = "genero")
     private String genero;
-    @Column
-    private LocalDate fecha_registro;
+    @Column(name = "fecha_registro")
+    private LocalDate fechaRegistro;
 }

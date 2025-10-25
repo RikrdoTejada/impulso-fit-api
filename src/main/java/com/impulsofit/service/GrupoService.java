@@ -29,22 +29,22 @@ public class GrupoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Deporte no encontrado"));
 
         Grupo grupoEntity = new Grupo();
-        grupoEntity.setUsuario_creador(usuario);
+        grupoEntity.setCreador(usuario);
         grupoEntity.setDeporte(deporte);
         grupoEntity.setNombre(grupo.nombre());
         grupoEntity.setDescripcion(grupo.descripcion());
         grupoEntity.setUbicacion(grupo.ubicacion());
-        grupoEntity.setFecha_creacion(grupo.fecha_creacion());
+        grupoEntity.setFechaCreacion(grupo.fecha_creacion());
 
         Grupo saved = grupoRepository.save(grupoEntity);
         return new GrupoResponse(
-                saved.getId_grupo(),
-                saved.getUsuario_creador().getNombre(),
+                saved.getIdGrupo(),
+                saved.getCreador().getNombre(),
                 saved.getDeporte().getNombre(),
                 saved.getNombre(),
                 saved.getDescripcion(),
                 saved.getUbicacion(),
-                saved.getFecha_creacion()
+                saved.getFechaCreacion()
         );
 
     }

@@ -18,12 +18,12 @@ public class DeporteService {
 
         Deporte deporteEntity = new Deporte();
         deporteEntity.setNombre(deporte.nombre());
-        deporteEntity.setTipo(deporte.tipo());
+        deporteEntity.setTipo(deporte.tipo_deporte());
 
         Deporte saved = deporteRepository.save(deporteEntity);
 
         return new DeporteResponse(
-                saved.getId(),
+                saved.getIdDeporte(),
                 saved.getNombre(),
                 saved.getNombre()
         );
