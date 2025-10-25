@@ -29,7 +29,6 @@ public class UsuarioService {
         usuarioEntity.setContrasena(usuario.contrasena());
         usuarioEntity.setEdad(usuario.edad());
         usuarioEntity.setGenero(usuario.genero());
-        usuarioEntity.setFechaRegistro(usuario.fecha_registro());
 
         Usuario saved = usuarioRepository.save(usuarioEntity);
 

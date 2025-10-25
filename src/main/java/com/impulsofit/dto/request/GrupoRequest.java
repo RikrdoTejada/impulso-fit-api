@@ -7,7 +7,6 @@ public record GrupoRequest(
         Long id_deporte,
         String nombre,
         String descripcion,
-        String ubicacion,
-        LocalDate fecha_creacion
+        String ubicacion
 ) {
 }

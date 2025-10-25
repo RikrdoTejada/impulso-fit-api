@@ -7,7 +7,6 @@ public record UsuarioRequest(
         String email,
         String contrasena,
         Integer edad,
-        String genero,
-        LocalDate fecha_registro
+        String genero
 ) {
 }

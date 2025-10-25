@@ -34,7 +34,6 @@ public class GrupoService {
         grupoEntity.setNombre(grupo.nombre());
         grupoEntity.setDescripcion(grupo.descripcion());
         grupoEntity.setUbicacion(grupo.ubicacion());
-        grupoEntity.setFechaCreacion(grupo.fecha_creacion());
 
         Grupo saved = grupoRepository.save(grupoEntity);
         return new GrupoResponse(

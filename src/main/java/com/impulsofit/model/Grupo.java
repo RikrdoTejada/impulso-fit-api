@@ -39,4 +39,9 @@ public class Grupo {
     @Column(name = "fecha_creacion")
     private LocalDate fechaCreacion;
 
+    @PrePersist
+    public void onCreate() {
+        this.fechaCreacion = LocalDate.now();
+    }
+
 }
