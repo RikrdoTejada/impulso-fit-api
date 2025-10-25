@@ -5,14 +5,8 @@ import com.impulsofit.dto.response.RetoResponse;
 import com.impulsofit.exception.AlreadyExistsException;
 import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.exception.ResourceNotFoundException;
-import com.impulsofit.model.Reto;
-import com.impulsofit.model.Usuario;
-import com.impulsofit.model.Grupo;
-import com.impulsofit.model.Unidad;
-import com.impulsofit.repository.RetoRepository;
-import com.impulsofit.repository.UnidadRepository;
-import com.impulsofit.repository.GrupoRepository;
-import com.impulsofit.repository.UsuarioRepository;
+import com.impulsofit.model.*;
+import com.impulsofit.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +22,7 @@ public class RetoService {
     private final UsuarioRepository usuarioRepository;
     private final UnidadRepository unidadRepository;
     private final RetoRepository retoRepository;
+    private final MembresiaGrupoRepository membresiaGrupoRepository;
 
     @Transactional
     public RetoResponse create(RetoRequest reto){
@@ -51,7 +46,11 @@ public class RetoService {
         }
         //Unicidad de reto por grupo
         if (retoRepository.existsByNombreIgnoreCaseAndGrupo_IdGrupo(reto.nombre(), reto.id_grupo())) {
-            throw new AlreadyExistsException("Ya existe un reto con el nombre: "+reto.nombre());
+            throw new AlreadyExistsException("Ya existe un reto con el nombre: " + reto.nombre());
+        }
+        //Pertenencia a Grupo
+        if(!membresiaGrupoRepository.existsByUsuario_IdUsuarioAndGrupo_IdGrupo(reto.id_usuario_creador(), reto.id_grupo())) {
+            throw new ResourceNotFoundException("El usuario con el id: " + reto.id_usuario_creador() + " no pertenece al grupo con el id: " + reto.id_grupo());
         }
 
         Reto retoEntity = new Reto();
