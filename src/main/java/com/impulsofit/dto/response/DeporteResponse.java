@@ -3,6 +3,6 @@ package com.impulsofit.dto.response;
 public record DeporteResponse(
         Long id_deporte,
         String nombre,
-        String tipo
+        String tipo_deporte
 ) {
 }

@@ -3,7 +3,6 @@ package com.impulsofit.controller;
 import com.impulsofit.dto.request.PublicacionRequest;
 import com.impulsofit.dto.response.PublicacionResponse;
 import com.impulsofit.service.PublicacionService;
-import com.impulsofit.model.Publicacion;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,12 +22,12 @@ public class PublicacionController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Publicacion>> findAll() {
+    public ResponseEntity<List<PublicacionResponse>> findAll() {
         return ResponseEntity.ok(publicacionService.findAll());
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<Publicacion> update(@PathVariable Long id, @RequestBody Publicacion p) {
+    public ResponseEntity<PublicacionResponse> update(@PathVariable Long id, @RequestBody PublicacionRequest p) {
         return ResponseEntity.ok(publicacionService.update(id, p));
     }
 

@@ -1,7 +1,6 @@
 package com.impulsofit.controller;
 import com.impulsofit.dto.request.GrupoRequest;
 import com.impulsofit.dto.response.GrupoResponse;
-import com.impulsofit.model.Grupo;
 import com.impulsofit.service.GrupoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

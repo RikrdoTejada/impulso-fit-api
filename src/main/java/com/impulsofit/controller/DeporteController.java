@@ -1,14 +1,14 @@
 package com.impulsofit.controller;
 import com.impulsofit.dto.request.DeporteRequest;
 import com.impulsofit.dto.response.DeporteResponse;
-import com.impulsofit.model.Deporte;
 import com.impulsofit.service.DeporteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
 @RestController
-@RequestMapping("/deporte")
+@RequestMapping("/sport")
 @RequiredArgsConstructor
 public class DeporteController {
     private final DeporteService deporteService;

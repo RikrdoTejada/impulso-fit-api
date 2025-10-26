@@ -24,6 +24,14 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(AlreadyExistsException.class)
+    public ProblemDetail handleAlreadyExists(AlreadyExistsException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+        problem.setTitle("Recurso existente");
+        problem.setDetail(ex.getMessage());
+        return problem;
+    }
+
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleGeneral(Exception ex) {
         ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);

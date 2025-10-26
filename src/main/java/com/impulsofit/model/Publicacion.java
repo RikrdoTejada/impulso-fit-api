@@ -14,19 +14,29 @@ import java.time.LocalDateTime;
 public class Publicacion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_publicacion;
+    @Column(name = "id_publicacion")
+    private Long idPublicacion;
 
     @ManyToOne
     @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_publicacion" ,nullable = false)
+    private PublicacionType type;
+
+    @ManyToOne
     @JoinColumn(name= "id_grupo")
     private Grupo grupo;
 
-    @Column
+    @Column(name = "contenido")
     private String contenido;
-    @Column
-    private LocalDateTime fecha_publicacion;
 
+    @Column(name = "fecha_publicacion")
+    private LocalDateTime fechaPublicacion;
+
+    @PrePersist
+    public void onCreate() {
+        this.fechaPublicacion = LocalDateTime.now();
+    }
 }

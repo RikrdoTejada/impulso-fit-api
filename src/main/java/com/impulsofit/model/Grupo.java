@@ -16,23 +16,32 @@ import java.time.LocalDate;
 public class Grupo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_grupo;
+    @Column(name = "id_grupo")
+    private Long idGrupo;
 
     @ManyToOne
     @JoinColumn(name = "id_usuario_creador", nullable = false)
-    private Usuario usuario_creador;
+    private Usuario creador;
 
     @ManyToOne
     @JoinColumn(name = "id_deporte", nullable = false)
     private Deporte deporte;
 
-    @Column
+    @Column(name = "nombre")
     private String nombre;
-    @Column
+
+    @Column(name = "descripcion")
     private String descripcion;
-    @Column
+
+    @Column(name = "ubicacion")
     private String ubicacion;
-    @Column
-    private LocalDate fecha_creacion;
+
+    @Column(name = "fecha_creacion")
+    private LocalDate fechaCreacion;
+
+    @PrePersist
+    public void onCreate() {
+        this.fechaCreacion = LocalDate.now();
+    }
 
 }
