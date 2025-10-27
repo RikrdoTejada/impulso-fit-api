@@ -1,6 +1,9 @@
 package com.impulsofit.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class PerfilRequest {
+    @NotBlank(message = "El nombre de usuario es obligatorio")
     private String nombre;
     private String apellido;
     private String biografia;

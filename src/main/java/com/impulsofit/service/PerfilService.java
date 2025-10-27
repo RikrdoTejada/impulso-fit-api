@@ -5,6 +5,7 @@ import com.impulsofit.dto.response.PerfilResponse;
 import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.model.Perfil;
 import com.impulsofit.repository.PerfilRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -20,15 +21,15 @@ public class PerfilService {
 
     public PerfilResponse actualizarPerfil(Long idPerfil, PerfilRequest request) {
         Perfil perfil = perfilRepository.findById(idPerfil)
-                .orElseThrow(() -> new BusinessRuleException("Perfil no encontrado"));
+                .orElseThrow(() -> new BusinessRuleException("Perfil no encontrado", HttpStatus.NOT_FOUND));
 
         // Business rule: nombre obligatorio
-        if (request.getNombre() == null || request.getNombre().isBlank()) {
-            throw new BusinessRuleException("El nombre de usuario no puede estar vacío.");
+        if (request.getNombre() == null || request.getNombre().trim().isEmpty()) {
+            throw new BusinessRuleException("El nombre de usuario no puede estar vacío.", HttpStatus.BAD_REQUEST);
         }
 
         // Actualizar campos
-        perfil.setNombre(request.getNombre());
+        perfil.setNombre(request.getNombre().trim());
         perfil.setApellido(request.getApellido());
         perfil.setBiografia(request.getBiografia());
         perfil.setUbicacion(request.getUbicacion());
@@ -47,4 +48,3 @@ public class PerfilService {
         return response;
     }
 }
-
