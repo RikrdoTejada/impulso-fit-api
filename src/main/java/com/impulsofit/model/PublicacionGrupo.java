@@ -3,11 +3,12 @@ package com.impulsofit.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "publicaciones_grupo")
+@Table(name = "publicaciongrupo")
+@PrimaryKeyJoinColumn(name = "id_publicacion")
 public class PublicacionGrupo extends PublicacionGeneral {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "grupo_id", nullable = false)
+    @JoinColumn(name = "id_grupo", nullable = false)
     private Grupo grupo;
 
     public PublicacionGrupo() {}

@@ -5,22 +5,23 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "publicaciones_generales")
+@Table(name = "publicaciongeneral")
 @Inheritance(strategy = InheritanceType.JOINED)
 public class PublicacionGeneral {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_publicacion")
     private Long id;
 
-    @Column(nullable = false, length = 300)
+    @Column(name = "contenido", nullable = false, columnDefinition = "text")
     private String contenido;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id", nullable = false)
+    @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
-    @Column(nullable = false)
+    @Column(name = "fecha_publicacion", nullable = false)
     private LocalDateTime fechaCreacion = LocalDateTime.now();
 
     @OneToMany(mappedBy = "publicacion", cascade = CascadeType.ALL, orphanRemoval = true)

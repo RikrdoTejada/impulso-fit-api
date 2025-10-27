@@ -3,7 +3,6 @@ package com.impulsofit.controller;
 import com.impulsofit.dto.request.ComentarioRequestDTO;
 import com.impulsofit.dto.response.ComentarioResponseDTO;
 import com.impulsofit.model.Comentario;
-import com.impulsofit.model.PublicacionGeneral;
 import com.impulsofit.model.Usuario;
 import com.impulsofit.service.ComentarioService;
 import org.springframework.web.bind.annotation.*;
@@ -11,7 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/comentarios")
+@RequestMapping("/comentarios")
 public class ComentarioController {
 
     private final ComentarioService comentarioService;
@@ -20,39 +19,52 @@ public class ComentarioController {
         this.comentarioService = comentarioService;
     }
 
+    // Endpoint genérico de lectura por compatibilidad
     @GetMapping("/publicacion/{id}")
     public List<ComentarioResponseDTO> listarPorPublicacion(@PathVariable Long id) {
         return comentarioService.listarPorPublicacion(id).stream()
-                .map(c -> new ComentarioResponseDTO(
-                        c.getId(),
-                        c.getContenido(),
-                        c.getUsuario().getNombre(),
-                        c.getFechaCreacion()
-                ))
+                .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
-    @PostMapping
-    public ComentarioResponseDTO crearComentario(@RequestBody ComentarioRequestDTO dto) {
-        Usuario usuario = new Usuario();
-        usuario.setId(dto.getUsuarioId());
+    // Endpoints separados recomendados
+    @GetMapping("/general/{publicacionId}")
+    public List<ComentarioResponseDTO> listarGeneral(@PathVariable Long publicacionId) {
+        return comentarioService.listarPorPublicacionGeneral(publicacionId).stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
 
-        PublicacionGeneral publicacion = new PublicacionGeneral();
-        publicacion.setId(dto.getPublicacionId());
+    @GetMapping("/grupal/{publicacionId}")
+    public List<ComentarioResponseDTO> listarGrupal(@PathVariable Long publicacionId) {
+        return comentarioService.listarPorPublicacionGrupo(publicacionId).stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
 
-        Comentario comentario = new Comentario(dto.getContenido(), usuario, publicacion);
-        Comentario guardado = comentarioService.crearComentario(comentario);
+    @PostMapping("/general")
+    public ComentarioResponseDTO crearEnGeneral(@RequestBody ComentarioRequestDTO dto) {
+        Comentario guardado = comentarioService.crearComentarioEnPublicacionGeneral(dto.getUsuarioId(), dto.getPublicacionId(), dto.getContenido());
+        return toDto(guardado);
+    }
 
-        return new ComentarioResponseDTO(
-                guardado.getId(),
-                guardado.getContenido(),
-                guardado.getUsuario().getNombre(),
-                guardado.getFechaCreacion()
-        );
+    @PostMapping("/grupal")
+    public ComentarioResponseDTO crearEnGrupal(@RequestBody ComentarioRequestDTO dto) {
+        Comentario guardado = comentarioService.crearComentarioEnPublicacionGrupo(dto.getUsuarioId(), dto.getPublicacionId(), dto.getContenido());
+        return toDto(guardado);
     }
 
     @DeleteMapping("/{id}")
     public void eliminarComentario(@PathVariable Long id) {
         comentarioService.eliminarComentario(id);
+    }
+
+    private ComentarioResponseDTO toDto(Comentario c) {
+        return new ComentarioResponseDTO(
+                c.getId(),
+                c.getContenido(),
+                c.getUsuario() != null ? c.getUsuario().getNombre() : null,
+                c.getFechaCreacion()
+        );
     }
 }

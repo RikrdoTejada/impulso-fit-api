@@ -4,25 +4,26 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "comentarios")
+@Table(name = "comentario")
 public class Comentario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_comentario")
     private Long id;
 
-    @Column(nullable = false, length = 300)
+    @Column(name = "contenido", nullable = false, length = 500)
     private String contenido;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id", nullable = false)
+    @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "publicacion_id", nullable = false)
+    @JoinColumn(name = "id_publicacion", nullable = false)
     private PublicacionGeneral publicacion;
 
-    @Column(nullable = false)
+    @Column(name = "fecha_comentario", nullable = false)
     private LocalDateTime fechaCreacion = LocalDateTime.now();
 
     // Constructor vacío
@@ -44,4 +45,5 @@ public class Comentario {
     public PublicacionGeneral getPublicacion() { return publicacion; }
     public void setPublicacion(PublicacionGeneral publicacion) { this.publicacion = publicacion; }
     public LocalDateTime getFechaCreacion() { return fechaCreacion; }
+    public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
 }
