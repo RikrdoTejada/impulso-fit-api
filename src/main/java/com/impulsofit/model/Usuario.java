@@ -64,6 +64,6 @@ public class Usuario {
     public void setIntentosFallidos(Integer intentosFallidos) { this.intentosFallidos = intentosFallidos; }
 
     public boolean isBloqueado() {
-        return false;
+        return Boolean.TRUE.equals(this.bloqueado);
     }
 }
