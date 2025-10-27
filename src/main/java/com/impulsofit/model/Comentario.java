@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "comentarios")
+@Table(name = "comentario")
 public class Comentario {
 
     @Id
@@ -18,62 +18,41 @@ public class Comentario {
     @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_publicacion", nullable = false)
-    private PublicacionGrupo publicacion;
+    // Desacoplado: guardamos solo el id de la publicación en vez de una relación directa.
+    @Column(name = "id_publicacion", nullable = false)
+    private Long idPublicacion;
 
-    @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion = LocalDateTime.now();
+    @Column(name = "fecha_creacion", nullable = true)
+    private LocalDateTime fechaCreacion;
 
-    // 🔹 Constructor vacío (obligatorio para JPA)
+    // Constructor vacío
     public Comentario() {}
 
-    // 🔹 Constructor con todos los campos
-    public Comentario(String contenido, Usuario usuario, PublicacionGrupo publicacion) {
+    public Comentario(String contenido, Usuario usuario, Long idPublicacion) {
         this.contenido = contenido;
         this.usuario = usuario;
-        this.publicacion = publicacion;
-        this.fechaCreacion = LocalDateTime.now();
+        this.idPublicacion = idPublicacion;
     }
 
-    // 🔹 Getters y Setters
-    public Long getId() {
-        return id;
+    @PrePersist
+    protected void onCreate() {
+        if (this.fechaCreacion == null) {
+            this.fechaCreacion = LocalDateTime.now();
+        }
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public String getContenido() {
-        return contenido;
-    }
+    public String getContenido() { return contenido; }
+    public void setContenido(String contenido) { this.contenido = contenido; }
 
-    public void setContenido(String contenido) {
-        this.contenido = contenido;
-    }
+    public Usuario getUsuario() { return usuario; }
+    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
 
-    public Usuario getUsuario() {
-        return usuario;
-    }
+    public Long getIdPublicacion() { return idPublicacion; }
+    public void setIdPublicacion(Long idPublicacion) { this.idPublicacion = idPublicacion; }
 
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
-    }
-
-    public PublicacionGrupo getPublicacion() {
-        return publicacion;
-    }
-
-    public void setPublicacion(PublicacionGrupo publicacion) {
-        this.publicacion = publicacion;
-    }
-
-    public LocalDateTime getFechaCreacion() {
-        return fechaCreacion;
-    }
-
-    public void setFechaCreacion(LocalDateTime fechaCreacion) {
-        this.fechaCreacion = fechaCreacion;
-    }
+    public LocalDateTime getFechaCreacion() { return fechaCreacion; }
+    public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
 }

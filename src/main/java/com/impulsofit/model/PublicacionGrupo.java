@@ -2,7 +2,6 @@ package com.impulsofit.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "publicaciongrupo")
@@ -24,11 +23,8 @@ public class PublicacionGrupo {
     @JoinColumn(name = "id_grupo", nullable = false)
     private Grupo grupo;
 
-    @Column(name = "fecha_publicacion", nullable = false)
-    private LocalDateTime fechaCreacion = LocalDateTime.now();
-
-    @OneToMany(mappedBy = "publicacion", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comentario> comentarios;
+    @Column(name = "fecha_publicacion", nullable = true)
+    private LocalDateTime fechaCreacion;
 
     public Long getIdPublicacion() { return idPublicacion; }
 
@@ -41,9 +37,13 @@ public class PublicacionGrupo {
     public Grupo getGrupo() { return grupo; }
     public void setGrupo(Grupo grupo) { this.grupo = grupo; }
 
+    @PrePersist
+    protected void onCreate() {
+        if (this.fechaCreacion == null) {
+            this.fechaCreacion = LocalDateTime.now();
+        }
+    }
+
     public LocalDateTime getFechaCreacion() { return fechaCreacion; }
     public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
-
-    public List<Comentario> getComentarios() { return comentarios; }
-    public void setComentarios(List<Comentario> comentarios) { this.comentarios = comentarios; }
 }

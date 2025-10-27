@@ -21,14 +21,14 @@ public class FeedGrupoController {
 
     @GetMapping("/{grupoId}")
     public List<PublicacionGrupoResponseDTO> obtenerFeed(@PathVariable Long grupoId) {
-        return feedService.obtenerFeedPorGrupo(grupoId).stream()
+        List<PublicacionGrupo> publicaciones = feedService.obtenerFeedPorGrupo(grupoId);
+        return publicaciones.stream()
                 .map(pub -> {
                     String autorNombre = (pub.getAutor() != null) ? pub.getAutor().getNombre() : null;
-                    List<String> comentarios = (pub.getComentarios() == null)
+                    List<Comentario> comentariosEnt = feedService.obtenerComentariosPorPublicacion(pub.getIdPublicacion());
+                    List<String> comentarios = (comentariosEnt == null || comentariosEnt.isEmpty())
                             ? Collections.emptyList()
-                            : pub.getComentarios().stream()
-                                .map(Comentario::getContenido)
-                                .collect(Collectors.toList());
+                            : comentariosEnt.stream().map(Comentario::getContenido).collect(Collectors.toList());
                     return new PublicacionGrupoResponseDTO(
                             pub.getIdPublicacion(),
                             pub.getContenido(),

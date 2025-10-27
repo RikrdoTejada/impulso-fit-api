@@ -10,7 +10,6 @@ public interface PublicacionGrupoRepository extends JpaRepository<PublicacionGru
 
     @Query("SELECT DISTINCT p FROM PublicacionGrupo p " +
             "LEFT JOIN FETCH p.autor " +
-            "LEFT JOIN FETCH p.comentarios " +
             "WHERE p.grupo.idGrupo = :grupoId")
     List<PublicacionGrupo> findByGrupoId(@Param("grupoId") Long grupoId);
 }
