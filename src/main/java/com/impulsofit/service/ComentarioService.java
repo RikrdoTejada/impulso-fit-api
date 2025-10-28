@@ -44,7 +44,7 @@ public class ComentarioService {
         return comentarioRepository.findByPublicacionId(publicacionId);
     }
 
-    // Nuevo: listar por tipo explícito
+    // Listar por tipo
     public List<Comentario> listarPorPublicacionGeneral(Long publicacionId) {
         return comentarioRepository.findByPublicacionId(publicacionId);
     }
@@ -53,7 +53,7 @@ public class ComentarioService {
         return comentarioRepository.findByPublicacionId(publicacionId);
     }
 
-    // Nuevo: crear comentario en publicación general
+    // Crear comentario en publicación general
     public Comentario crearComentarioEnPublicacionGeneral(Long usuarioId, Long publicacionId, String contenido) {
         if (usuarioId == null) throw new IllegalArgumentException("Usuario inválido");
         if (publicacionId == null) throw new IllegalArgumentException("Publicación inválida");
@@ -74,7 +74,7 @@ public class ComentarioService {
         return comentarioRepository.save(comentario);
     }
 
-    // Nuevo: crear comentario en publicación grupal (valida membresía)
+    // Crear comentario en publicación grupal (valida membresía)
     public Comentario crearComentarioEnPublicacionGrupo(Long usuarioId, Long publicacionId, String contenido) {
         if (usuarioId == null) throw new IllegalArgumentException("Usuario inválido");
         if (publicacionId == null) throw new IllegalArgumentException("Publicación inválida");
@@ -103,7 +103,6 @@ public class ComentarioService {
         return comentarioRepository.save(comentario);
     }
 
-    // Mantener el método genérico para compatibilidad
     public Comentario crearComentario(Comentario comentario) {
         // Validaciones básicas de entrada
         if (comentario.getUsuario() == null || comentario.getUsuario().getId() == null) {
@@ -154,7 +153,6 @@ public class ComentarioService {
 
         validarComentario(comentario.getContenido());
 
-        // Asociar entidades reales
         comentario.setUsuario(usuario);
         comentario.setPublicacion(publicacion);
 

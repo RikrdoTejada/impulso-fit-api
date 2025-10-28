@@ -1,4 +1,3 @@
-// ...new file...
 package com.impulsofit.model;
 
 import jakarta.persistence.*;

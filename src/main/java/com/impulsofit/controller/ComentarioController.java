@@ -19,7 +19,6 @@ public class ComentarioController {
         this.comentarioService = comentarioService;
     }
 
-    // Endpoint genérico de lectura por compatibilidad
     @GetMapping("/publicacion/{id}")
     public List<ComentarioResponseDTO> listarPorPublicacion(@PathVariable Long id) {
         return comentarioService.listarPorPublicacion(id).stream()
@@ -27,7 +26,6 @@ public class ComentarioController {
                 .collect(Collectors.toList());
     }
 
-    // Endpoints separados recomendados
     @GetMapping("/general/{publicacionId}")
     public List<ComentarioResponseDTO> listarGeneral(@PathVariable Long publicacionId) {
         return comentarioService.listarPorPublicacionGeneral(publicacionId).stream()
