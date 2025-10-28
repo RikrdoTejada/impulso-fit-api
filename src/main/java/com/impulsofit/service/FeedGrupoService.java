@@ -24,14 +24,12 @@ public class FeedGrupoService {
     @Transactional(readOnly = true)
     public List<PublicacionGrupo> obtenerFeedPorGrupo(Long grupoId) {
         List<PublicacionGrupo> publicaciones = publicacionGrupoRepository.findByGrupoId(grupoId);
-        // cargar comentarios por cada publicacion y setearlos como property derivada si se desea;
-        // como no queremos crear nuevos DTOs/archivos, dejaremos que el controlador consulte los comentarios
+        // cargar comentarios por cada publicacion
         return publicaciones;
     }
 
     @Transactional(readOnly = true)
     public List<Comentario> obtenerComentariosPorPublicacion(Long publicacionId) {
-        // Solo traer comentarios cuya id_publicacion pertenezca a una fila existente en publicaciongrupo
         TypedQuery<Comentario> q = em.createQuery(
                 "SELECT c FROM Comentario c, PublicacionGrupo p WHERE c.idPublicacion = p.idPublicacion AND p.idPublicacion = :pubId ORDER BY c.fechaCreacion",
                 Comentario.class);

@@ -18,7 +18,6 @@ public class Comentario {
     @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
-    // Desacoplado: guardamos solo el id de la publicación en vez de una relación directa.
     @Column(name = "id_publicacion", nullable = false)
     private Long idPublicacion;
 
