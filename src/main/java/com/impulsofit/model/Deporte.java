@@ -3,7 +3,7 @@ package com.impulsofit.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "Deporte")
+@Table(name = "deporte")
 public class Deporte {
 
     @Id
