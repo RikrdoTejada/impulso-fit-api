@@ -50,7 +50,7 @@ public class LoginService {
                     throw new BusinessRuleException("Usuario bloqueado por múltiples intentos fallidos", HttpStatus.FORBIDDEN);
                 }
             } else {
-                // Si la DB marca bloqueado pero no tenemos registro en memoria, considerar bloqueado por seguridad
+                // Considerar bloqueado por seguridad
                 throw new BusinessRuleException("Usuario bloqueado por múltiples intentos fallidos", HttpStatus.FORBIDDEN);
             }
         }
@@ -62,13 +62,12 @@ public class LoginService {
 
             boolean bloquear = false;
             if (intentos > MAX_INTENTOS) {
-                // En el sexto intento (intentos == MAX_INTENTOS + 1) se bloquea
+                // En el sexto intento se bloquea
                 usuario.setBloqueado(true);
                 bloqueos.put(idUsuario, LocalDateTime.now());
                 bloquear = true;
             }
 
-            // Persistir intentos y bloqueo en una transacción separada para que no se pierda
             persistirIntentosYBloqueo(idUsuario, intentos, bloquear);
 
             throw new BusinessRuleException("Credenciales incorrectas", HttpStatus.UNAUTHORIZED);
