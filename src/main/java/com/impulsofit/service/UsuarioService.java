@@ -70,6 +70,7 @@ public class UsuarioService {
         return mapToResponse(saved);
     }
 
+    //Metodo update para credenciales de usuario (password and email)
     @Transactional
     public UsuarioResponse updateCred(Long id, RecoverRequest usercred) {
         Usuario usuarioEntity = usuarioRepository.findById(id)
@@ -83,7 +84,7 @@ public class UsuarioService {
         if (usercred.tipo_recover() == RecoverType.PASSWORD) {
             if (usercred.new_contrasena() == null || usercred.new_contrasena().isBlank())
                 throw new IllegalArgumentException("La nueva contraseña está vacía.");
-            usuarioEntity.setContrasena(usercred.new_contrasena()); // TEXTO PLANO PARA PRUEBAS
+            usuarioEntity.setContrasena(usercred.new_contrasena());
             Usuario saved = usuarioRepository.save(usuarioEntity);
             return mapToResponse(saved);
 
@@ -95,7 +96,6 @@ public class UsuarioService {
             return mapToResponse(saved);
         }
     }
-
 
     @Transactional
     public void delete(Long id) {

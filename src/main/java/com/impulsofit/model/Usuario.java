@@ -34,16 +34,16 @@ public class Usuario {
     @Column(name = "contrasena", nullable = false)
     private String contrasena;
 
-    @Column(name = "fecha_nacimiento")
+    @Column(name = "fecha_nacimiento", nullable = false)
     private LocalDate fechaNacimiento;
 
-    @Column(name = "genero")
+    @Column(name = "genero", nullable = false)
     private String genero;
 
-    @Column(name = "fecha_registro")
+    @Column(name = "fecha_registro", nullable = false)
     private LocalDate fechaRegistro;
 
-    @Column(name = "cod_pregunta")
+    @Column(name = "cod_pregunta", nullable = false)
     private CodPregunta codPregunta;
 
     @PrePersist

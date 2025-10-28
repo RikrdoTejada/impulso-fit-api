@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 
-public class Respuesta {
+public class Respuesta{
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     @Column(name = "id_respuesta", nullable = false)
@@ -21,7 +21,7 @@ public class Respuesta {
     @JoinColumn(name="id_usuario", nullable = false)
     private Usuario usuario;
 
-    @Column(name = "str_respueta", nullable = false)
+    @Column(name = "str_respuesta", nullable = false)
     private String strRespuesta;
 
 }
