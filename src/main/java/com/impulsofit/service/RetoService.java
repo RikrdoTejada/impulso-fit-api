@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,6 +53,18 @@ public class RetoService {
         if(!membresiaGrupoRepository.existsByUsuario_IdUsuarioAndGrupo_IdGrupo(reto.id_usuario_creador(), reto.id_grupo())) {
             throw new ResourceNotFoundException("El usuario con el id: " + reto.id_usuario_creador() + " no pertenece al grupo con el id: " + reto.id_grupo());
         }
+        //Fecha de inicio o fin de reto no puede ser en el pasado
+        if (reto.fecha_inicio().isBefore(LocalDate.now())) {
+            throw new BusinessRuleException(
+                    "La fecha de inicio no puede ser anterior a la fecha actual. " +
+                            "Fecha ingresada: " + reto.fecha_inicio()
+            );
+        }
+        if(reto.fecha_fin().isBefore(LocalDate.now())){
+            throw new BusinessRuleException(
+                    "La fecha de fin no puede ser anterior a la fecha actual. " +
+                    "Fecha ingresada: " + reto.fecha_fin());
+        }
 
         Reto retoEntity = new Reto();
         retoEntity.setGrupo(grupo);
@@ -78,19 +91,20 @@ public class RetoService {
 
     @Transactional
     public RetoResponse update(Long id, RetoRequest reto) {
-
-        if (!retoRepository.existsById(id)) {
-            throw new ResourceNotFoundException("No existe el reto con el id: " + id);
-        }
+        //Validaciones
+        //Existencia de reto
+        Reto retoEntity = retoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No existe el reto con el id: " + id));
+        //Existencia de usuario
         Usuario usuario = usuarioRepository.findById(reto.id_usuario_creador())
                 .orElseThrow(() -> new ResourceNotFoundException("No existe el usuario con el id: " + reto.id_usuario_creador()));
-
+        //Existencia de grupo
         Grupo grupo = grupoRepository.findById(reto.id_grupo())
                 .orElseThrow(() -> new ResourceNotFoundException("No existe el grupo con el id: " + reto.id_grupo()));
-
+        //Existencia de unidad
         Unidad unidad = unidadRepository.findById(reto.id_unidad())
                 .orElseThrow(() -> new ResourceNotFoundException("No existe la unidad con el id: " + reto.id_unidad()));
-
+        //Regla de negocio: Descripcion no puede estar vacía o ser menor a 5 caracteres
         if(reto.descripcion()==null){
             throw new BusinessRuleException("La descripción no puede estar vacia.");
         }
@@ -98,13 +112,27 @@ public class RetoService {
             throw new BusinessRuleException("El nombre debe tener al menos 5 caracteres. Longitud actual: "
                     +reto.nombre().length());
         }
-
+        //Pertenencia a Grupo
+        if(!membresiaGrupoRepository.existsByUsuario_IdUsuarioAndGrupo_IdGrupo(reto.id_usuario_creador(), reto.id_grupo())) {
+            throw new ResourceNotFoundException("El usuario con el id: " + reto.id_usuario_creador() + " no pertenece al grupo con el id: " + reto.id_grupo());
+        }
+        //Unicidad de reto por grupo
         if (retoRepository.existsByNombreIgnoreCaseAndGrupo_IdGrupoAndIdRetoNot(reto.nombre(), reto.id_grupo(), id)) {
             throw new AlreadyExistsException("Ya existe un reto con el nombre: "  + reto.nombre());
         }
+        if (reto.fecha_inicio().isBefore(LocalDate.now())) {
+            throw new BusinessRuleException(
+                    "La fecha de inicio no puede ser anterior a la fecha actual. " +
+                            "Fecha ingresada: " + reto.fecha_inicio()
+            );
+        }
+        if(reto.fecha_fin().isBefore(LocalDate.now())){
+            throw new BusinessRuleException(
+                    "La fecha de fin no puede ser anterior a la fecha actual. " +
+                            "Fecha ingresada: " + reto.fecha_fin());
+        }
 
-
-        Reto retoEntity = new Reto();
+        //sets
         retoEntity.setIdReto(id);
         retoEntity.setGrupo(grupo);
         retoEntity.setCreador(usuario);
@@ -148,11 +176,12 @@ public class RetoService {
         return new RetoResponse(
                 reto.getIdReto(),
                 reto.getGrupo().getNombre(),
-                reto.getCreador().getNombre(),
+                reto.getCreador().getNombres(),
                 reto.getUnidad().getNombre(),
                 reto.getNombre(),
                 reto.getDescripcion(),
                 reto.getObjetivo(),
+                reto.getFechaPublicacion(),
                 reto.getFechaInicio(),
                 reto.getFechaFin()
         );

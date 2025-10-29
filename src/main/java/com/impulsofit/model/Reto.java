@@ -41,9 +41,17 @@ public class Reto {
     @Column(name = "objetivo")
     private String objetivo;
 
+    @Column(name = "fecha_publicacion")
+    private LocalDate fechaPublicacion;
+
     @Column(name = "fecha_inicio")
     private LocalDate fechaInicio;
 
     @Column(name = "fecha_fin")
     private LocalDate fechaFin;
+
+    @PrePersist
+    public void onCreate() {
+        this.fechaPublicacion = LocalDate.now();
+    }
 }

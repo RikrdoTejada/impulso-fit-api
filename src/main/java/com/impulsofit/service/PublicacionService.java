@@ -136,7 +136,7 @@ public class PublicacionService {
         String grupoNombre = publica ? null : publicacion.getGrupo().getNombre();
         return new PublicacionResponse(
                 publicacion.getIdPublicacion(),
-                publicacion.getUsuario().getNombre(),
+                publicacion.getUsuario().getNombres(),
                 publicacion.getType(),
                 grupoNombre,
                 publicacion.getContenido(),

@@ -10,6 +10,7 @@ public record RetoResponse(
     String nombre,
     String descripcion,
     String objetivo,
+    LocalDate fechaPublicacion,
     LocalDate fecha_inicio,
     LocalDate fecha_fin) {
 }

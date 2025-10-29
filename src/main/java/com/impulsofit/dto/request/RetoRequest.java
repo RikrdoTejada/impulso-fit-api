@@ -11,5 +11,4 @@ public record RetoRequest(
         String objetivo,
         LocalDate fecha_inicio,
         LocalDate fecha_fin){
-
 }
