@@ -38,7 +38,7 @@ public class GrupoService {
         Grupo saved = grupoRepository.save(grupoEntity);
         return new GrupoResponse(
                 saved.getIdGrupo(),
-                saved.getCreador().getNombre(),
+                saved.getCreador().getNombres(),
                 saved.getDeporte().getNombre(),
                 saved.getNombre(),
                 saved.getDescripcion(),

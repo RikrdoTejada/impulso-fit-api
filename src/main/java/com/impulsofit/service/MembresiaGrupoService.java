@@ -35,7 +35,7 @@ public class MembresiaGrupoService {
 
         return new MembresiaGrupoResponse(
                 saved.getIdMembresia(),
-                saved.getUsuario().getNombre(),
+                saved.getUsuario().getNombres(),
                 saved.getGrupo().getNombre(),
                 saved.getFechaUnion()
         );
