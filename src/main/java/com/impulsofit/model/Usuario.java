@@ -67,3 +67,4 @@ public class Usuario {
         return Boolean.TRUE.equals(this.bloqueado);
     }
 }
+
