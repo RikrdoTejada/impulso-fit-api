@@ -2,45 +2,36 @@ package com.impulsofit.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
-@Table(name = "comentario")
-public class Comentario {
+@Table(name = "publicaciongeneral")
+@Inheritance(strategy = InheritanceType.JOINED)
+public class PublicacionGeneral {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_comentario")
+    @Column(name = "id_publicacion")
     private Long id;
 
-    @Column(name = "contenido", nullable = false, length = 500)
+    @Column(name = "contenido", nullable = false, columnDefinition = "text")
     private String contenido;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_publicacion", nullable = false)
-    private PublicacionGeneral publicacion;
+    @Column(name = "fecha_publicacion", nullable = false)
+    private LocalDateTime fechaCreacion = LocalDateTime.now();
 
-    @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion;
+    @OneToMany(mappedBy = "publicacion", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comentario> comentarios;
 
-    // Constructor vacío
-    public Comentario() {}
+    public PublicacionGeneral() {}
 
-    // Constructor con campos
-    public Comentario(String contenido, Usuario usuario, PublicacionGeneral publicacion) {
+    public PublicacionGeneral(String contenido, Usuario usuario) {
         this.contenido = contenido;
         this.usuario = usuario;
-        this.publicacion = publicacion;
-    }
-
-    @PrePersist
-    protected void onCreate() {
-        if (this.fechaCreacion == null) {
-            this.fechaCreacion = LocalDateTime.now();
-        }
     }
 
     // Getters y setters
@@ -52,9 +43,6 @@ public class Comentario {
 
     public Usuario getUsuario() { return usuario; }
     public void setUsuario(Usuario usuario) { this.usuario = usuario; }
-
-    public PublicacionGeneral getPublicacion() { return publicacion; }
-    public void setPublicacion(PublicacionGeneral publicacion) { this.publicacion = publicacion; }
 
     public LocalDateTime getFechaCreacion() { return fechaCreacion; }
     public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }

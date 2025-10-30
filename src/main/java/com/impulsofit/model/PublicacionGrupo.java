@@ -5,45 +5,45 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "publicaciongrupo")
-public class PublicacionGrupo {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_publicacion")
-    private Long idPublicacion;
-
-    @Column(nullable = false, length = 500)
-    private String contenido;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_usuario", nullable = false)
-    private Usuario autor;
+@PrimaryKeyJoinColumn(name = "id_publicacion")
+public class PublicacionGrupo extends PublicacionGeneral {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_grupo", nullable = false)
     private Grupo grupo;
 
-    @Column(name = "fecha_publicacion", nullable = true)
-    private LocalDateTime fechaCreacion;
+    public PublicacionGrupo() {}
 
-    public Long getIdPublicacion() { return idPublicacion; }
-
-    public String getContenido() { return contenido; }
-    public void setContenido(String contenido) { this.contenido = contenido; }
-
-    public Usuario getAutor() { return autor; }
-    public void setAutor(Usuario autor) { this.autor = autor; }
+    public PublicacionGrupo(String contenido, Usuario usuario, Grupo grupo) {
+        super(contenido, usuario);
+        this.grupo = grupo;
+    }
 
     public Grupo getGrupo() { return grupo; }
     public void setGrupo(Grupo grupo) { this.grupo = grupo; }
 
+    // Métodos delegados para compatibilidad con la versión de la rama destino
+    // (evitan duplicar campos mapeados en la superclase PublicacionGeneral)
+    public Long getIdPublicacion() { return super.getId(); }
+    public void setIdPublicacion(Long id) { super.setId(id); }
+
+    @Override
+    public String getContenido() { return super.getContenido(); }
+    @Override
+    public void setContenido(String contenido) { super.setContenido(contenido); }
+
+    // "autor" es el mismo que "usuario" en la superclase; delegamos para compatibilidad
+    public Usuario getAutor() { return super.getUsuario(); }
+    public void setAutor(Usuario autor) { super.setUsuario(autor); }
+
+    // Asegurar fechaCreacion si no está seteada (fecha está en la superclase)
     @PrePersist
     protected void onCreate() {
-        if (this.fechaCreacion == null) {
-            this.fechaCreacion = LocalDateTime.now();
+        if (super.getFechaCreacion() == null) {
+            super.setFechaCreacion(LocalDateTime.now());
         }
     }
 
-    public LocalDateTime getFechaCreacion() { return fechaCreacion; }
-    public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
+    public LocalDateTime getFechaCreacion() { return super.getFechaCreacion(); }
+    public void setFechaCreacion(LocalDateTime fechaCreacion) { super.setFechaCreacion(fechaCreacion); }
 }
