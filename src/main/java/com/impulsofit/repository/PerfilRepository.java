@@ -6,10 +6,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PerfilRepository extends JpaRepository<Perfil, Long> {
 
     @Query("SELECT p FROM Perfil p WHERE LOWER(CONCAT(COALESCE(p.nombre, ''), ' ', COALESCE(p.apellido, ''))) LIKE LOWER(CONCAT('%', :term, '%'))")
     List<Perfil> searchByNombreApellido(@Param("term") String term);
-}
 
+    Optional<Perfil> findByIdPerfil(Long idPerfil);
+}

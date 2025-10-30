@@ -2,6 +2,8 @@ package com.impulsofit.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "usuario")
@@ -12,21 +14,48 @@ public class Usuario {
     @Column(name = "id_usuario")
     private Long idUsuario;
 
+    @Column(name = "nombre", nullable = false, length = 100)
     private String nombre;
 
-    @Column(unique = true)
+    @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
+    @Column(name = "contrasena", nullable = false)
     private String contrasena;
+
+    @Column(name = "edad")
     private Integer edad;
+
+    @Column(name = "genero")
     private String genero;
 
-    @Column(name = "fecha_registro")
-    private LocalDate fechaRegistro;
+    // Guardamos fecha con precisión de tiempo (timestamp). Proporcionamos helpers para compatibilidad con LocalDate.
+    @Column(name = "fecha_registro", nullable = false)
+    private LocalDateTime fechaRegistro;
 
-    // Getters y Setters
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comentario> comentarios;
+
+    @Column(name = "bloqueado", nullable = false)
+    private Boolean bloqueado = false;
+
+    @Column(name = "intentos_fallidos", nullable = false)
+    private Integer intentosFallidos = 0;
+
+    public Usuario() {}
+
+    public Usuario(String nombre, String email, String contrasena) {
+        this.nombre = nombre;
+        this.email = email;
+        this.contrasena = contrasena;
+    }
+
+    // PK accessors: compatibilidad con getIdUsuario() y getId()
     public Long getIdUsuario() { return idUsuario; }
     public void setIdUsuario(Long idUsuario) { this.idUsuario = idUsuario; }
+
+    public Long getId() { return idUsuario; }
+    public void setId(Long id) { this.idUsuario = id; }
 
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
@@ -43,6 +72,46 @@ public class Usuario {
     public String getGenero() { return genero; }
     public void setGenero(String genero) { this.genero = genero; }
 
-    public LocalDate getFechaRegistro() { return fechaRegistro; }
-    public void setFechaRegistro(LocalDate fechaRegistro) { this.fechaRegistro = fechaRegistro; }
+    // Fecha registro primaria: LocalDateTime (preserva hora). Helpers para compatibilidad con LocalDate.
+    public LocalDateTime getFechaRegistro() { return fechaRegistro; }
+    public void setFechaRegistro(LocalDateTime fechaRegistro) { this.fechaRegistro = fechaRegistro; }
+
+    public LocalDate getFechaRegistroAsLocalDate() {
+        return this.fechaRegistro != null ? this.fechaRegistro.toLocalDate() : null;
+    }
+
+    public void setFechaRegistro(LocalDate fechaRegistroDate) {
+        if (fechaRegistroDate == null) {
+            this.fechaRegistro = null;
+        } else {
+            this.fechaRegistro = fechaRegistroDate.atStartOfDay();
+        }
+    }
+
+    public List<Comentario> getComentarios() { return comentarios; }
+    public void setComentarios(List<Comentario> comentarios) { this.comentarios = comentarios; }
+
+    public Boolean getBloqueado() { return bloqueado; }
+    public void setBloqueado(Boolean bloqueado) { this.bloqueado = bloqueado; }
+
+    public Integer getIntentosFallidos() { return intentosFallidos; }
+    public void setIntentosFallidos(Integer intentosFallidos) { this.intentosFallidos = intentosFallidos; }
+
+    public boolean isBloqueado() {
+        return Boolean.TRUE.equals(this.bloqueado);
+    }
+
+    // Asegurar valores por defecto antes de persistir
+    @PrePersist
+    protected void onCreate() {
+        if (this.fechaRegistro == null) {
+            this.fechaRegistro = LocalDateTime.now();
+        }
+        if (this.bloqueado == null) {
+            this.bloqueado = false;
+        }
+        if (this.intentosFallidos == null) {
+            this.intentosFallidos = 0;
+        }
+    }
 }

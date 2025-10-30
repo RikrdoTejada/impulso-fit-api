@@ -2,14 +2,17 @@ package com.impulsofit.model;
 
 import jakarta.persistence.*;
 
+/**
+ * Entidad Perfil: comparte PK con Usuario (1:1) usando @MapsId.
+ * Esto permite que el perfil tenga exactamente el mismo id que su usuario asociado.
+ */
 @Entity
 @Table(name = "perfil")
 public class Perfil {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_perfil")
-    private Long idPerfil;
+    private Long idPerfil; // será el mismo valor que Usuario.id (no generado aquí)
 
     @Column(length = 50)
     private String nombre;
@@ -17,7 +20,7 @@ public class Perfil {
     @Column(length = 50)
     private String apellido;
 
-    @Column(columnDefinition = "text")
+    @Column(columnDefinition = "TEXT")
     private String biografia;
 
     @Column(length = 100)
@@ -26,13 +29,14 @@ public class Perfil {
     @Column(name = "foto_perfil", length = 255)
     private String fotoPerfil;
 
-    // ELIMINAMOS o COMENTAMOS la relación con Usuario para que no cause problemas
-    // @OneToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "id_usuario", nullable = false, unique = true)
-    // private Usuario usuario;
+    @OneToOne(fetch = FetchType.LAZY)
+    @MapsId
+    @JoinColumn(name = "id_perfil")
+    private Usuario usuario;
 
     public Perfil() {}
 
+    // Getters / Setters
     public Long getIdPerfil() { return idPerfil; }
     public void setIdPerfil(Long idPerfil) { this.idPerfil = idPerfil; }
 
@@ -51,5 +55,9 @@ public class Perfil {
     public String getFotoPerfil() { return fotoPerfil; }
     public void setFotoPerfil(String fotoPerfil) { this.fotoPerfil = fotoPerfil; }
 
-    // Getters y Setters de usuario ELIMINADOS
+    public Usuario getUsuario() { return usuario; }
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+        this.idPerfil = (usuario != null) ? usuario.getId() : null;
+    }
 }
