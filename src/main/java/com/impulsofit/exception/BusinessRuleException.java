@@ -12,9 +12,14 @@ public class BusinessRuleException extends RuntimeException {
     }
 
     public BusinessRuleException(String message, HttpStatus status) {
-        super(message);
-        this.status = status == null ? HttpStatus.BAD_REQUEST : status;
-    }
+      super(message);
+      if (status == null) {
+        this.status = HttpStatus.BAD_REQUEST;
+      } else {
+        this.status = status;
+      }
+  }
+
 
     public HttpStatus getStatus() {
         return status;
