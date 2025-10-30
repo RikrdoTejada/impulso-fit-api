@@ -1,4 +1,4 @@
 package com.impulsofit.model;
 
-public class Publicacion {
+public class Feed {
 }
