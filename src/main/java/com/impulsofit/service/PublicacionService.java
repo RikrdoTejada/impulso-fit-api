@@ -78,6 +78,22 @@ public class PublicacionService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<PublicacionResponse> findByUsuario_IdUsuario(Long id_usuario) {
+        return publicacionRepository.findAllByUsuario_IdUsuario(id_usuario)
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<PublicacionResponse> findByGrupo_IdGrupo(Long id_grupo) {
+        return publicacionRepository.findAllByGrupo_IdGrupo(id_grupo)
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public PublicacionResponse update(Long id, PublicacionRequest publicacion) {
         Publicacion publicacionEntity = publicacionRepository.findById(id)

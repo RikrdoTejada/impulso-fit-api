@@ -164,6 +164,14 @@ public class RetoService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<RetoResponse> findByUnidad_IdUnidad(Long id_unidad) {
+        return retoRepository.findAllByUnidad_IdUnidad(id_unidad)
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public void delete(Long id) {
         if (!retoRepository.existsById(id)) {

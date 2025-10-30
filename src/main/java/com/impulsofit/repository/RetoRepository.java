@@ -8,6 +8,8 @@ public interface RetoRepository extends JpaRepository<Reto,Long> {
 
     List<Reto> findAllByCreador_IdUsuario(Long creadorIdUsuario);
 
+    List<Reto> findAllByUnidad_IdUnidad(Long unidadIdUnidad);
+
     boolean existsByNombreIgnoreCaseAndGrupo_IdGrupo(String nombre, Long idGrupo);
 
     boolean existsByNombreIgnoreCaseAndGrupo_IdGrupoAndIdRetoNot(String nombre, Long idGrupo, Long idReto);

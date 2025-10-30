@@ -21,9 +21,21 @@ public class PublicacionController {
         return ResponseEntity.ok(saved);
     }
 
-    @GetMapping
+    @GetMapping({"search/"})
     public ResponseEntity<List<PublicacionResponse>> findAll() {
         return ResponseEntity.ok(publicacionService.findAll());
+    }
+
+    @GetMapping({"search/by-group/{id}"})
+    public ResponseEntity<List<PublicacionResponse>> findAllByGrupo_IdGrupo(@PathVariable Long id)
+    {
+        return ResponseEntity.ok(publicacionService.findByGrupo_IdGrupo(id));
+    }
+
+    @GetMapping({"search/by-user/{id}"})
+    public ResponseEntity<List<PublicacionResponse>> findAllByUser_Id(@PathVariable Long id)
+    {
+        return ResponseEntity.ok(publicacionService.findByUsuario_IdUsuario(id));
     }
 
     @PutMapping("{id}")

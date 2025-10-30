@@ -36,6 +36,11 @@ public class RetoController {
         return ResponseEntity.ok(retoService.findByCreador_Id(id));
     }
 
+    @GetMapping({"/search/by-unit/{id}"})
+    public ResponseEntity<List<RetoResponse>> findByUnitId(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(retoService.findByUnidad_IdUnidad(id));
+    }
+
     @PutMapping("{id}")
     public ResponseEntity<RetoResponse> update(@PathVariable Long id, @RequestBody RetoRequest r) {
         RetoResponse updated = retoService.update(id, r);
