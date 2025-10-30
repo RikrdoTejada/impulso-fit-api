@@ -29,6 +29,7 @@ public class Usuario {
     @Column(name = "genero")
     private String genero;
 
+    // Guardamos fecha con precisión de tiempo (timestamp). Proporcionamos helpers para compatibilidad con LocalDate.
     @Column(name = "fecha_registro", nullable = false)
     private LocalDateTime fechaRegistro;
 
@@ -49,7 +50,7 @@ public class Usuario {
         this.contrasena = contrasena;
     }
 
-    // Compatibility: some code expected getIdUsuario(), other code expected getId()
+    // PK accessors: compatibilidad con getIdUsuario() y getId()
     public Long getIdUsuario() { return idUsuario; }
     public void setIdUsuario(Long idUsuario) { this.idUsuario = idUsuario; }
 
@@ -71,20 +72,18 @@ public class Usuario {
     public String getGenero() { return genero; }
     public void setGenero(String genero) { this.genero = genero; }
 
-    // Primary fechaRegistro getter returns LocalDateTime (keeps timestamp precision)
+    // Fecha registro primaria: LocalDateTime (preserva hora). Helpers para compatibilidad con LocalDate.
     public LocalDateTime getFechaRegistro() { return fechaRegistro; }
     public void setFechaRegistro(LocalDateTime fechaRegistro) { this.fechaRegistro = fechaRegistro; }
 
-    // Backward-compatibility helper: some code expected LocalDate
     public LocalDate getFechaRegistroAsLocalDate() {
         return this.fechaRegistro != null ? this.fechaRegistro.toLocalDate() : null;
     }
-    // Alternative setter by LocalDate for callers providing only date
+
     public void setFechaRegistro(LocalDate fechaRegistroDate) {
         if (fechaRegistroDate == null) {
             this.fechaRegistro = null;
         } else {
-            // set time to start of day
             this.fechaRegistro = fechaRegistroDate.atStartOfDay();
         }
     }
@@ -102,6 +101,7 @@ public class Usuario {
         return Boolean.TRUE.equals(this.bloqueado);
     }
 
+    // Asegurar valores por defecto antes de persistir
     @PrePersist
     protected void onCreate() {
         if (this.fechaRegistro == null) {
