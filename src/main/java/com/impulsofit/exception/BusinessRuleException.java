@@ -6,17 +6,25 @@ public class BusinessRuleException extends RuntimeException {
 
     private final HttpStatus status;
 
-    public BusinessRuleException(String mensaje, HttpStatus status) {
-        super(mensaje);
-        this.status = status;
+    public BusinessRuleException(String message) {
+        super(message);
+        this.status = HttpStatus.BAD_REQUEST;
     }
 
-    // Getter para HttpStatus
+    public BusinessRuleException(String message, HttpStatus status) {
+      super(message);
+      if (status == null) {
+        this.status = HttpStatus.BAD_REQUEST;
+      } else {
+        this.status = status;
+      }
+  }
+
+
     public HttpStatus getStatus() {
         return status;
     }
 
-    // Getter para el mensaje
     @Override
     public String getMessage() {
         return super.getMessage();
