@@ -42,7 +42,12 @@ public class Grupo {
 
     public Grupo() {}
 
-    // Getters y setters
+    // Compatibilidad con la versión que esperaba 'idGrupo' como nombre del getter
+    // (no creamos un campo duplicado; delegamos al id real)
+    public Long getIdGrupo() { return this.id; }
+    public void setIdGrupo(Long idGrupo) { this.id = idGrupo; }
+
+    // Id principal
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -72,4 +77,11 @@ public class Grupo {
 
     public List<MembresiaGrupo> getMembresias() { return membresias; }
     public void setMembresias(List<MembresiaGrupo> membresias) { this.membresias = membresias; }
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.fechaCreacion == null) {
+            this.fechaCreacion = LocalDate.now();
+        }
+    }
 }

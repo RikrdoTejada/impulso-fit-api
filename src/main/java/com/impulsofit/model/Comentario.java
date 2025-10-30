@@ -23,8 +23,8 @@ public class Comentario {
     @JoinColumn(name = "id_publicacion", nullable = false)
     private PublicacionGeneral publicacion;
 
-    @Column(name = "fecha_comentario", nullable = false)
-    private LocalDateTime fechaCreacion = LocalDateTime.now();
+    @Column(name = "fecha_creacion", nullable = false)
+    private LocalDateTime fechaCreacion;
 
     // Constructor vacío
     public Comentario() {}
@@ -36,14 +36,26 @@ public class Comentario {
         this.publicacion = publicacion;
     }
 
+    @PrePersist
+    protected void onCreate() {
+        if (this.fechaCreacion == null) {
+            this.fechaCreacion = LocalDateTime.now();
+        }
+    }
+
     // Getters y setters
     public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
     public String getContenido() { return contenido; }
     public void setContenido(String contenido) { this.contenido = contenido; }
+
     public Usuario getUsuario() { return usuario; }
     public void setUsuario(Usuario usuario) { this.usuario = usuario; }
+
     public PublicacionGeneral getPublicacion() { return publicacion; }
     public void setPublicacion(PublicacionGeneral publicacion) { this.publicacion = publicacion; }
+
     public LocalDateTime getFechaCreacion() { return fechaCreacion; }
     public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
 }
