@@ -1,14 +1,20 @@
 package com.impulsofit.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import lombok.AllArgsConstructor;
 
 @Entity
 @Table(name = "usuario")
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class Usuario {
 
     @Id
@@ -16,7 +22,16 @@ public class Usuario {
     @Column(name = "id_usuario")
     private Long idUsuario;
 
-    @Column(name = "nombre", nullable = false, length = 100)
+    @Column(name = "nombres", nullable = false, length = 100)
+    private String nombres;
+
+    @Column(name = "apellido_p", nullable = false, length = 100)
+    private String apellidoP;
+
+    @Column(name = "apellido_m", nullable = false, length = 100)
+    private String apellidoM;
+
+    @Transient
     private String nombre;
 
     @Column(name = "email", nullable = false, unique = true, length = 100)
@@ -25,18 +40,14 @@ public class Usuario {
     @Column(name = "contrasena", nullable = false)
     private String contrasena;
 
-    @Column(name = "edad")
-    private Integer edad;
+    @Column(name = "fecha_nacimiento", nullable = false)
+    private LocalDate fechaNacimiento;
 
-    @Column(name = "genero")
+    @Column(name = "genero", nullable = false)
     private String genero;
 
-    // Guardamos fecha con precisión de tiempo (timestamp). Proporcionamos helpers para compatibilidad con LocalDate.
     @Column(name = "fecha_registro", nullable = false)
     private LocalDateTime fechaRegistro;
-
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comentario> comentarios;
 
     @Column(name = "bloqueado", nullable = false)
     private Boolean bloqueado = false;
@@ -44,47 +55,30 @@ public class Usuario {
     @Column(name = "intentos_fallidos", nullable = false)
     private Integer intentosFallidos = 0;
 
-    public Usuario() {}
+    @Column(name = "cod_pregunta", nullable = false)
+    private CodPregunta codPregunta;
 
-    public Usuario(String nombre, String email, String contrasena) {
-        this.nombre = nombre;
-        this.email = email;
-        this.contrasena = contrasena;
-    }
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comentario> comentarios;
 
-    // PK accessors: compatibilidad con getIdUsuario() y getId()
-    public Long getIdUsuario() { return idUsuario; }
-    public void setIdUsuario(Long idUsuario) { this.idUsuario = idUsuario; }
 
     public Long getId() { return idUsuario; }
     public void setId(Long id) { this.idUsuario = id; }
 
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-
-    public String getContrasena() { return contrasena; }
-    public void setContrasena(String contrasena) { this.contrasena = contrasena; }
-
-    public Integer getEdad() { return edad; }
-    public void setEdad(Integer edad) { this.edad = edad; }
-
-    public String getGenero() { return genero; }
-    public void setGenero(String genero) { this.genero = genero; }
-
-    // Fecha registro primaria: LocalDateTime (preserva hora). Helpers para compatibilidad con LocalDate.
-    public LocalDateTime getFechaRegistro() { return fechaRegistro; }
-    public void setFechaRegistro(LocalDateTime fechaRegistro) { this.fechaRegistro = fechaRegistro; }
+    public String getNombre() {
+        if (nombre != null) return nombre;
+        StringBuilder sb = new StringBuilder();
+        if (nombres != null) sb.append(nombres);
+        if (apellidoP != null) sb.append(" ").append(apellidoP);
+        if (apellidoM != null) sb.append(" ").append(apellidoM);
+        return sb.toString().trim();
+    }
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
 
     public LocalDate getFechaRegistroAsLocalDate() {
         return this.fechaRegistro != null ? this.fechaRegistro.toLocalDate() : null;
-    }
-
-    // Compatibilidad: getter que devuelve LocalDate (rama challenge-participation espera LocalDate)
-    public LocalDate getFechaRegistroLocal() {
-        return getFechaRegistroAsLocalDate();
     }
 
     public void setFechaRegistro(LocalDate fechaRegistroDate) {
@@ -95,20 +89,16 @@ public class Usuario {
         }
     }
 
-    public List<Comentario> getComentarios() { return comentarios; }
-    public void setComentarios(List<Comentario> comentarios) { this.comentarios = comentarios; }
-
-    public Boolean getBloqueado() { return bloqueado; }
-    public void setBloqueado(Boolean bloqueado) { this.bloqueado = bloqueado; }
-
-    public Integer getIntentosFallidos() { return intentosFallidos; }
-    public void setIntentosFallidos(Integer intentosFallidos) { this.intentosFallidos = intentosFallidos; }
-
     public boolean isBloqueado() {
         return Boolean.TRUE.equals(this.bloqueado);
     }
 
-    // Asegurar valores por defecto antes de persistir
+    // Devuelve la edad calculada a partir de la fecha de nacimiento (si está disponible)
+    public Integer getEdad() {
+        if (this.fechaNacimiento == null) return null;
+        return java.time.Period.between(this.fechaNacimiento, java.time.LocalDate.now()).getYears();
+    }
+
     @PrePersist
     protected void onCreate() {
         if (this.fechaRegistro == null) {

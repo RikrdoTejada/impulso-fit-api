@@ -29,9 +29,8 @@ public class FeedGrupoService {
 
     @Transactional(readOnly = true)
     public List<PublicacionGrupo> obtenerFeedPorGrupo(Long grupoId) {
-        List<PublicacionGrupo> publicaciones = publicacionGrupoRepository.findByGrupoId(grupoId);
-        // cargar comentarios por cada publicacion
-        return publicaciones;
+        // devolver directamente las publicaciones del repositorio
+        return publicacionGrupoRepository.findByGrupoId(grupoId);
     }
 
     @Transactional(readOnly = true)

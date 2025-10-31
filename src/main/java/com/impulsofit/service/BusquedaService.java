@@ -49,16 +49,18 @@ public class BusquedaService {
         List<Reto> retos;
         List<Perfil> perfiles;
 
+        Long deporteIdLong = (deporteId == null) ? null : deporteId.longValue();
+
         if (deporteId != null) {
             if (term.isEmpty()) {
                 // Solo deporteId, sin término: buscar grupos y retos, NO perfiles
-                grupos = grupoRepository.findByDeporte_IdDeporte(deporteId);
-                retos = retoRepository.findByDeporteId(deporteId);
+                grupos = grupoRepository.findByDeporte_IdDeporte(deporteIdLong);
+                retos = retoRepository.findByDeporteId(deporteIdLong);
                 perfiles = Collections.emptyList();
             } else {
                 // Hay deporteId Y término: buscar con ambos filtros
-                grupos = grupoRepository.buscarPorNombreODeporteYDeporteId(term, deporteId);
-                retos = retoRepository.searchByTermAndDeporteId(term, deporteId);
+                grupos = grupoRepository.buscarPorNombreODeporteYDeporteId(term, deporteIdLong);
+                retos = retoRepository.searchByTermAndDeporteId(term, deporteIdLong);
                 perfiles = perfilRepository.searchByNombreApellido(term);
             }
         } else {

@@ -189,10 +189,6 @@ public class ComentarioService {
         return comentarioRepository.save(comentario);
     }
 
-    private String contenidoFrom(Comentario comentario) {
-        return comentario.getContenido();
-    }
-
     private ComentarioResponseDTO toDto(Comentario c) {
         return new ComentarioResponseDTO(
                 c.getId(),

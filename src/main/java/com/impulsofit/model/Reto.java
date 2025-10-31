@@ -1,14 +1,17 @@
 package com.impulsofit.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDate;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "reto")
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class Reto {
 
     @Id
@@ -17,18 +20,35 @@ public class Reto {
     private Long idReto;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_grupo")
+    @JoinColumn(name = "id_grupo", nullable = false)
     private Grupo grupo;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_usuario")
+    @JoinColumn(name = "id_usuario_creador", nullable = false)
     private Usuario creador;
 
-    @Column(name = "titulo", nullable = false, length = 255)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_unidad")
+    private Unidad unidad;
+
+    @Column(name = "nombre", length = 255)
+    private String nombre;
+
+    @Column(name = "titulo", length = 255)
     private String titulo;
 
     @Column(name = "descripcion", length = 255)
     private String descripcion;
+
+    // Meta cuantificable
+    @Column(name = "objetivo_total")
+    private Double objetivoTotal;
+
+    @Column(name = "objetivo")
+    private String objetivo;
+
+    @Column(name = "fecha_publicacion")
+    private LocalDate fechaPublicacion;
 
     @Column(name = "fecha_inicio")
     private LocalDate fechaInicio;
@@ -36,35 +56,6 @@ public class Reto {
     @Column(name = "fecha_fin")
     private LocalDate fechaFin;
 
-    // Meta cuantificable del reto (por ejemplo: 50.0 km, 10 sesiones, etc.)
-    @Column(name = "objetivo_total")
-    private Double objetivoTotal;
-
-    public Long getIdReto() { return idReto; }
-    public void setIdReto(Long idReto) { this.idReto = idReto; }
-
-    public Grupo getGrupo() { return grupo; }
-    public void setGrupo(Grupo grupo) { this.grupo = grupo; }
-
-    public Usuario getCreador() { return creador; }
-    public void setCreador(Usuario creador) { this.creador = creador; }
-
-    public String getTitulo() { return titulo; }
-    public void setTitulo(String titulo) { this.titulo = titulo; }
-
-    public String getDescripcion() { return descripcion; }
-    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
-
-    public LocalDate getFechaInicio() { return fechaInicio; }
-    public void setFechaInicio(LocalDate fechaInicio) { this.fechaInicio = fechaInicio; }
-
-    public LocalDate getFechaFin() { return fechaFin; }
-    public void setFechaFin(LocalDate fechaFin) { this.fechaFin = fechaFin; }
-
-    public Double getObjetivoTotal() { return objetivoTotal; }
-    public void setObjetivoTotal(Double objetivoTotal) { this.objetivoTotal = objetivoTotal; }
-
-    // Métodos de compatibilidad con la versión anterior que usaba ids directamente
     public Long getIdGrupo() {
         return (this.grupo != null) ? this.grupo.getId() : null;
     }
@@ -83,5 +74,12 @@ public class Reto {
         if (idUsuario == null) { this.creador = null; return; }
         if (this.creador == null) this.creador = new Usuario();
         this.creador.setId(idUsuario);
+    }
+
+    @PrePersist
+    public void onCreate() {
+        if (this.fechaPublicacion == null) {
+            this.fechaPublicacion = LocalDate.now();
+        }
     }
 }

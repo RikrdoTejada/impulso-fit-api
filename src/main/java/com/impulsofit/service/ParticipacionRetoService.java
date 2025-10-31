@@ -20,11 +20,14 @@ import java.util.stream.Collectors;
 @Service
 public class ParticipacionRetoService {
 
-    @Autowired
-    private ParticipacionRetoRepository participacionRetoRepository;
+    private final ParticipacionRetoRepository participacionRetoRepository;
 
-    @Autowired
-    private RegistroProcesoRepository registroProcesoRepository;
+    private final RegistroProcesoRepository registroProcesoRepository;
+
+    public ParticipacionRetoService(ParticipacionRetoRepository participacionRetoRepository, RegistroProcesoRepository registroProcesoRepository) {
+        this.participacionRetoRepository = participacionRetoRepository;
+        this.registroProcesoRepository = registroProcesoRepository;
+    }
 
     @Transactional
     public Double agregarProgreso(Usuario usuario, Reto reto, Double avance) {
@@ -42,12 +45,11 @@ public class ParticipacionRetoService {
         registro.setAvance(String.valueOf(avance));
         registroProcesoRepository.save(registro);
 
-        double total = registroProcesoRepository.findByParticipacionRetoOrderByFechaDesc(participacion)
+        return registroProcesoRepository.findByParticipacionRetoOrderByFechaDesc(participacion)
                 .stream()
                 .map(RegistroProceso::getAvance)
                 .map(v -> { try { return Double.parseDouble(v); } catch (Exception e) { return 0.0; } })
                 .reduce(0.0, Double::sum);
-        return total;
     }
 
     public List<UsuarioTotal> rankingPorReto(Reto reto) {

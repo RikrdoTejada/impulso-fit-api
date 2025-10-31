@@ -17,10 +17,10 @@ public interface GrupoRepository extends JpaRepository<Grupo, Long> {
 
     // Buscar grupos por id de deporte (consulta explícita para evitar advertencias del analizador)
     @Query("SELECT g FROM Grupo g WHERE g.deporte.idDeporte = :idDeporte")
-    List<Grupo> findByDeporte_IdDeporte(@Param("idDeporte") Integer idDeporte);
+    List<Grupo> findByDeporte_IdDeporte(@Param("idDeporte") Long idDeporte);
 
     // Implementación por defecto: reutiliza buscarPorNombreODeporte y filtra por deporteId
-    default List<Grupo> buscarPorNombreODeporteYDeporteId(String filtro, Integer deporteId) {
+    default List<Grupo> buscarPorNombreODeporteYDeporteId(String filtro, Long deporteId) {
         if (deporteId == null) return buscarPorNombreODeporte(filtro);
         return buscarPorNombreODeporte(filtro).stream()
                 .filter(g -> g.getDeporte() != null && deporteId.equals(g.getDeporte().getIdDeporte()))

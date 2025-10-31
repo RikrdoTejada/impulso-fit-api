@@ -1,14 +1,19 @@
 package com.impulsofit.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
-@Table(name = "membresiagrupo")
-@NoArgsConstructor
+@Data
+@Table(name = "membresiagrupo",
+        uniqueConstraints = @UniqueConstraint(name = "uq_membresia_usuario_grupo",
+                columnNames = {"id_usuario", "id_grupo"}))
 @AllArgsConstructor
+@NoArgsConstructor
 public class MembresiaGrupo {
 
     @Id
@@ -24,23 +29,19 @@ public class MembresiaGrupo {
     @JoinColumn(name = "id_grupo", nullable = false)
     private Grupo grupo;
 
-    @Column(name = "fecha_union")
+    @Column(name = "fecha_union", nullable = false)
     private LocalDateTime fechaUnion;
 
-    // Primary id accessors (rama challenge)
     public Long getIdMembresia() { return idMembresia; }
     public void setIdMembresia(Long idMembresia) { this.idMembresia = idMembresia; }
 
-    // Alias para compatibilidad con código que usa getId()/setId()
     public Long getId() { return this.idMembresia; }
     public void setId(Long id) { this.idMembresia = id; }
 
-    public Usuario getUsuario() { return usuario; }
-    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
-
-    public Grupo getGrupo() { return grupo; }
-    public void setGrupo(Grupo grupo) { this.grupo = grupo; }
-
-    public LocalDateTime getFechaUnion() { return fechaUnion; }
-    public void setFechaUnion(LocalDateTime fechaUnion) { this.fechaUnion = fechaUnion; }
+    @PrePersist
+    public void onCreate() {
+        if (this.fechaUnion == null) {
+            this.fechaUnion = LocalDateTime.now();
+        }
+    }
 }

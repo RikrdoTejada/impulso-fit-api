@@ -5,7 +5,6 @@ import com.impulsofit.dto.response.LoginResponseDTO;
 import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.model.Usuario;
 import com.impulsofit.repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -21,11 +20,14 @@ public class LoginService {
     private static final int MAX_INTENTOS = 5;
     private static final long HORAS_BLOQUEO = 6;
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
 
     // Mapa en memoria: usuarioId -> fechaHoraBloqueo
     private final ConcurrentMap<Long, LocalDateTime> bloqueos = new ConcurrentHashMap<>();
+
+    public LoginService(UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
+    }
 
     @Transactional(noRollbackFor = BusinessRuleException.class)
     public LoginResponseDTO login(LoginRequestDTO loginDTO) {
