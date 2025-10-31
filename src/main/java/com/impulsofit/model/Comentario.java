@@ -23,8 +23,12 @@ public class Comentario {
     @JoinColumn(name = "id_publicacion", nullable = false)
     private PublicacionGeneral publicacion;
 
-    @Column(name = "fecha_creacion", nullable = false)
+    @Column(name = "fecha_comentario", nullable = false)
     private LocalDateTime fechaCreacion;
+
+    // Tipo genérico para distinguir origen de la publicación (ej. 'GENERAL' o 'GRUPAL')
+    @Column(name = "tipo", nullable = false, length = 20)
+    private String tipo = "GENERAL";
 
     // Constructor vacío
     public Comentario() {}
@@ -40,6 +44,9 @@ public class Comentario {
     protected void onCreate() {
         if (this.fechaCreacion == null) {
             this.fechaCreacion = LocalDateTime.now();
+        }
+        if (this.tipo == null) {
+            this.tipo = "GENERAL";
         }
     }
 
@@ -58,4 +65,7 @@ public class Comentario {
 
     public LocalDateTime getFechaCreacion() { return fechaCreacion; }
     public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
+
+    public String getTipo() { return tipo; }
+    public void setTipo(String tipo) { this.tipo = tipo; }
 }

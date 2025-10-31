@@ -15,6 +15,7 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class ComentarioService {
@@ -46,11 +47,15 @@ public class ComentarioService {
 
     // Listar por tipo
     public List<Comentario> listarPorPublicacionGeneral(Long publicacionId) {
-        return comentarioRepository.findByPublicacionId(publicacionId);
+        return comentarioRepository.findByPublicacionId(publicacionId).stream()
+                .filter(c -> "GENERAL".equalsIgnoreCase(c.getTipo()))
+                .collect(Collectors.toList());
     }
 
     public List<Comentario> listarPorPublicacionGrupo(Long publicacionId) {
-        return comentarioRepository.findByPublicacionId(publicacionId);
+        return comentarioRepository.findByPublicacionId(publicacionId).stream()
+                .filter(c -> "GRUPAL".equalsIgnoreCase(c.getTipo()))
+                .collect(Collectors.toList());
     }
 
     // Crear comentario en publicación general
@@ -70,6 +75,7 @@ public class ComentarioService {
         comentario.setContenido(contenido);
         comentario.setUsuario(usuarioOpt.get());
         comentario.setPublicacion(publicacionOpt.get());
+        comentario.setTipo("GENERAL");
 
         return comentarioRepository.save(comentario);
     }
@@ -99,6 +105,7 @@ public class ComentarioService {
         comentario.setContenido(contenido);
         comentario.setUsuario(usuarioOpt.get());
         comentario.setPublicacion(pg);
+        comentario.setTipo("GRUPAL");
 
         return comentarioRepository.save(comentario);
     }
@@ -155,6 +162,11 @@ public class ComentarioService {
 
         comentario.setUsuario(usuario);
         comentario.setPublicacion(publicacion);
+
+        // Si no se especificó tipo, intentar inferir
+        if (comentario.getTipo() == null) {
+            comentario.setTipo(publicacion instanceof PublicacionGrupo ? "GRUPAL" : "GENERAL");
+        }
 
         return comentarioRepository.save(comentario);
     }

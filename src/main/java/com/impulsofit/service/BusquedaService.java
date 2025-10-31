@@ -54,12 +54,12 @@ public class BusquedaService {
                 // Solo deporteId, sin término: buscar grupos y retos, NO perfiles
                 grupos = grupoRepository.findByDeporte_IdDeporte(deporteId);
                 retos = retoRepository.findByDeporteId(deporteId);
-                perfiles = Collections.emptyList();  // ✅ NO buscar perfiles
+                perfiles = Collections.emptyList();
             } else {
                 // Hay deporteId Y término: buscar con ambos filtros
                 grupos = grupoRepository.buscarPorNombreODeporteYDeporteId(term, deporteId);
                 retos = retoRepository.searchByTermAndDeporteId(term, deporteId);
-                perfiles = perfilRepository.searchByNombreApellido(term);  // ✅ Buscar perfiles solo si hay término
+                perfiles = perfilRepository.searchByNombreApellido(term);
             }
         } else {
             // Solo término, sin deporteId: buscar entre todo
@@ -69,7 +69,12 @@ public class BusquedaService {
         }
 
         List<GrupoResponseDTO> gruposDto = grupos.stream()
-                .map(g -> new GrupoResponseDTO(g.getIdGrupo(), g.getNombre(), g.getDeporte() != null ? g.getDeporte().getNombre() : null, g.getDescripcion(), "/grupos/" + g.getIdGrupo() + "/unirse"))
+                .map(g -> new GrupoResponseDTO(
+                        g.getIdGrupoAsInteger(),
+                        g.getNombre(),
+                        g.getDeporte() != null ? g.getDeporte().getNombre() : null,
+                        g.getDescripcion(),
+                        "/grupos/" + g.getIdGrupoAsInteger() + "/unirse"))
                 .collect(Collectors.toList());
 
         List<UsuarioResponseDTO> usuariosDto = perfiles.stream()

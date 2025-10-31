@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public interface GrupoRepository extends JpaRepository<Grupo, Long> {
 
@@ -14,11 +15,15 @@ public interface GrupoRepository extends JpaRepository<Grupo, Long> {
             "OR LOWER(g.deporte.nombre) LIKE LOWER(CONCAT('%', :filtro, '%'))")
     List<Grupo> buscarPorNombreODeporte(@Param("filtro") String filtro);
 
-    // Buscar grupos por id de deporte
-    List<Grupo> findByDeporte_Id(Long idDeporte);
+    // Buscar grupos por id de deporte (consulta explícita para evitar advertencias del analizador)
+    @Query("SELECT g FROM Grupo g WHERE g.deporte.idDeporte = :idDeporte")
+    List<Grupo> findByDeporte_IdDeporte(@Param("idDeporte") Integer idDeporte);
 
-    // Buscar por filtro y por id de deporte
-    @Query("SELECT g FROM Grupo g WHERE (LOWER(g.nombre) LIKE LOWER(CONCAT('%', :filtro, '%')) " +
-            "OR LOWER(g.deporte.nombre) LIKE LOWER(CONCAT('%', :filtro, '%'))) AND g.deporte.id = :deporteId")
-    List<Grupo> buscarPorNombreODeporteYDeporteId(@Param("filtro") String filtro, @Param("deporteId") Long deporteId);
+    // Implementación por defecto: reutiliza buscarPorNombreODeporte y filtra por deporteId
+    default List<Grupo> buscarPorNombreODeporteYDeporteId(String filtro, Integer deporteId) {
+        if (deporteId == null) return buscarPorNombreODeporte(filtro);
+        return buscarPorNombreODeporte(filtro).stream()
+                .filter(g -> g.getDeporte() != null && deporteId.equals(g.getDeporte().getIdDeporte()))
+                .collect(Collectors.toList());
+    }
 }

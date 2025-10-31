@@ -78,8 +78,8 @@ public class Grupo {
     /**
      * Compatibilidad: devuelve el id del deporte si la relación está cargada.
      */
-    public Long getDeporteId() {
-        return (deporte != null) ? (deporte.getId()) : null;
+    public Integer getDeporteId() {
+        return (deporte != null) ? deporte.getIdDeporte() : null;
     }
 
     // Campos básicos

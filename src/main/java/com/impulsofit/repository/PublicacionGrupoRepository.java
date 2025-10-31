@@ -9,7 +9,7 @@ import java.util.List;
 public interface PublicacionGrupoRepository extends JpaRepository<PublicacionGrupo, Long> {
 
     @Query("SELECT DISTINCT p FROM PublicacionGrupo p " +
-            "LEFT JOIN FETCH p.autor " +
-            "WHERE p.grupo.idGrupo = :grupoId")
+            "LEFT JOIN FETCH p.usuario " +
+            "WHERE p.grupo.id = :grupoId")
     List<PublicacionGrupo> findByGrupoId(@Param("grupoId") Long grupoId);
 }

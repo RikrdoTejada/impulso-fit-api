@@ -27,7 +27,6 @@ public class GlobalExceptionHandler {
         body.put("status", HttpStatus.BAD_REQUEST.value());
         body.put("error", HttpStatus.BAD_REQUEST.getReasonPhrase());
         body.put("message", ex.getMessage());
-        body.put("mensaje", ex.getMessage()); // backward compatibility
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
@@ -40,7 +39,6 @@ public class GlobalExceptionHandler {
         body.put("status", status.value());
         body.put("error", status.getReasonPhrase());
         body.put("message", ex.getMessage());
-        body.put("mensaje", ex.getMessage()); // backward compatibility
         return ResponseEntity.status(status).body(body);
     }
 
@@ -71,7 +69,6 @@ public class GlobalExceptionHandler {
         body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
         body.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
         body.put("message", ex.getMessage());
-        body.put("mensaje", ex.getMessage()); // backward compatibility
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
 }
