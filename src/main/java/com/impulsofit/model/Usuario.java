@@ -4,9 +4,11 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.AllArgsConstructor;
 
 @Entity
 @Table(name = "usuario")
+@AllArgsConstructor
 public class Usuario {
 
     @Id
@@ -78,6 +80,11 @@ public class Usuario {
 
     public LocalDate getFechaRegistroAsLocalDate() {
         return this.fechaRegistro != null ? this.fechaRegistro.toLocalDate() : null;
+    }
+
+    // Compatibilidad: getter que devuelve LocalDate (rama challenge-participation espera LocalDate)
+    public LocalDate getFechaRegistroLocal() {
+        return getFechaRegistroAsLocalDate();
     }
 
     public void setFechaRegistro(LocalDate fechaRegistroDate) {

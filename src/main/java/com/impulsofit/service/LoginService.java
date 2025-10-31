@@ -1,7 +1,7 @@
 package com.impulsofit.service;
 
-import com.impulsofit.dto.request.LoginRequest;
-import com.impulsofit.dto.response.LoginResponse;
+import com.impulsofit.dto.request.LoginRequestDTO;
+import com.impulsofit.dto.response.LoginResponseDTO;
 import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.model.Usuario;
 import com.impulsofit.repository.UsuarioRepository;
@@ -28,7 +28,7 @@ public class LoginService {
     private final ConcurrentMap<Long, LocalDateTime> bloqueos = new ConcurrentHashMap<>();
 
     @Transactional(noRollbackFor = BusinessRuleException.class)
-    public LoginResponse login(LoginRequest loginDTO) {
+    public LoginResponseDTO login(LoginRequestDTO loginDTO) {
         Usuario usuario = usuarioRepository.findByEmail(loginDTO.getEmail())
                 .orElseThrow(() -> new BusinessRuleException("Usuario no encontrado", HttpStatus.NOT_FOUND));
 
@@ -78,7 +78,7 @@ public class LoginService {
         usuario.setBloqueado(false);
         usuarioRepository.save(usuario);
 
-        return new LoginResponse(
+        return new LoginResponseDTO(
                 usuario.getIdUsuario(),
                 usuario.getNombre(),
                 usuario.getEmail(),

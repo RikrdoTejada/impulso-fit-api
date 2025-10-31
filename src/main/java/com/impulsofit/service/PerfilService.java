@@ -1,14 +1,13 @@
 package com.impulsofit.service;
 
-import com.impulsofit.dto.request.PerfilRequest;
-import com.impulsofit.dto.response.PerfilResponse;
+import com.impulsofit.dto.request.PerfilRequestDTO;
+import com.impulsofit.dto.response.PerfilResponseDTO;
 import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.model.Perfil;
 import com.impulsofit.repository.PerfilRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PerfilService {
@@ -19,7 +18,8 @@ public class PerfilService {
         this.perfilRepository = perfilRepository;
     }
 
-    public PerfilResponse actualizarPerfil(Long idPerfil, PerfilRequest request) {
+    @Transactional
+    public PerfilResponseDTO actualizarPerfil(Long idPerfil, PerfilRequestDTO request) {
         Perfil perfil = perfilRepository.findById(idPerfil)
                 .orElseThrow(() -> new BusinessRuleException("Perfil no encontrado", HttpStatus.NOT_FOUND));
 
@@ -37,14 +37,14 @@ public class PerfilService {
 
         perfilRepository.save(perfil);
 
-        // Convertir a Response
-        PerfilResponse response = new PerfilResponse();
-        response.setIdPerfil(perfil.getIdPerfil());
-        response.setNombre(perfil.getNombre());
-        response.setApellido(perfil.getApellido());
-        response.setBiografia(perfil.getBiografia());
-        response.setUbicacion(perfil.getUbicacion());
-        response.setFotoPerfil(perfil.getFotoPerfil());
-        return response;
+        // Convertir a Response usando constructor inmutable
+        return new PerfilResponseDTO(
+                perfil.getIdPerfil(),
+                perfil.getNombre(),
+                perfil.getApellido(),
+                perfil.getBiografia(),
+                perfil.getUbicacion(),
+                perfil.getFotoPerfil()
+        );
     }
 }

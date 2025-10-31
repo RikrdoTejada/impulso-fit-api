@@ -1,9 +1,13 @@
 package com.impulsofit.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "deporte")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Deporte {
 
     @Id
@@ -11,18 +15,11 @@ public class Deporte {
     @Column(name = "id_deporte")
     private Integer idDeporte;
 
-    @Column(nullable = false)
+    @Column(name = "nombre", nullable = false)
     private String nombre;
 
     @Column(name = "tipo_deporte")
     private String tipoDeporte;
-
-    public Deporte() {}
-
-    public Deporte(String nombre, String tipoDeporte) {
-        this.nombre = nombre;
-        this.tipoDeporte = tipoDeporte;
-    }
 
     public Integer getIdDeporte() {
         return idDeporte;

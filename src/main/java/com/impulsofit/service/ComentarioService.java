@@ -1,5 +1,6 @@
 package com.impulsofit.service;
 
+import com.impulsofit.dto.response.ComentarioResponseDTO;
 import com.impulsofit.model.Comentario;
 import com.impulsofit.model.PublicacionGrupo;
 import com.impulsofit.model.PublicacionGeneral;
@@ -11,6 +12,7 @@ import com.impulsofit.repository.PublicacionGrupoRepository;
 import com.impulsofit.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -45,7 +47,20 @@ public class ComentarioService {
         return comentarioRepository.findByPublicacionId(publicacionId);
     }
 
-    // Listar por tipo
+    // DTO mappers: mover streams al servicio para que los controladores no hagan mapeos
+    public List<ComentarioResponseDTO> listarPorPublicacionDTO(Long publicacionId) {
+        return listarPorPublicacion(publicacionId).stream().map(this::toDto).collect(Collectors.toList());
+    }
+
+    public List<ComentarioResponseDTO> listarPorPublicacionGeneralDTO(Long publicacionId) {
+        return listarPorPublicacionGeneral(publicacionId).stream().map(this::toDto).collect(Collectors.toList());
+    }
+
+    public List<ComentarioResponseDTO> listarPorPublicacionGrupoDTO(Long publicacionId) {
+        return listarPorPublicacionGrupo(publicacionId).stream().map(this::toDto).collect(Collectors.toList());
+    }
+
+    // Listar por tipo (entidades)
     public List<Comentario> listarPorPublicacionGeneral(Long publicacionId) {
         return comentarioRepository.findByPublicacionId(publicacionId).stream()
                 .filter(c -> "GENERAL".equalsIgnoreCase(c.getTipo()))
@@ -59,6 +74,7 @@ public class ComentarioService {
     }
 
     // Crear comentario en publicación general
+    @Transactional
     public Comentario crearComentarioEnPublicacionGeneral(Long usuarioId, Long publicacionId, String contenido) {
         if (usuarioId == null) throw new IllegalArgumentException("Usuario inválido");
         if (publicacionId == null) throw new IllegalArgumentException("Publicación inválida");
@@ -81,6 +97,7 @@ public class ComentarioService {
     }
 
     // Crear comentario en publicación grupal (valida membresía)
+    @Transactional
     public Comentario crearComentarioEnPublicacionGrupo(Long usuarioId, Long publicacionId, String contenido) {
         if (usuarioId == null) throw new IllegalArgumentException("Usuario inválido");
         if (publicacionId == null) throw new IllegalArgumentException("Publicación inválida");
@@ -110,6 +127,7 @@ public class ComentarioService {
         return comentarioRepository.save(comentario);
     }
 
+    @Transactional
     public Comentario crearComentario(Comentario comentario) {
         // Validaciones básicas de entrada
         if (comentario.getUsuario() == null || comentario.getUsuario().getId() == null) {
@@ -175,6 +193,15 @@ public class ComentarioService {
         return comentario.getContenido();
     }
 
+    private ComentarioResponseDTO toDto(Comentario c) {
+        return new ComentarioResponseDTO(
+                c.getId(),
+                c.getContenido(),
+                c.getUsuario() != null ? c.getUsuario().getNombre() : null,
+                c.getFechaCreacion()
+        );
+    }
+
     private void validarComentario(String contenido) {
         if (!StringUtils.hasText(contenido)) {
             throw new IllegalArgumentException("El comentario no puede estar vacío");
@@ -193,6 +220,7 @@ public class ComentarioService {
         }
     }
 
+    @Transactional
     public void eliminarComentario(Long id) {
         comentarioRepository.deleteById(id);
     }

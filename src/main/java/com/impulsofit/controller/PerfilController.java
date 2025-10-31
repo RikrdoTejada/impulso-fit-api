@@ -1,7 +1,7 @@
 package com.impulsofit.controller;
 
-import com.impulsofit.dto.request.PerfilRequest;
-import com.impulsofit.dto.response.PerfilResponse;
+import com.impulsofit.dto.request.PerfilRequestDTO;
+import com.impulsofit.dto.response.PerfilResponseDTO;
 import com.impulsofit.service.PerfilService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,9 +19,9 @@ public class PerfilController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PerfilResponse> editarPerfil(@PathVariable Long id,
-                                                       @Valid @RequestBody PerfilRequest request) {
-        PerfilResponse actualizado = perfilService.actualizarPerfil(id, request);
+    public ResponseEntity<PerfilResponseDTO> editarPerfil(@PathVariable Long id,
+                                                          @Valid @RequestBody PerfilRequestDTO request) {
+        PerfilResponseDTO actualizado = perfilService.actualizarPerfil(id, request);
         return ResponseEntity.ok(actualizado);
     }
 }

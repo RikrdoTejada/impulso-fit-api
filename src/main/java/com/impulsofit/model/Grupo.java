@@ -3,17 +3,22 @@ package com.impulsofit.model;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "grupo")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Grupo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_grupo")
-    private Long id;
+    private Long idGrupo;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario_creador", nullable = false)
@@ -35,6 +40,7 @@ public class Grupo {
     @Column(name = "foto_grupo", length = 255)
     private String fotoGrupo;
 
+    // Guardamos fecha con hora para compatibilidad con usos actuales
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion;
 
@@ -44,43 +50,30 @@ public class Grupo {
     @OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MembresiaGrupo> membresias;
 
-    public Grupo() {}
 
-    // Id accessors (compatibilidad)
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    // Primary id accessors
+    public Long getIdGrupo() { return idGrupo; }
+    public void setIdGrupo(Long idGrupo) { this.idGrupo = idGrupo; }
 
-    /**
-     * Compatibilidad con código que esperaba getIdGrupo()/Integer.
-     * Devolvemos Long (más general); si necesitas Integer puedes usar getIdGrupoAsInteger().
-     */
-    public Long getIdGrupo() { return this.id; }
-    public void setIdGrupo(Long idGrupo) { this.id = idGrupo; }
+    // Alias para compatibilidad con código que usa getId()/setId()
+    public Long getId() { return this.idGrupo; }
+    public void setId(Long id) { this.idGrupo = id; }
 
-    public Integer getIdGrupoAsInteger() {
-        return (this.id == null) ? null : this.id.intValue();
-    }
-  
+    // Compatibilidad adicional: entero
+    public Integer getIdGrupoAsInteger() { return (this.idGrupo == null) ? null : this.idGrupo.intValue(); }
+
     // Usuario creador / Deporte
     public Usuario getUsuarioCreador() { return usuarioCreador; }
     public void setUsuarioCreador(Usuario usuarioCreador) { this.usuarioCreador = usuarioCreador; }
 
-    /**
-     * Compatibilidad: devuelve el id del usuario creador si la relación está cargada.
-     */
-    public Long getUsuarioCreadorId() {
-        return (usuarioCreador != null) ? usuarioCreador.getId() : null;
-    }
+    /** Compatibilidad: devuelve el id del usuario creador si la relación está cargada. */
+    public Long getUsuarioCreadorId() { return (usuarioCreador != null) ? usuarioCreador.getId() : null; }
 
     public Deporte getDeporte() { return deporte; }
     public void setDeporte(Deporte deporte) { this.deporte = deporte; }
 
-    /**
-     * Compatibilidad: devuelve el id del deporte si la relación está cargada.
-     */
-    public Integer getDeporteId() {
-        return (deporte != null) ? deporte.getIdDeporte() : null;
-    }
+    /** Compatibilidad: devuelve el id del deporte si la relación está cargada. */
+    public Integer getDeporteId() { return (deporte != null) ? deporte.getIdDeporte() : null; }
 
     // Campos básicos
     public String getNombre() { return nombre; }
@@ -99,29 +92,11 @@ public class Grupo {
     public LocalDateTime getFechaCreacion() { return fechaCreacion; }
     public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
 
-    public LocalDate getFechaCreacionAsLocalDate() {
-        return (this.fechaCreacion == null) ? null : this.fechaCreacion.toLocalDate();
-    }
+    public LocalDate getFechaCreacionAsLocalDate() { return (this.fechaCreacion == null) ? null : this.fechaCreacion.toLocalDate(); }
+    public void setFechaCreacion(LocalDate date) { this.fechaCreacion = (date == null) ? null : date.atStartOfDay(); }
 
-    public void setFechaCreacion(LocalDate date) {
-        if (date == null) {
-            this.fechaCreacion = null;
-        } else {
-            this.fechaCreacion = date.atStartOfDay();
-        }
-    }
-
-    public Date getFechaCreacionAsDate() {
-        return (this.fechaCreacion == null) ? null : java.util.Date.from(this.fechaCreacion.atZone(java.time.ZoneId.systemDefault()).toInstant());
-    }
-
-    public void setFechaCreacionAsDate(Date date) {
-        if (date == null) {
-            this.fechaCreacion = null;
-        } else {
-            this.fechaCreacion = LocalDateTime.ofInstant(date.toInstant(), java.time.ZoneId.systemDefault());
-        }
-    }
+    public Date getFechaCreacionAsDate() { return (this.fechaCreacion == null) ? null : Date.from(this.fechaCreacion.atZone(ZoneId.systemDefault()).toInstant()); }
+    public void setFechaCreacionAsDate(Date date) { this.fechaCreacion = (date == null) ? null : LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault()); }
 
     // Relaciones listas
     public List<PublicacionGrupo> getPublicaciones() { return publicaciones; }
@@ -129,7 +104,7 @@ public class Grupo {
 
     public List<MembresiaGrupo> getMembresias() { return membresias; }
     public void setMembresias(List<MembresiaGrupo> membresias) { this.membresias = membresias; }
-  
+
     // PrePersist: asegurar fecha por defecto
     @PrePersist
     protected void onCreate() {

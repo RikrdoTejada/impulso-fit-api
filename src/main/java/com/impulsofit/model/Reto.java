@@ -2,9 +2,13 @@ package com.impulsofit.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "reto")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Reto {
 
     @Id
@@ -12,16 +16,18 @@ public class Reto {
     @Column(name = "id_reto")
     private Long idReto;
 
-    @Column(name = "id_grupo")
-    private Long idGrupo;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_grupo")
+    private Grupo grupo;
 
-    @Column(name = "id_usuario")
-    private Long idUsuario;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_usuario")
+    private Usuario creador;
 
-    @Column(nullable = false, length = 255)
+    @Column(name = "titulo", nullable = false, length = 255)
     private String titulo;
 
-    @Column(length = 255)
+    @Column(name = "descripcion", length = 255)
     private String descripcion;
 
     @Column(name = "fecha_inicio")
@@ -30,16 +36,18 @@ public class Reto {
     @Column(name = "fecha_fin")
     private LocalDate fechaFin;
 
-    public Reto() {}
+    // Meta cuantificable del reto (por ejemplo: 50.0 km, 10 sesiones, etc.)
+    @Column(name = "objetivo_total")
+    private Double objetivoTotal;
 
     public Long getIdReto() { return idReto; }
     public void setIdReto(Long idReto) { this.idReto = idReto; }
 
-    public Long getIdGrupo() { return idGrupo; }
-    public void setIdGrupo(Long idGrupo) { this.idGrupo = idGrupo; }
+    public Grupo getGrupo() { return grupo; }
+    public void setGrupo(Grupo grupo) { this.grupo = grupo; }
 
-    public Long getIdUsuario() { return idUsuario; }
-    public void setIdUsuario(Long idUsuario) { this.idUsuario = idUsuario; }
+    public Usuario getCreador() { return creador; }
+    public void setCreador(Usuario creador) { this.creador = creador; }
 
     public String getTitulo() { return titulo; }
     public void setTitulo(String titulo) { this.titulo = titulo; }
@@ -52,4 +60,28 @@ public class Reto {
 
     public LocalDate getFechaFin() { return fechaFin; }
     public void setFechaFin(LocalDate fechaFin) { this.fechaFin = fechaFin; }
+
+    public Double getObjetivoTotal() { return objetivoTotal; }
+    public void setObjetivoTotal(Double objetivoTotal) { this.objetivoTotal = objetivoTotal; }
+
+    // Métodos de compatibilidad con la versión anterior que usaba ids directamente
+    public Long getIdGrupo() {
+        return (this.grupo != null) ? this.grupo.getId() : null;
+    }
+
+    public void setIdGrupo(Long idGrupo) {
+        if (idGrupo == null) { this.grupo = null; return; }
+        if (this.grupo == null) this.grupo = new Grupo();
+        this.grupo.setId(idGrupo);
+    }
+
+    public Long getIdUsuario() {
+        return (this.creador != null) ? this.creador.getId() : null;
+    }
+
+    public void setIdUsuario(Long idUsuario) {
+        if (idUsuario == null) { this.creador = null; return; }
+        if (this.creador == null) this.creador = new Usuario();
+        this.creador.setId(idUsuario);
+    }
 }
