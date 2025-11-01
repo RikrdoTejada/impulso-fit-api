@@ -2,17 +2,13 @@ package com.impulsofit.model;
 
 import jakarta.persistence.*;
 
-/**
- * Entidad Perfil: comparte PK con Usuario (1:1) usando @MapsId.
- * Esto permite que el perfil tenga exactamente el mismo id que su usuario asociado.
- */
 @Entity
 @Table(name = "perfil")
 public class Perfil {
 
     @Id
     @Column(name = "id_perfil")
-    private Long idPerfil; // será el mismo valor que Usuario.id (no generado aquí)
+    private Long idPerfil;
 
     @Column(length = 50)
     private String nombre;

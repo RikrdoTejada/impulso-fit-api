@@ -1,7 +1,7 @@
 package com.impulsofit.service;
 
-import com.impulsofit.dto.request.GrupoRequest;
-import com.impulsofit.dto.response.GrupoResponse;
+import com.impulsofit.dto.request.GrupoRequestDTO;
+import com.impulsofit.dto.response.GrupoResponseDTO;
 import com.impulsofit.exception.ResourceNotFoundException;
 import com.impulsofit.model.Deporte;
 import com.impulsofit.model.Grupo;
@@ -33,7 +33,7 @@ public class GrupoService {
     }
 
     // Crear un nuevo grupo
-    public GrupoResponse create(GrupoRequest grupo) {
+    public GrupoResponseDTO create(GrupoRequestDTO grupo) {
 
         Usuario usuario = usuarioRepository.findById(grupo.id_usuario_creador())
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario creador no encontrado"));
@@ -49,11 +49,10 @@ public class GrupoService {
         grupoEntity.setUbicacion(grupo.ubicacion());
 
         Grupo saved = grupoRepository.save(grupoEntity);
-        return new GrupoResponse(
+        return new GrupoResponseDTO(
                 saved.getIdGrupo(),
-                saved.getCreador().getNombres(),
-                saved.getDeporte().getNombre(),
                 saved.getNombre(),
+                saved.getDeporte() != null ? saved.getDeporte().getNombre() : null,
                 saved.getDescripcion(),
                 saved.getUbicacion(),
                 (saved.getFechaCreacion() == null) ? null : saved.getFechaCreacion().toLocalDate()

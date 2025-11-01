@@ -18,7 +18,6 @@ public class FeedGrupoController {
 
     @GetMapping("/{grupoId}")
     public List<PublicacionGrupoResponseDTO> obtenerFeed(@PathVariable Long grupoId) {
-        // Usar la versión DTO que no depende de la herencia JOINED
         return feedService.obtenerFeedDTOPorGrupo(grupoId);
     }
 

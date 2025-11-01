@@ -67,7 +67,6 @@ public class ParticipacionRetoService {
                 .collect(Collectors.toList());
     }
 
-    // Nuevo: transformar el ranking a DTOs listos para el controlador
     public List<ProgresoResponseDTO> rankingDto(Reto reto) {
         Double objetivo = reto.getObjetivoTotal();
         return rankingPorReto(reto).stream()

@@ -1,7 +1,6 @@
 package com.impulsofit.controller;
 
-import com.impulsofit.dto.request.DeporteRequest;
-import com.impulsofit.dto.response.DeporteResponse;
+import com.impulsofit.dto.request.DeporteRequestDTO;
 import com.impulsofit.dto.response.DeporteResponseDTO;
 import com.impulsofit.service.DeporteService;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +21,8 @@ public class DeporteController {
     }
 
     @PostMapping
-    public ResponseEntity<DeporteResponse> create(@RequestBody DeporteRequest d) {
-        DeporteResponse saved = deporteService.create(d);
+    public ResponseEntity<DeporteResponseDTO> create(@RequestBody DeporteRequestDTO d) {
+        DeporteResponseDTO saved = deporteService.create(d);
         return ResponseEntity.ok(saved);
     }
 

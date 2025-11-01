@@ -1,7 +1,7 @@
 package com.impulsofit.service;
 
-import com.impulsofit.dto.request.RetoRequest;
-import com.impulsofit.dto.response.RetoResponse;
+import com.impulsofit.dto.request.RetoRequestDTO;
+import com.impulsofit.dto.response.RetoResponseDTO;
 import com.impulsofit.exception.AlreadyExistsException;
 import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.exception.ResourceNotFoundException;
@@ -28,7 +28,7 @@ public class RetoService {
 
 
     @Transactional
-    public RetoResponse create(RetoRequest reto){
+    public RetoResponseDTO create(RetoRequestDTO reto){
 
         Usuario usuario = usuarioRepository.findById(reto.id_usuario_creador())
                 .orElseThrow(() -> new ResourceNotFoundException("No existe el usuario con el id: " + reto.id_usuario_creador()));
@@ -79,7 +79,7 @@ public class RetoService {
     }
 
     @Transactional(readOnly = true)
-    public List<RetoResponse> findAll() {
+    public List<RetoResponseDTO> findAll() {
         return retoRepository.findAll()
                 .stream()
                 .map(this::mapToResponse)
@@ -87,7 +87,7 @@ public class RetoService {
     }
 
     @Transactional
-    public RetoResponse update(Long id, RetoRequest reto) {
+    public RetoResponseDTO update(Long id, RetoRequestDTO reto) {
         Reto retoEntity = retoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No existe el reto con el id: " + id));
         Usuario usuario = usuarioRepository.findById(reto.id_usuario_creador())
@@ -137,7 +137,7 @@ public class RetoService {
     }
 
     @Transactional(readOnly = true)
-    public List<RetoResponse> findByGrupo_Id_grupo(Long id_grupo) {
+    public List<RetoResponseDTO> findByGrupo_Id_grupo(Long id_grupo) {
         return retoRepository.findAllByGrupo_IdGrupo(id_grupo)
                 .stream()
                 .map(this::mapToResponse)
@@ -145,7 +145,7 @@ public class RetoService {
     }
 
     @Transactional(readOnly = true)
-    public List<RetoResponse> findByCreador_Id(Long usuario_creador) {
+    public List<RetoResponseDTO> findByCreador_Id(Long usuario_creador) {
         return retoRepository.findAllByCreador_IdUsuario(usuario_creador)
                 .stream()
                 .map(this::mapToResponse)
@@ -153,7 +153,7 @@ public class RetoService {
     }
 
     @Transactional(readOnly = true)
-    public List<RetoResponse> findByUnidad_IdUnidad(Long id_unidad) {
+    public List<RetoResponseDTO> findByUnidad_IdUnidad(Long id_unidad) {
         return retoRepository.findAllByUnidad_IdUnidad(id_unidad)
                 .stream()
                 .map(this::mapToResponse)
@@ -173,8 +173,8 @@ public class RetoService {
         return retoRepository.findById(id);
     }
 
-    private RetoResponse mapToResponse(Reto reto) {
-        return new RetoResponse(
+    private RetoResponseDTO mapToResponse(Reto reto) {
+        return new RetoResponseDTO(
                 reto.getIdReto(),
                 reto.getGrupo().getNombre(),
                 reto.getCreador().getNombres(),

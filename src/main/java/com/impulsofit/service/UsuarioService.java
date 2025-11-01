@@ -1,8 +1,8 @@
 package com.impulsofit.service;
 
-import com.impulsofit.dto.request.RecoverRequest;
-import com.impulsofit.dto.request.UsuarioRequest;
-import com.impulsofit.dto.response.UsuarioResponse;
+import com.impulsofit.dto.request.RecoverRequestDTO;
+import com.impulsofit.dto.request.UsuarioRequestDTO;
+import com.impulsofit.dto.response.UsuarioResponseDTO;
 import com.impulsofit.exception.AlreadyExistsException;
 import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.exception.ResourceNotFoundException;
@@ -28,7 +28,7 @@ public class UsuarioService {
     // --- CRUD y lógica avanzada ---
 
     @Transactional
-    public UsuarioResponse create(UsuarioRequest usuario) {
+    public UsuarioResponseDTO create(UsuarioRequestDTO usuario) {
         if (usuarioRepository.existsByEmailIgnoreCase(usuario.email())) {
             throw new AlreadyExistsException("Ya existe un usuario con el correo: " + usuario.email());
         }
@@ -51,7 +51,7 @@ public class UsuarioService {
     }
 
     @Transactional
-    public UsuarioResponse updateInfo(Long id, UsuarioRequest usuario) {
+    public UsuarioResponseDTO updateInfo(Long id, UsuarioRequestDTO usuario) {
         Usuario usuarioEntity = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No existe el usuario con id " + id));
 
@@ -70,7 +70,7 @@ public class UsuarioService {
     }
 
     @Transactional
-    public UsuarioResponse updateCred(Long id, RecoverRequest usercred) {
+    public UsuarioResponseDTO updateCred(Long id, RecoverRequestDTO usercred) {
         Usuario usuarioEntity = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No existe el usuario con id " + id));
         Respuesta resp = respuestaRepository.findByUsuario_IdUsuario(id);
@@ -108,7 +108,7 @@ public class UsuarioService {
         return usuarioRepository.findById(id);
     }
 
-    private void validarDateyGender(UsuarioRequest u) {
+    private void validarDateyGender(UsuarioRequestDTO u) {
         if (u.fecha_nacimiento() == null) {
             throw new BusinessRuleException("La fecha de nacimiento no puede estar vacía.");
         }
@@ -132,8 +132,8 @@ public class UsuarioService {
         }
     }
 
-    private UsuarioResponse mapToResponse(Usuario saved) {
-        return new UsuarioResponse(
+    private UsuarioResponseDTO mapToResponse(Usuario saved) {
+        return new UsuarioResponseDTO(
                 saved.getIdUsuario(),
                 saved.getNombres(),
                 saved.getApellidoP(),

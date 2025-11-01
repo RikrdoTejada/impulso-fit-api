@@ -1,7 +1,7 @@
 package com.impulsofit.dto.request;
 
-public record MembresiaGrupoRequest(
+public record RespuestaRequestDTO(
         Long id_usuario,
-        Long id_grupo
+        String str_respuesta
 ) {
 }

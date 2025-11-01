@@ -1,7 +1,7 @@
 package com.impulsofit.service;
 
-import com.impulsofit.dto.request.ReaccionRequest;
-import com.impulsofit.dto.response.ReaccionResponse;
+import com.impulsofit.dto.request.ReaccionRequestDTO;
+import com.impulsofit.dto.response.ReaccionResponseDTO;
 import com.impulsofit.exception.AlreadyExistsException;
 import com.impulsofit.exception.ResourceNotFoundException;
 import com.impulsofit.model.Publicacion;
@@ -22,7 +22,7 @@ public class ReaccionService {
     private final UsuarioRepository usuarioRepository;
 
     @Transactional
-    public ReaccionResponse create(ReaccionRequest reaccion) {
+    public ReaccionResponseDTO create(ReaccionRequestDTO reaccion) {
         Usuario usuario = usuarioRepository.findById(reaccion.id_usuario())
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
@@ -39,7 +39,7 @@ public class ReaccionService {
 
         Reaccion saved = reaccionRepository.save(reaccionEntity);
 
-        return new ReaccionResponse(
+        return new ReaccionResponseDTO(
                 saved.getIdReaccion(),
                 saved.getUsuario().getIdUsuario(),
                 saved.getPublicacion().getIdPublicacion(),

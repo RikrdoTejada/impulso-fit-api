@@ -1,7 +1,7 @@
 package com.impulsofit.service;
 
-import com.impulsofit.dto.request.PublicacionRequest;
-import com.impulsofit.dto.response.PublicacionResponse;
+import com.impulsofit.dto.request.PublicacionRequestDTO;
+import com.impulsofit.dto.response.PublicacionResponseDTO;
 import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.exception.ResourceNotFoundException;
 import com.impulsofit.model.Grupo;
@@ -29,7 +29,7 @@ public class PublicacionService {
     private final MembresiaGrupoRepository membresiaGrupoRepository;
 
     @Transactional
-    public PublicacionResponse create(PublicacionRequest publicacion) {
+    public PublicacionResponseDTO create(PublicacionRequestDTO publicacion) {
         //Usuario
         Usuario usuario = usuarioRepository.findById(publicacion.id_usuario())
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
@@ -71,7 +71,7 @@ public class PublicacionService {
     }
 
     @Transactional(readOnly = true)
-    public List<PublicacionResponse> findAll() {
+    public List<PublicacionResponseDTO> findAll() {
         return publicacionRepository.findAll()
                 .stream()
                 .map(this::mapToResponse)
@@ -79,7 +79,7 @@ public class PublicacionService {
     }
 
     @Transactional(readOnly = true)
-    public List<PublicacionResponse> findByUsuario_IdUsuario(Long id_usuario) {
+    public List<PublicacionResponseDTO> findByUsuario_IdUsuario(Long id_usuario) {
         return publicacionRepository.findAllByUsuario_IdUsuario(id_usuario)
                 .stream()
                 .map(this::mapToResponse)
@@ -87,7 +87,7 @@ public class PublicacionService {
     }
 
     @Transactional(readOnly = true)
-    public List<PublicacionResponse> findByGrupo_IdGrupo(Long id_grupo) {
+    public List<PublicacionResponseDTO> findByGrupo_IdGrupo(Long id_grupo) {
         return publicacionRepository.findAllByGrupo_IdGrupo(id_grupo)
                 .stream()
                 .map(this::mapToResponse)
@@ -95,7 +95,7 @@ public class PublicacionService {
     }
 
     @Transactional
-    public PublicacionResponse update(Long id, PublicacionRequest publicacion) {
+    public PublicacionResponseDTO update(Long id, PublicacionRequestDTO publicacion) {
         Publicacion publicacionEntity = publicacionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No existe la publicacion con id " + id));
         publicacionEntity.setIdPublicacion(id);
@@ -147,10 +147,10 @@ public class PublicacionService {
         publicacionRepository.deleteById(id);
     }
 
-    private PublicacionResponse mapToResponse(Publicacion publicacion) {
+    private PublicacionResponseDTO mapToResponse(Publicacion publicacion) {
         boolean publica = (publicacion.getType() == PublicacionType.GENERAL);
         String grupoNombre = publica ? null : publicacion.getGrupo().getNombre();
-        return new PublicacionResponse(
+        return new PublicacionResponseDTO(
                 publicacion.getIdPublicacion(),
                 publicacion.getUsuario().getNombres(),
                 publicacion.getType(),

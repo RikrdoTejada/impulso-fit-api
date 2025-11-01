@@ -1,6 +1,6 @@
 package com.impulsofit.controller;
-import com.impulsofit.dto.request.GrupoRequest;
-import com.impulsofit.dto.response.GrupoResponse;
+import com.impulsofit.dto.request.GrupoRequestDTO;
+import com.impulsofit.dto.response.GrupoResponseDTO;
 import com.impulsofit.service.GrupoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,8 +13,8 @@ public class GrupoController {
     private final GrupoService grupoService;
 
     @PostMapping
-    public ResponseEntity<GrupoResponse> create(@RequestBody GrupoRequest g) {
-        GrupoResponse saved = grupoService.create(g);
+    public ResponseEntity<GrupoResponseDTO> create(@RequestBody GrupoRequestDTO g) {
+        GrupoResponseDTO saved = grupoService.create(g);
         return ResponseEntity.ok(saved);
     }
 

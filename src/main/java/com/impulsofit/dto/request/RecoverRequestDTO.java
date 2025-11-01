@@ -3,7 +3,7 @@ package com.impulsofit.dto.request;
 import com.impulsofit.model.RecoverType;
 import jakarta.validation.constraints.Pattern;
 
-public record RecoverRequest(
+public record RecoverRequestDTO(
         String respuesta,
         RecoverType tipo_recover,
         String new_contrasena,

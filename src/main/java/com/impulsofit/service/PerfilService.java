@@ -23,7 +23,6 @@ public class PerfilService {
         Perfil perfil = perfilRepository.findById(idPerfil)
                 .orElseThrow(() -> new BusinessRuleException("Perfil no encontrado", HttpStatus.NOT_FOUND));
 
-        // Business rule: nombre obligatorio
         if (request.getNombre() == null || request.getNombre().trim().isEmpty()) {
             throw new BusinessRuleException("El nombre de usuario no puede estar vacío.", HttpStatus.BAD_REQUEST);
         }

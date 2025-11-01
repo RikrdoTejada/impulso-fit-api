@@ -2,7 +2,7 @@ package com.impulsofit.dto.request;
 
 import java.time.LocalDate;
 
-public record RetoRequest(
+public record RetoRequestDTO(
         Long id_grupo,
         Long id_usuario_creador,
         Long id_unidad,

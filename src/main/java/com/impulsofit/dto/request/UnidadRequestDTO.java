@@ -1,7 +1,7 @@
 package com.impulsofit.dto.request;
 
-public record DeporteRequest(
+public record UnidadRequestDTO(
         String nombre,
-        String tipo_deporte
+        String uso
 ) {
 }

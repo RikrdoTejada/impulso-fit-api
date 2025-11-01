@@ -1,11 +1,9 @@
 package com.impulsofit.controller;
 
-import com.impulsofit.dto.request.RespuestaRequest;
-import com.impulsofit.dto.response.RespuestaResponse;
-import com.impulsofit.model.Respuesta;
+import com.impulsofit.dto.request.RespuestaRequestDTO;
+import com.impulsofit.dto.response.RespuestaResponseDTO;
 import com.impulsofit.service.RespuestaService;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,8 +14,8 @@ public class RespuestaController {
     private final RespuestaService respuestaService;
 
     @PostMapping
-    public ResponseEntity<RespuestaResponse> create(@RequestBody RespuestaRequest r){
-        RespuestaResponse saved = respuestaService.create(r);
+    public ResponseEntity<RespuestaResponseDTO> create(@RequestBody RespuestaRequestDTO r){
+        RespuestaResponseDTO saved = respuestaService.create(r);
         return ResponseEntity.ok(saved);
     }
 

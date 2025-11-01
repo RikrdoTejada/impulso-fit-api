@@ -1,7 +1,6 @@
 package com.impulsofit.service;
 
-import com.impulsofit.dto.request.DeporteRequest;
-import com.impulsofit.dto.response.DeporteResponse;
+import com.impulsofit.dto.request.DeporteRequestDTO;
 import com.impulsofit.dto.response.DeporteResponseDTO;
 import com.impulsofit.exception.ResourceNotFoundException;
 import com.impulsofit.model.Deporte;
@@ -24,14 +23,14 @@ public class DeporteService {
         List<Deporte> deportes = deporteRepository.findAll();
         return deportes.stream()
                 .map(d -> new DeporteResponseDTO(
-                        d.getIdDeporteAsInteger(),
+                        d.getIdDeporte(),
                         d.getNombre(),
                         d.getTipo()
                 ))
                 .collect(Collectors.toList());
     }
 
-    public DeporteResponse create(DeporteRequest deporte) {
+    public DeporteResponseDTO create(DeporteRequestDTO deporte) {
         Deporte deporteEntity = new Deporte();
         deporteEntity.setNombre(deporte.nombre());
 
@@ -41,7 +40,7 @@ public class DeporteService {
 
         Deporte saved = deporteRepository.save(deporteEntity);
 
-        return new DeporteResponse(
+        return new DeporteResponseDTO(
                 saved.getIdDeporte(),
                 saved.getNombre(),
                 saved.getTipo()

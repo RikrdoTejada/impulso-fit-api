@@ -1,6 +1,6 @@
 package com.impulsofit.dto.request;
 
-public record GrupoRequest(
+public record GrupoRequestDTO(
         Long id_usuario_creador,
         Long id_deporte,
         String nombre,

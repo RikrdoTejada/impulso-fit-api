@@ -72,11 +72,11 @@ public class BusquedaService {
 
         List<GrupoResponseDTO> gruposDto = grupos.stream()
                 .map(g -> new GrupoResponseDTO(
-                        g.getIdGrupoAsInteger(),
+                        g.getId(),
                         g.getNombre(),
                         g.getDeporte() != null ? g.getDeporte().getNombre() : null,
                         g.getDescripcion(),
-                        "/grupos/" + g.getIdGrupoAsInteger() + "/unirse"))
+                        "/grupos/" + g.getId() + "/unirse"))
                 .collect(Collectors.toList());
 
         List<UsuarioResponseDTO> usuariosDto = perfiles.stream()

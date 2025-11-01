@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Pattern;
 
 import java.time.LocalDate;
 
-public record UsuarioRequest(
+public record UsuarioRequestDTO(
         String nombres,
         String apellido_p,
         String apellido_m,

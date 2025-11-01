@@ -1,7 +1,7 @@
 package com.impulsofit.controller;
 
-import com.impulsofit.dto.request.MembresiaGrupoRequest;
-import com.impulsofit.dto.response.MembresiaGrupoResponse;
+import com.impulsofit.dto.request.MembresiaGrupoRequestDTO;
+import com.impulsofit.dto.response.MembresiaGrupoResponseDTO;
 import com.impulsofit.service.MembresiaGrupoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,8 +14,8 @@ public class MembresiaGrupoController {
     private final MembresiaGrupoService membresiaGrupoService;
 
     @PostMapping
-    public ResponseEntity<MembresiaGrupoResponse> create(@RequestBody MembresiaGrupoRequest m) {
-        MembresiaGrupoResponse saved = membresiaGrupoService.create(m);
+    public ResponseEntity<MembresiaGrupoResponseDTO> create(@RequestBody MembresiaGrupoRequestDTO m) {
+        MembresiaGrupoResponseDTO saved = membresiaGrupoService.create(m);
         return ResponseEntity.ok(saved);
     }
 

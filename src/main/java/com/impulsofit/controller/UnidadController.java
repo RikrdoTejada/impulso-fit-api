@@ -1,8 +1,8 @@
 package com.impulsofit.controller;
 
 
-import com.impulsofit.dto.request.UnidadRequest;
-import com.impulsofit.dto.response.UnidadResponse;
+import com.impulsofit.dto.request.UnidadRequestDTO;
+import com.impulsofit.dto.response.UnidadResponseDTO;
 import com.impulsofit.service.UnidadService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +15,8 @@ public class UnidadController {
     private final UnidadService unidadService;
 
     @PostMapping
-    public ResponseEntity<UnidadResponse> create(@RequestBody UnidadRequest u) {
-        UnidadResponse saved = unidadService.create(u);
+    public ResponseEntity<UnidadResponseDTO> create(@RequestBody UnidadRequestDTO u) {
+        UnidadResponseDTO saved = unidadService.create(u);
         return ResponseEntity.ok(saved);
     }
 

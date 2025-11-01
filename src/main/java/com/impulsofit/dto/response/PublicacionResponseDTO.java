@@ -4,7 +4,7 @@ import com.impulsofit.model.PublicacionType;
 
 import java.time.LocalDateTime;
 
-public record PublicacionResponse(
+public record PublicacionResponseDTO(
         Long id_publicacion,
         String usuarioNombre,
         PublicacionType tipo_publicacion,

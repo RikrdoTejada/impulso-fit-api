@@ -1,7 +1,7 @@
 package com.impulsofit.service;
 
-import com.impulsofit.dto.request.UnidadRequest;
-import com.impulsofit.dto.response.UnidadResponse;
+import com.impulsofit.dto.request.UnidadRequestDTO;
+import com.impulsofit.dto.response.UnidadResponseDTO;
 import com.impulsofit.exception.ResourceNotFoundException;
 import com.impulsofit.model.Unidad;
 import com.impulsofit.repository.UnidadRepository;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 public class UnidadService {
     private final UnidadRepository unidadRepository;
 
-    public UnidadResponse create(UnidadRequest unidad) {
+    public UnidadResponseDTO create(UnidadRequestDTO unidad) {
 
         Unidad unidadEntity = new Unidad();
         unidadEntity.setNombre(unidad.nombre());
@@ -22,7 +22,7 @@ public class UnidadService {
 
         Unidad saved = unidadRepository.save(unidadEntity);
 
-        return new UnidadResponse(
+        return new UnidadResponseDTO(
                 saved.getIdUnidad(),
                 saved.getNombre(),
                 saved.getUso()

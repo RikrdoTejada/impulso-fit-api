@@ -15,14 +15,10 @@ public class PerfilRequestDTO {
     public void setNombre(String nombre) { this.nombre = nombre; }
 
     public String getApellido() { return apellido; }
-    public void setApellido(String apellido) { this.apellido = apellido; }
 
     public String getBiografia() { return biografia; }
-    public void setBiografia(String biografia) { this.biografia = biografia; }
 
     public String getUbicacion() { return ubicacion; }
-    public void setUbicacion(String ubicacion) { this.ubicacion = ubicacion; }
 
     public String getFotoPerfil() { return fotoPerfil; }
-    public void setFotoPerfil(String fotoPerfil) { this.fotoPerfil = fotoPerfil; }
 }

@@ -35,7 +35,6 @@ public class FeedGrupoService {
 
     @Transactional(readOnly = true)
     public List<Comentario> obtenerComentariosPorPublicacion(Long publicacionId) {
-        // Consulta corregida: usar la relación `publicacion` y su id en Comentario
         TypedQuery<Comentario> q = em.createQuery(
                 "SELECT c FROM Comentario c WHERE c.publicacion.id = :pubId ORDER BY c.fechaCreacion",
                 Comentario.class);
@@ -43,12 +42,11 @@ public class FeedGrupoService {
         return q.getResultList();
     }
 
-    // Nuevo: obtener feed como DTOs usando consultas nativas para evitar dependencia en herencia JOINED
     @Transactional(readOnly = true)
     public List<PublicacionGrupoResponseDTO> obtenerFeedDTOPorGrupo(Long grupoId) {
         String sql = "SELECT pg.id_publicacion, " +
                 "COALESCE(p.contenido, pg.contenido) as contenido, " +
-                "COALESCE(u.nombre, '') as autor, " +
+                "COALESCE(u.nombres, '') as autor, " +
                 "COALESCE(p.fecha_publicacion, pg.fecha_publicacion) as fecha " +
                 "FROM publicaciongrupo pg " +
                 "LEFT JOIN publicaciongeneral p ON pg.id_publicacion = p.id_publicacion " +
@@ -71,7 +69,6 @@ public class FeedGrupoService {
             if (row[3] instanceof Timestamp) {
                 fecha = ((Timestamp) row[3]).toLocalDateTime();
             } else if (row[3] != null) {
-                // intentar parsear si viene como String
                 try {
                     fecha = LocalDateTime.parse(row[3].toString());
                 } catch (Exception ignored) {}

@@ -32,11 +32,10 @@ public class PublicacionGrupo extends PublicacionGeneral {
     @Override
     public void setContenido(String contenido) { super.setContenido(contenido); }
 
-    // "autor" es el mismo que "usuario" en la superclase; delegamos para compatibilidad
     public Usuario getAutor() { return super.getUsuario(); }
     public void setAutor(Usuario autor) { super.setUsuario(autor); }
 
-    // Asegurar fechaCreacion si no está seteada (fecha está en la superclase)
+    // Asegurar fechaCreacion si no está seteada
     @PrePersist
     protected void onCreate() {
         if (super.getFechaCreacion() == null) {
