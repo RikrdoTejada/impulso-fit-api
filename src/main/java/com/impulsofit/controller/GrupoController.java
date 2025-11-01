@@ -65,6 +65,18 @@ public class GrupoController {
         }
     }
 
+    // Listar todos los deportes
+    @GetMapping("/deportes")
+    public List<Deporte> listarDeportes() {
+        return deporteRepository.findAll();
+    }
+
+    // Listar todos los grupos
+    @GetMapping("/grupos")
+    public List<Grupo> listarGrupos() {
+        return grupoRepository.findAll();
+    }
+
     // ✅ Endpoint para crear grupos de prueba
     @PostMapping("/grupos-test")
     public String crearGruposDePrueba() {
