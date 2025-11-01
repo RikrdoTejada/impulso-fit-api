@@ -73,7 +73,7 @@ public class RetoController {
         if (retoOpt.isEmpty() || usuarioOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        Double total = participacionRetoService.agregarProgreso(usuarioOpt.get(), retoOpt.get(), request.getAvance());
+        Double total = participacionRetoService.agregarProgreso(usuarioOpt.get(), retoOpt.get(), request.avance());
         Double porcentaje = participacionRetoService.calcularPorcentajeForReto(retoOpt.get(), total);
         return ResponseEntity.ok(new ProgresoResponseDTO(idUsuario, idReto, total, porcentaje));
     }

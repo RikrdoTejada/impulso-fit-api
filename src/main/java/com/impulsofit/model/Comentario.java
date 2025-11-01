@@ -2,9 +2,15 @@ package com.impulsofit.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "comentario")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Comentario {
 
     @Id
@@ -30,9 +36,6 @@ public class Comentario {
     @Column(name = "tipo", nullable = false, length = 20)
     private String tipo = "GENERAL";
 
-    // Constructor vacío
-    public Comentario() {}
-
     // Constructor con campos
     public Comentario(String contenido, Usuario usuario, PublicacionGeneral publicacion) {
         this.contenido = contenido;
@@ -49,25 +52,4 @@ public class Comentario {
             this.tipo = "GENERAL";
         }
     }
-
-
-
-    // Getters y setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getContenido() { return contenido; }
-    public void setContenido(String contenido) { this.contenido = contenido; }
-
-    public Usuario getUsuario() { return usuario; }
-    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
-
-    public PublicacionGeneral getPublicacion() { return publicacion; }
-    public void setPublicacion(PublicacionGeneral publicacion) { this.publicacion = publicacion; }
-
-    public LocalDateTime getFechaCreacion() { return fechaCreacion; }
-    public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
-
-    public String getTipo() { return tipo; }
-    public void setTipo(String tipo) { this.tipo = tipo; }
 }

@@ -55,6 +55,9 @@ public class Usuario {
     @Column(name = "intentos_fallidos", nullable = false)
     private Integer intentosFallidos = 0;
 
+    @Column(name = "fecha_bloqueo")
+    private LocalDateTime fechaBloqueo;
+
     @Column(name = "cod_pregunta", nullable = false)
     private CodPregunta codPregunta;
 

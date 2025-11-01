@@ -64,7 +64,7 @@ public class BusquedaService {
                 perfiles = perfilRepository.searchByNombreApellido(term);
             }
         } else {
-            // Solo término, sin deporteId: buscar entre todo
+            // Solo término, sin deporteId
             grupos = grupoRepository.buscarPorNombreODeporte(term);
             retos = retoRepository.searchByTerm(term);
             perfiles = perfilRepository.searchByNombreApellido(term);
@@ -76,19 +76,44 @@ public class BusquedaService {
                         g.getNombre(),
                         g.getDeporte() != null ? g.getDeporte().getNombre() : null,
                         g.getDescripcion(),
-                        "/grupos/" + g.getId() + "/unirse"))
+                        "/grupos/" + g.getId() + "/unirse",
+                        g.getUbicacion(),
+                        (g.getFechaCreacion() == null) ? null : g.getFechaCreacion().toLocalDate()))
                 .collect(Collectors.toList());
 
         List<UsuarioResponseDTO> usuariosDto = perfiles.stream()
-                .map(p -> new UsuarioResponseDTO(
-                        p.getIdPerfil(),
-                        (p.getNombre() + " " + (p.getApellido() != null ? p.getApellido() : "")).trim(),
-                        "/perfiles/" + p.getIdPerfil()
-                ))
+                .map(p -> {
+                    // Perfil contiene referencia a Usuario (MapsId). Obtener usuario relacionado si existe
+                    com.impulsofit.model.Usuario u = p.getUsuario();
+                    return new UsuarioResponseDTO(
+                            p.getIdPerfil(),
+                            p.getNombre(),
+                            p.getApellido(),
+                            null,
+                            (u != null) ? u.getEmail() : null,
+                            null,
+                            (u != null) ? u.getFechaNacimiento() : null,
+                            (u != null) ? u.getGenero() : null,
+                            (u != null && u.getFechaRegistro() != null) ? u.getFechaRegistro().toLocalDate() : null,
+                            (u != null) ? u.getCodPregunta() : null,
+                            "/perfiles/" + p.getIdPerfil()
+                    );
+                })
                 .collect(Collectors.toList());
 
         List<RetoResponseDTO> retosDto = retos.stream()
-                .map(r -> new RetoResponseDTO(r.getIdReto(), r.getTitulo(), r.getDescripcion(), "/retos/" + r.getIdReto()))
+                .map(r -> new RetoResponseDTO(
+                        r.getIdReto(),
+                        r.getGrupo() != null ? r.getGrupo().getNombre() : null,
+                        r.getCreador() != null ? r.getCreador().getNombre() : null,
+                        r.getUnidad() != null ? r.getUnidad().getNombre() : null,
+                        r.getTitulo(),
+                        r.getDescripcion(),
+                        r.getObjetivo(),
+                        r.getFechaPublicacion(),
+                        r.getFechaInicio(),
+                        r.getFechaFin()
+                ))
                 .collect(Collectors.toList());
 
         return new BusquedaResponseDTO(gruposDto, usuariosDto, retosDto);

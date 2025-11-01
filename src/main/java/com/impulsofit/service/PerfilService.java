@@ -23,16 +23,16 @@ public class PerfilService {
         Perfil perfil = perfilRepository.findById(idPerfil)
                 .orElseThrow(() -> new BusinessRuleException("Perfil no encontrado", HttpStatus.NOT_FOUND));
 
-        if (request.getNombre() == null || request.getNombre().trim().isEmpty()) {
+        if (request.nombre() == null || request.nombre().trim().isEmpty()) {
             throw new BusinessRuleException("El nombre de usuario no puede estar vacío.", HttpStatus.BAD_REQUEST);
         }
 
         // Actualizar campos
-        perfil.setNombre(request.getNombre().trim());
-        perfil.setApellido(request.getApellido());
-        perfil.setBiografia(request.getBiografia());
-        perfil.setUbicacion(request.getUbicacion());
-        perfil.setFotoPerfil(request.getFotoPerfil());
+        perfil.setNombre(request.nombre().trim());
+        perfil.setApellido(request.apellido());
+        perfil.setBiografia(request.biografia());
+        perfil.setUbicacion(request.ubicacion());
+        perfil.setFotoPerfil(request.fotoPerfil());
 
         perfilRepository.save(perfil);
 

@@ -1,9 +1,15 @@
 package com.impulsofit.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "perfil")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Perfil {
 
     @Id
@@ -29,31 +35,4 @@ public class Perfil {
     @MapsId
     @JoinColumn(name = "id_perfil")
     private Usuario usuario;
-
-    public Perfil() {}
-
-    // Getters / Setters
-    public Long getIdPerfil() { return idPerfil; }
-    public void setIdPerfil(Long idPerfil) { this.idPerfil = idPerfil; }
-
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
-
-    public String getApellido() { return apellido; }
-    public void setApellido(String apellido) { this.apellido = apellido; }
-
-    public String getBiografia() { return biografia; }
-    public void setBiografia(String biografia) { this.biografia = biografia; }
-
-    public String getUbicacion() { return ubicacion; }
-    public void setUbicacion(String ubicacion) { this.ubicacion = ubicacion; }
-
-    public String getFotoPerfil() { return fotoPerfil; }
-    public void setFotoPerfil(String fotoPerfil) { this.fotoPerfil = fotoPerfil; }
-
-    public Usuario getUsuario() { return usuario; }
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
-        this.idPerfil = (usuario != null) ? usuario.getId() : null;
-    }
 }

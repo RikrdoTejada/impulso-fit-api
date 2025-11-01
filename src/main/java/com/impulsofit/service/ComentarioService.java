@@ -47,7 +47,6 @@ public class ComentarioService {
         return comentarioRepository.findByPublicacionId(publicacionId);
     }
 
-    // DTO mappers: mover streams al servicio para que los controladores no hagan mapeos
     public List<ComentarioResponseDTO> listarPorPublicacionDTO(Long publicacionId) {
         return listarPorPublicacion(publicacionId).stream().map(this::toDto).collect(Collectors.toList());
     }
@@ -94,6 +93,10 @@ public class ComentarioService {
         comentario.setTipo("GENERAL");
 
         return comentarioRepository.save(comentario);
+    }
+
+    public ComentarioResponseDTO obtenerComentarioDTOPorId(Long id) {
+        return comentarioRepository.findById(id).map(this::toDto).orElse(null);
     }
 
     // Crear comentario en publicación grupal (valida membresía)

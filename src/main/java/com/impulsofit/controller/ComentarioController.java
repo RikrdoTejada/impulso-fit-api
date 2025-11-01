@@ -34,16 +34,14 @@ public class ComentarioController {
 
     @PostMapping("/general")
     public ComentarioResponseDTO crearEnGeneral(@RequestBody ComentarioRequestDTO dto) {
-        Comentario guardado = comentarioService.crearComentarioEnPublicacionGeneral(dto.getUsuarioId(), dto.getPublicacionId(), dto.getContenido());
-        return comentarioService.listarPorPublicacionDTO(guardado.getPublicacion().getId())
-                .stream().filter(c -> c.getId().equals(guardado.getId())).findFirst().orElse(null);
+        Comentario guardado = comentarioService.crearComentarioEnPublicacionGeneral(dto.usuarioId(), dto.publicacionId(), dto.contenido());
+        return comentarioService.obtenerComentarioDTOPorId(guardado.getId());
     }
 
     @PostMapping("/grupal")
     public ComentarioResponseDTO crearEnGrupal(@RequestBody ComentarioRequestDTO dto) {
-        Comentario guardado = comentarioService.crearComentarioEnPublicacionGrupo(dto.getUsuarioId(), dto.getPublicacionId(), dto.getContenido());
-        return comentarioService.listarPorPublicacionDTO(guardado.getPublicacion().getId())
-                .stream().filter(c -> c.getId().equals(guardado.getId())).findFirst().orElse(null);
+        Comentario guardado = comentarioService.crearComentarioEnPublicacionGrupo(dto.usuarioId(), dto.publicacionId(), dto.contenido());
+        return comentarioService.obtenerComentarioDTOPorId(guardado.getId());
     }
 
     @DeleteMapping("/{id}")

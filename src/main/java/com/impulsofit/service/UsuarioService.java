@@ -143,7 +143,8 @@ public class UsuarioService {
                 saved.getFechaNacimiento(),
                 saved.getGenero(),
                 (saved.getFechaRegistro() == null) ? null : saved.getFechaRegistro().toLocalDate(),
-                saved.getCodPregunta()
+                saved.getCodPregunta(),
+                "/perfiles/" + saved.getIdUsuario()
         );
     }
 }

@@ -15,7 +15,7 @@ public interface GrupoRepository extends JpaRepository<Grupo, Long> {
             "OR LOWER(g.deporte.nombre) LIKE LOWER(CONCAT('%', :filtro, '%'))")
     List<Grupo> buscarPorNombreODeporte(@Param("filtro") String filtro);
 
-    // Buscar grupos por id de deporte (consulta explícita para evitar advertencias del analizador)
+    // Buscar grupos por id de deporte
     @Query("SELECT g FROM Grupo g WHERE g.deporte.idDeporte = :idDeporte")
     List<Grupo> findByDeporte_IdDeporte(@Param("idDeporte") Long idDeporte);
 

@@ -54,6 +54,7 @@ public class GrupoService {
                 saved.getNombre(),
                 saved.getDeporte() != null ? saved.getDeporte().getNombre() : null,
                 saved.getDescripcion(),
+                "/grupos/" + saved.getIdGrupo() + "/unirse",
                 saved.getUbicacion(),
                 (saved.getFechaCreacion() == null) ? null : saved.getFechaCreacion().toLocalDate()
         );
