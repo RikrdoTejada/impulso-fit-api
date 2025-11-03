@@ -31,9 +31,6 @@ public class Usuario {
     @Column(name = "apellido_m", nullable = false, length = 100)
     private String apellidoM;
 
-    @Transient
-    private String nombre;
-
     @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
@@ -68,16 +65,12 @@ public class Usuario {
     public Long getId() { return idUsuario; }
     public void setId(Long id) { this.idUsuario = id; }
 
-    public String getNombre() {
-        if (nombre != null) return nombre;
+    public String getNombres() {
         StringBuilder sb = new StringBuilder();
         if (nombres != null) sb.append(nombres);
         if (apellidoP != null) sb.append(" ").append(apellidoP);
         if (apellidoM != null) sb.append(" ").append(apellidoM);
         return sb.toString().trim();
-    }
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
     }
 
     public LocalDate getFechaRegistroAsLocalDate() {
@@ -96,7 +89,7 @@ public class Usuario {
         return Boolean.TRUE.equals(this.bloqueado);
     }
 
-    // Devuelve la edad calculada a partir de la fecha de nacimiento (si está disponible)
+    // Devuelve la edad calculada a partir de la fecha de nacimiento
     public Integer getEdad() {
         if (this.fechaNacimiento == null) return null;
         return java.time.Period.between(this.fechaNacimiento, java.time.LocalDate.now()).getYears();

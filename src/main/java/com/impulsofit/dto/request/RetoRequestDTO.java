@@ -6,9 +6,9 @@ public record RetoRequestDTO(
         Long id_grupo,
         Long id_usuario_creador,
         Long id_unidad,
-        String nombre,
+        String titulo,
         String descripcion,
-        String objetivo,
+        Double objetivo_total,
         LocalDate fecha_inicio,
         LocalDate fecha_fin){
 }

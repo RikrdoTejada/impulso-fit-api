@@ -27,7 +27,7 @@ public class Comentario {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_publicacion", nullable = false)
-    private PublicacionGeneral publicacion;
+    private Publicacion publicacion;
 
     @Column(name = "fecha_comentario", nullable = false)
     private LocalDateTime fechaCreacion;
@@ -37,7 +37,7 @@ public class Comentario {
     private String tipo = "GENERAL";
 
     // Constructor con campos
-    public Comentario(String contenido, Usuario usuario, PublicacionGeneral publicacion) {
+    public Comentario(String contenido, Usuario usuario, Publicacion publicacion) {
         this.contenido = contenido;
         this.usuario = usuario;
         this.publicacion = publicacion;

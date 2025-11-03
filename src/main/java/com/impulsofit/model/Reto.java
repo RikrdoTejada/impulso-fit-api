@@ -31,9 +31,6 @@ public class Reto {
     @JoinColumn(name = "id_unidad")
     private Unidad unidad;
 
-    @Column(name = "nombre", length = 255)
-    private String nombre;
-
     @Column(name = "titulo", length = 255)
     private String titulo;
 
@@ -43,9 +40,6 @@ public class Reto {
     // Meta cuantificable
     @Column(name = "objetivo_total")
     private Double objetivoTotal;
-
-    @Column(name = "objetivo")
-    private String objetivo;
 
     @Column(name = "fecha_publicacion")
     private LocalDate fechaPublicacion;

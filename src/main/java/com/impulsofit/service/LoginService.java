@@ -5,7 +5,6 @@ import com.impulsofit.dto.response.LoginResponseDTO;
 import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.model.Usuario;
 import com.impulsofit.repository.UsuarioRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +27,7 @@ public class LoginService {
     @Transactional(noRollbackFor = BusinessRuleException.class)
     public LoginResponseDTO login(LoginRequestDTO loginDTO) {
         Usuario usuario = usuarioRepository.findByEmail(loginDTO.email())
-                .orElseThrow(() -> new BusinessRuleException("Usuario no encontrado", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new BusinessRuleException("Usuario no encontrado"));
 
         Long idUsuario = usuario.getIdUsuario();
 
@@ -42,10 +41,10 @@ public class LoginService {
                     usuario.setFechaBloqueo(null);
                     usuarioRepository.save(usuario);
                 } else {
-                    throw new BusinessRuleException("Usuario bloqueado por múltiples intentos fallidos", HttpStatus.FORBIDDEN);
+                    throw new BusinessRuleException("Usuario bloqueado por múltiples intentos fallidos");
                 }
             } else {
-                throw new BusinessRuleException("Usuario bloqueado por múltiples intentos fallidos", HttpStatus.FORBIDDEN);
+                throw new BusinessRuleException("Usuario bloqueado por múltiples intentos fallidos");
             }
         }
 
@@ -63,7 +62,7 @@ public class LoginService {
             }
 
             persistirIntentosYBloqueo(idUsuario, intentos, bloquear);
-            throw new BusinessRuleException("Credenciales incorrectas", HttpStatus.UNAUTHORIZED);
+            throw new BusinessRuleException("Credenciales incorrectas");
         }
 
         // Login exitoso: resetear intentos fallidos
@@ -74,7 +73,7 @@ public class LoginService {
 
         return new LoginResponseDTO(
                 usuario.getIdUsuario(),
-                usuario.getNombre(),
+                usuario.getNombres(),
                 usuario.getEmail(),
                 usuario.getEdad(),
                 usuario.getGenero()

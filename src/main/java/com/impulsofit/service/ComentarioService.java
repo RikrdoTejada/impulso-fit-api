@@ -2,13 +2,12 @@ package com.impulsofit.service;
 
 import com.impulsofit.dto.response.ComentarioResponseDTO;
 import com.impulsofit.model.Comentario;
-import com.impulsofit.model.PublicacionGrupo;
-import com.impulsofit.model.PublicacionGeneral;
+import com.impulsofit.model.Publicacion;
+import com.impulsofit.model.PublicacionType;
 import com.impulsofit.model.Usuario;
 import com.impulsofit.repository.ComentarioRepository;
 import com.impulsofit.repository.MembresiaGrupoRepository;
-import com.impulsofit.repository.PublicacionGeneralRepository;
-import com.impulsofit.repository.PublicacionGrupoRepository;
+import com.impulsofit.repository.PublicacionRepository;
 import com.impulsofit.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -23,8 +22,7 @@ import java.util.stream.Collectors;
 public class ComentarioService {
 
     private final ComentarioRepository comentarioRepository;
-    private final PublicacionGeneralRepository publicacionGeneralRepo;
-    private final PublicacionGrupoRepository publicacionGrupoRepo;
+    private final PublicacionRepository publicacionRepo;
     private final UsuarioRepository usuarioRepo;
     private final MembresiaGrupoRepository membresiaRepo;
 
@@ -32,19 +30,17 @@ public class ComentarioService {
     private static final Pattern URL_PATTERN = Pattern.compile("(?i)https?://|www\\.");
 
     public ComentarioService(ComentarioRepository comentarioRepository,
-                              PublicacionGeneralRepository publicacionGeneralRepo,
-                              PublicacionGrupoRepository publicacionGrupoRepo,
+                              PublicacionRepository publicacionRepo,
                               UsuarioRepository usuarioRepo,
                               MembresiaGrupoRepository membresiaRepo) {
         this.comentarioRepository = comentarioRepository;
-        this.publicacionGeneralRepo = publicacionGeneralRepo;
-        this.publicacionGrupoRepo = publicacionGrupoRepo;
+        this.publicacionRepo = publicacionRepo;
         this.usuarioRepo = usuarioRepo;
         this.membresiaRepo = membresiaRepo;
     }
 
     public List<Comentario> listarPorPublicacion(Long publicacionId) {
-        return comentarioRepository.findByPublicacionId(publicacionId);
+        return comentarioRepository.findByPublicacion_IdPublicacion(publicacionId);
     }
 
     public List<ComentarioResponseDTO> listarPorPublicacionDTO(Long publicacionId) {
@@ -61,13 +57,13 @@ public class ComentarioService {
 
     // Listar por tipo (entidades)
     public List<Comentario> listarPorPublicacionGeneral(Long publicacionId) {
-        return comentarioRepository.findByPublicacionId(publicacionId).stream()
+        return comentarioRepository.findByPublicacion_IdPublicacion(publicacionId).stream()
                 .filter(c -> "GENERAL".equalsIgnoreCase(c.getTipo()))
                 .collect(Collectors.toList());
     }
 
     public List<Comentario> listarPorPublicacionGrupo(Long publicacionId) {
-        return comentarioRepository.findByPublicacionId(publicacionId).stream()
+        return comentarioRepository.findByPublicacion_IdPublicacion(publicacionId).stream()
                 .filter(c -> "GRUPAL".equalsIgnoreCase(c.getTipo()))
                 .collect(Collectors.toList());
     }
@@ -81,15 +77,20 @@ public class ComentarioService {
         Optional<Usuario> usuarioOpt = usuarioRepo.findById(usuarioId);
         if (usuarioOpt.isEmpty()) throw new IllegalArgumentException("Usuario no encontrado");
 
-        Optional<PublicacionGeneral> publicacionOpt = publicacionGeneralRepo.findById(publicacionId);
+        Optional<Publicacion> publicacionOpt = publicacionRepo.findById(publicacionId);
         if (publicacionOpt.isEmpty()) throw new IllegalArgumentException("Publicación no encontrada");
+
+        Publicacion publicacion = publicacionOpt.get();
+        if (publicacion.getType() != PublicacionType.GENERAL) {
+            throw new IllegalArgumentException("La publicación no es de tipo GENERAL");
+        }
 
         validarComentario(contenido);
 
         Comentario comentario = new Comentario();
         comentario.setContenido(contenido);
         comentario.setUsuario(usuarioOpt.get());
-        comentario.setPublicacion(publicacionOpt.get());
+        comentario.setPublicacion(publicacion);
         comentario.setTipo("GENERAL");
 
         return comentarioRepository.save(comentario);
@@ -108,15 +109,19 @@ public class ComentarioService {
         Optional<Usuario> usuarioOpt = usuarioRepo.findById(usuarioId);
         if (usuarioOpt.isEmpty()) throw new IllegalArgumentException("Usuario no encontrado");
 
-        Optional<PublicacionGrupo> publicacionOpt = publicacionGrupoRepo.findById(publicacionId);
+        Optional<Publicacion> publicacionOpt = publicacionRepo.findById(publicacionId);
         if (publicacionOpt.isEmpty()) throw new IllegalArgumentException("Publicación no encontrada");
 
-        PublicacionGrupo pg = publicacionOpt.get();
-        if (pg.getGrupo() == null || pg.getGrupo().getId() == null) {
+        Publicacion publicacion = publicacionOpt.get();
+        if (publicacion.getType() != PublicacionType.GROUP) {
+            throw new IllegalArgumentException("La publicación no es de tipo GRUPO");
+        }
+
+        if (publicacion.getGrupo() == null || publicacion.getGrupo().getIdGrupo() == null) {
             throw new IllegalArgumentException("Publicación de grupo con datos de grupo inválidos (RN-17)");
         }
 
-        boolean esMiembro = membresiaRepo.existsByUsuario_IdAndGrupo_Id(usuarioId, pg.getGrupo().getId());
+        boolean esMiembro = membresiaRepo.existsByUsuario_IdAndGrupo_Id(usuarioId, publicacion.getGrupo().getIdGrupo());
         if (!esMiembro) throw new IllegalArgumentException("El usuario debe ser miembro del grupo para comentar");
 
         validarComentario(contenido);
@@ -124,7 +129,7 @@ public class ComentarioService {
         Comentario comentario = new Comentario();
         comentario.setContenido(contenido);
         comentario.setUsuario(usuarioOpt.get());
-        comentario.setPublicacion(pg);
+        comentario.setPublicacion(publicacion);
         comentario.setTipo("GRUPAL");
 
         return comentarioRepository.save(comentario);
@@ -136,29 +141,22 @@ public class ComentarioService {
         if (comentario.getUsuario() == null || comentario.getUsuario().getId() == null) {
             throw new IllegalArgumentException("Usuario inválido");
         }
-        if (comentario.getPublicacion() == null || comentario.getPublicacion().getId() == null) {
+        if (comentario.getPublicacion() == null || comentario.getPublicacion().getIdPublicacion() == null) {
             throw new IllegalArgumentException("Publicación inválida");
         }
 
         Long usuarioId = comentario.getUsuario().getId();
-        Long publicacionId = comentario.getPublicacion().getId();
+        Long publicacionId = comentario.getPublicacion().getIdPublicacion();
 
         Optional<Usuario> usuarioOpt = usuarioRepo.findById(usuarioId);
         if (usuarioOpt.isEmpty()) {
             throw new IllegalArgumentException("Usuario no encontrado");
         }
 
-        // Intentar cargar la publicación primero desde publicaciongeneral
-        Optional<PublicacionGeneral> publicacionGeneralOpt = publicacionGeneralRepo.findById(publicacionId);
-        PublicacionGeneral publicacion = null;
-        if (publicacionGeneralOpt.isPresent()) {
-            publicacion = publicacionGeneralOpt.get();
-        } else {
-            // Intentar cargar desde publicación de grupo
-            Optional<PublicacionGrupo> publicacionGrupoOpt = publicacionGrupoRepo.findById(publicacionId);
-            if (publicacionGrupoOpt.isPresent()) {
-                publicacion = publicacionGrupoOpt.get();
-            }
+        Optional<Publicacion> publicacionOpt = publicacionRepo.findById(publicacionId);
+        Publicacion publicacion = null;
+        if (publicacionOpt.isPresent()) {
+            publicacion = publicacionOpt.get();
         }
 
         if (publicacion == null) {
@@ -168,12 +166,11 @@ public class ComentarioService {
         Usuario usuario = usuarioOpt.get();
 
         // Si es una publicación de grupo, validar membresía
-        if (publicacion instanceof PublicacionGrupo) {
-            PublicacionGrupo pg = (PublicacionGrupo) publicacion;
-            if (pg.getGrupo() == null || pg.getGrupo().getId() == null) {
+        if (publicacion.getType() == PublicacionType.GROUP) {
+            if (publicacion.getGrupo() == null || publicacion.getGrupo().getIdGrupo() == null) {
                 throw new IllegalArgumentException("Publicación de grupo con datos de grupo inválidos (RN-17)");
             }
-            boolean esMiembro = membresiaRepo.existsByUsuario_IdAndGrupo_Id(usuarioId, pg.getGrupo().getId());
+            boolean esMiembro = membresiaRepo.existsByUsuario_IdAndGrupo_Id(usuarioId, publicacion.getGrupo().getIdGrupo());
             if (!esMiembro) {
                 throw new IllegalArgumentException("El usuario debe ser miembro del grupo para comentar (RN-01)");
             }
@@ -184,9 +181,9 @@ public class ComentarioService {
         comentario.setUsuario(usuario);
         comentario.setPublicacion(publicacion);
 
-        // Si no se especificó tipo, intentar inferir
+        // Si no se especificó tipo, inferir del tipo de la publicación
         if (comentario.getTipo() == null) {
-            comentario.setTipo(publicacion instanceof PublicacionGrupo ? "GRUPAL" : "GENERAL");
+            comentario.setTipo(publicacion.getType() == PublicacionType.GROUP ? "GRUPAL" : "GENERAL");
         }
 
         return comentarioRepository.save(comentario);
@@ -196,7 +193,7 @@ public class ComentarioService {
         return new ComentarioResponseDTO(
                 c.getId(),
                 c.getContenido(),
-                c.getUsuario() != null ? c.getUsuario().getNombre() : null,
+                c.getUsuario() != null ? c.getUsuario().getNombres() : null,
                 c.getFechaCreacion()
         );
     }

@@ -1,6 +1,6 @@
 package com.impulsofit.controller;
 
-import com.impulsofit.dto.response.PublicacionGrupoResponseDTO;
+import com.impulsofit.dto.response.PublicacionResponseDTO;
 import com.impulsofit.service.FeedGrupoService;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +17,7 @@ public class FeedGrupoController {
     }
 
     @GetMapping("/{grupoId}")
-    public List<PublicacionGrupoResponseDTO> obtenerFeed(@PathVariable Long grupoId) {
+    public List<PublicacionResponseDTO> obtenerFeed(@PathVariable Long grupoId) {
         return feedService.obtenerFeedDTOPorGrupo(grupoId);
     }
 

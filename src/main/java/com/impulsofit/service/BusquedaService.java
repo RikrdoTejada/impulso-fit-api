@@ -8,6 +8,7 @@ import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.model.Grupo;
 import com.impulsofit.model.Reto;
 import com.impulsofit.model.Perfil;
+import com.impulsofit.model.Usuario;
 import com.impulsofit.repository.GrupoRepository;
 import com.impulsofit.repository.RetoRepository;
 import com.impulsofit.repository.PerfilRepository;
@@ -83,8 +84,7 @@ public class BusquedaService {
 
         List<UsuarioResponseDTO> usuariosDto = perfiles.stream()
                 .map(p -> {
-                    // Perfil contiene referencia a Usuario (MapsId). Obtener usuario relacionado si existe
-                    com.impulsofit.model.Usuario u = p.getUsuario();
+                    Usuario u = p.getUsuario();
                     return new UsuarioResponseDTO(
                             p.getIdPerfil(),
                             p.getNombre(),
@@ -105,11 +105,11 @@ public class BusquedaService {
                 .map(r -> new RetoResponseDTO(
                         r.getIdReto(),
                         r.getGrupo() != null ? r.getGrupo().getNombre() : null,
-                        r.getCreador() != null ? r.getCreador().getNombre() : null,
+                        r.getCreador() != null ? r.getCreador().getNombres() : null,
                         r.getUnidad() != null ? r.getUnidad().getNombre() : null,
                         r.getTitulo(),
                         r.getDescripcion(),
-                        r.getObjetivo(),
+                        r.getObjetivoTotal(),
                         r.getFechaPublicacion(),
                         r.getFechaInicio(),
                         r.getFechaFin()

@@ -42,11 +42,11 @@ public class RetoService {
         if(reto.descripcion()==null){
             throw new BusinessRuleException("La descripción no puede estar vacía.");
         }
-        if(reto.nombre().length()<5){
-            throw new BusinessRuleException("El nombre debe tener al menos 5 caracteres. Longitud actual: " + reto.nombre().length());
+        if(reto.titulo()==null || reto.titulo().length()<5){
+            throw new BusinessRuleException("El título debe tener al menos 5 caracteres. Longitud actual: " + (reto.titulo()==null?0:reto.titulo().length()));
         }
-        if (retoRepository.existsByNombreIgnoreCaseAndGrupo_IdGrupo(reto.nombre(), reto.id_grupo())) {
-            throw new AlreadyExistsException("Ya existe un reto con el nombre: " + reto.nombre());
+        if (retoRepository.existsByTituloIgnoreCaseAndGrupo_IdGrupo(reto.titulo(), reto.id_grupo())) {
+            throw new AlreadyExistsException("Ya existe un reto con el título: " + reto.titulo());
         }
         if(!membresiaGrupoRepository.existsByUsuario_IdUsuarioAndGrupo_IdGrupo(reto.id_usuario_creador(), reto.id_grupo())) {
             throw new ResourceNotFoundException("El usuario con el id: " + reto.id_usuario_creador() + " no pertenece al grupo con el id: " + reto.id_grupo());
@@ -67,11 +67,11 @@ public class RetoService {
         retoEntity.setGrupo(grupo);
         retoEntity.setCreador(usuario);
         retoEntity.setUnidad(unidad);
-        retoEntity.setNombre(reto.nombre());
         retoEntity.setDescripcion(reto.descripcion());
+        retoEntity.setTitulo(reto.titulo());
+        retoEntity.setObjetivoTotal(reto.objetivo_total());
         retoEntity.setFechaInicio(reto.fecha_inicio());
         retoEntity.setFechaFin(reto.fecha_fin());
-        retoEntity.setObjetivo(reto.objetivo());
 
         Reto saved = retoRepository.save(retoEntity);
 
@@ -100,14 +100,14 @@ public class RetoService {
         if(reto.descripcion()==null){
             throw new BusinessRuleException("La descripción no puede estar vacía.");
         }
-        if(reto.nombre().length()<5){
-            throw new BusinessRuleException("El nombre debe tener al menos 5 caracteres. Longitud actual: " + reto.nombre().length());
+        if(reto.titulo()==null || reto.titulo().length()<5){
+            throw new BusinessRuleException("El título debe tener al menos 5 caracteres. Longitud actual: " + (reto.titulo()==null?0:reto.titulo().length()));
         }
         if(!membresiaGrupoRepository.existsByUsuario_IdUsuarioAndGrupo_IdGrupo(reto.id_usuario_creador(), reto.id_grupo())) {
             throw new ResourceNotFoundException("El usuario con el id: " + reto.id_usuario_creador() + " no pertenece al grupo con el id: " + reto.id_grupo());
         }
-        if (retoRepository.existsByNombreIgnoreCaseAndGrupo_IdGrupoAndIdRetoNot(reto.nombre(), reto.id_grupo(), id)) {
-            throw new AlreadyExistsException("Ya existe un reto con el nombre: "  + reto.nombre());
+        if (retoRepository.existsByTituloIgnoreCaseAndGrupo_IdGrupoAndIdRetoNot(reto.titulo(), reto.id_grupo(), id)) {
+            throw new AlreadyExistsException("Ya existe un reto con el título: "  + reto.titulo());
         }
         if (reto.fecha_inicio().isBefore(LocalDate.now())) {
             throw new BusinessRuleException(
@@ -125,9 +125,9 @@ public class RetoService {
         retoEntity.setGrupo(grupo);
         retoEntity.setCreador(usuario);
         retoEntity.setUnidad(unidad);
-        retoEntity.setNombre(reto.nombre());
+        retoEntity.setTitulo(reto.titulo());
         retoEntity.setDescripcion(reto.descripcion());
-        retoEntity.setObjetivo(reto.objetivo());
+        retoEntity.setObjetivoTotal(reto.objetivo_total());
         retoEntity.setFechaInicio(reto.fecha_inicio());
         retoEntity.setFechaFin(reto.fecha_fin());
 
@@ -176,12 +176,12 @@ public class RetoService {
     private RetoResponseDTO mapToResponse(Reto reto) {
         return new RetoResponseDTO(
                 reto.getIdReto(),
-                reto.getGrupo().getNombre(),
-                reto.getCreador().getNombres(),
-                reto.getUnidad().getNombre(),
-                reto.getNombre(),
+                reto.getGrupo() != null ? reto.getGrupo().getNombre() : null,
+                reto.getCreador() != null ? reto.getCreador().getNombres() : null,
+                reto.getUnidad() != null ? reto.getUnidad().getNombre() : null,
+                reto.getTitulo(),
                 reto.getDescripcion(),
-                reto.getObjetivo(),
+                reto.getObjetivoTotal(),
                 reto.getFechaPublicacion(),
                 reto.getFechaInicio(),
                 reto.getFechaFin()

@@ -5,7 +5,6 @@ import com.impulsofit.dto.response.PerfilResponseDTO;
 import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.model.Perfil;
 import com.impulsofit.repository.PerfilRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,10 +20,10 @@ public class PerfilService {
     @Transactional
     public PerfilResponseDTO actualizarPerfil(Long idPerfil, PerfilRequestDTO request) {
         Perfil perfil = perfilRepository.findById(idPerfil)
-                .orElseThrow(() -> new BusinessRuleException("Perfil no encontrado", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new BusinessRuleException("Perfil no encontrado"));
 
         if (request.nombre() == null || request.nombre().trim().isEmpty()) {
-            throw new BusinessRuleException("El nombre de usuario no puede estar vacío.", HttpStatus.BAD_REQUEST);
+            throw new BusinessRuleException("El nombre de usuario no puede estar vacío.");
         }
 
         // Actualizar campos

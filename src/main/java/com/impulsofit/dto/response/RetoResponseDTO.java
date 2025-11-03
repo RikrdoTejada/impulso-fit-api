@@ -7,9 +7,9 @@ public record RetoResponseDTO(
     String grupoNombre,
     String creadorNombre,
     String unidad,
-    String nombre,
+    String titulo,
     String descripcion,
-    String objetivo,
+    Double objetivoTotal,
     LocalDate fechaPublicacion,
     LocalDate fecha_inicio,
     LocalDate fecha_fin
