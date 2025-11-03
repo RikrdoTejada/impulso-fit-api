@@ -1,11 +1,12 @@
 package com.impulsofit.model;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "usuario")
@@ -41,13 +42,25 @@ public class Usuario {
     private String genero;
 
     @Column(name = "fecha_registro", nullable = false)
-    private LocalDate fechaRegistro;
+    private LocalDateTime fechaRegistro;
 
     @Column(name = "cod_pregunta", nullable = false)
     private CodPregunta codPregunta;
 
+    @Column(name = "bloqueado", nullable = false)
+    private Boolean bloqueado = false;
+
+    @Column(name = "intentos_fallidos", nullable = false)
+    private Integer intentosFallidos = 0;
+
+    @Column(name = "fecha_bloqueo")
+    private LocalDateTime fechaBloqueo;
+
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comentario> comentarios;
+
     @PrePersist
     public void prePersist() {
-        this.fechaRegistro = LocalDate.now();
+        this.fechaRegistro = LocalDateTime.now();
     }
 }
