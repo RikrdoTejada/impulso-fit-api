@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/membership")
+@RequestMapping("/membresia")
 @RequiredArgsConstructor
 public class MembresiaGrupoController {
     private final MembresiaGrupoService membresiaGrupoService;

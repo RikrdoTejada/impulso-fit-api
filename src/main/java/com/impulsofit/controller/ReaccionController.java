@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/reaction")
+@RequestMapping("/reaccion")
 @RequiredArgsConstructor
 public class ReaccionController {
     private final ReaccionService reaccionService;

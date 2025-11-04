@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/posts")
+@RequestMapping("/publicacion")
 @RequiredArgsConstructor
 public class PublicacionController {
     private final PublicacionService publicacionService;
@@ -21,18 +21,18 @@ public class PublicacionController {
         return ResponseEntity.ok(saved);
     }
 
-    @GetMapping({"search/"})
+    @GetMapping({"busqueda/"})
     public ResponseEntity<List<PublicacionResponseDTO>> findAll() {
         return ResponseEntity.ok(publicacionService.findAll());
     }
 
-    @GetMapping({"search/by-group/{id}"})
+    @GetMapping({"busqueda/por-group/{id}"})
     public ResponseEntity<List<PublicacionResponseDTO>> findAllByGrupo_IdGrupo(@PathVariable Long id)
     {
         return ResponseEntity.ok(publicacionService.findByGrupo_IdGrupo(id));
     }
 
-    @GetMapping({"search/by-user/{id}"})
+    @GetMapping({"busqueda/por-usuario/{id}"})
     public ResponseEntity<List<PublicacionResponseDTO>> findAllByUser_Id(@PathVariable Long id)
     {
         return ResponseEntity.ok(publicacionService.findByUsuario_IdUsuario(id));

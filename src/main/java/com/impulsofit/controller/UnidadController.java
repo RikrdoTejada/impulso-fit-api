@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/unit")
+@RequestMapping("/unidad")
 @RequiredArgsConstructor
 public class UnidadController {
     private final UnidadService unidadService;

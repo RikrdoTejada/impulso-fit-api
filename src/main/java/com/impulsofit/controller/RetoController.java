@@ -36,17 +36,17 @@ public class RetoController {
         return ResponseEntity.ok(retoService.findAll());
     }
 
-    @GetMapping("/search/by-group/{id}")
+    @GetMapping("/busqueda/por-grupo/{id}")
     public ResponseEntity<List<RetoResponseDTO>> findByGrupoId(@PathVariable("id") Long id) {
         return ResponseEntity.ok(retoService.findByGrupo_Id_grupo(id));
     }
 
-    @GetMapping("/search/by-creator/{id}")
+    @GetMapping("/busqueda/por-creador/{id}")
     public ResponseEntity<List<RetoResponseDTO>> findByCreadorId(@PathVariable("id") Long id) {
         return ResponseEntity.ok(retoService.findByCreador_Id(id));
     }
 
-    @GetMapping("/search/by-unit/{id}")
+    @GetMapping("/busqueda/por-unidad/{id}")
     public ResponseEntity<List<RetoResponseDTO>> findByUnitId(@PathVariable("id") Long id) {
         return ResponseEntity.ok(retoService.findByUnidad_IdUnidad(id));
     }
