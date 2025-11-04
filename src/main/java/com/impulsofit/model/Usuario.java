@@ -22,16 +22,16 @@ public class Usuario {
     @Column(name = "id_usuario")
     private Long idUsuario;
 
-    @Column(name = "nombres", nullable = false, length = 100)
+    @Column(name = "nombres", nullable = false)
     private String nombres;
 
-    @Column(name = "apellido_p", nullable = false, length = 100)
+    @Column(name = "apellido_p", nullable = false)
     private String apellidoP;
 
-    @Column(name = "apellido_m", nullable = false, length = 100)
+    @Column(name = "apellido_m", nullable = false)
     private String apellidoM;
 
-    @Column(name = "email", nullable = false, unique = true, length = 100)
+    @Column(name = "email", nullable = false)
     private String email;
 
     @Column(name = "contrasena", nullable = false)
@@ -60,7 +60,6 @@ public class Usuario {
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comentario> comentarios;
-
 
     public Long getId() { return idUsuario; }
     public void setId(Long id) { this.idUsuario = id; }
@@ -96,15 +95,7 @@ public class Usuario {
     }
 
     @PrePersist
-    protected void onCreate() {
-        if (this.fechaRegistro == null) {
-            this.fechaRegistro = LocalDateTime.now();
-        }
-        if (this.bloqueado == null) {
-            this.bloqueado = false;
-        }
-        if (this.intentosFallidos == null) {
-            this.intentosFallidos = 0;
-        }
+    public void prePersist() {
+        this.fechaRegistro = LocalDateTime.now();
     }
 }

@@ -138,14 +138,14 @@ public class ComentarioService {
     @Transactional
     public Comentario crearComentario(Comentario comentario) {
         // Validaciones básicas de entrada
-        if (comentario.getUsuario() == null || comentario.getUsuario().getId() == null) {
+        if (comentario.getUsuario() == null || comentario.getUsuario().getIdUsuario() == null) {
             throw new IllegalArgumentException("Usuario inválido");
         }
         if (comentario.getPublicacion() == null || comentario.getPublicacion().getIdPublicacion() == null) {
             throw new IllegalArgumentException("Publicación inválida");
         }
 
-        Long usuarioId = comentario.getUsuario().getId();
+        Long usuarioId = comentario.getUsuario().getIdUsuario();
         Long publicacionId = comentario.getPublicacion().getIdPublicacion();
 
         Optional<Usuario> usuarioOpt = usuarioRepo.findById(usuarioId);

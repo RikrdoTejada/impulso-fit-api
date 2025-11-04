@@ -52,7 +52,7 @@ public class Grupo {
     public Usuario getCreador() { return this.creador; }
     public void setCreador(Usuario creador) { this.creador = creador; }
 
-    public Long getUsuarioCreadorId() { return (this.creador != null) ? this.creador.getId() : null; }
+    public Long getUsuarioCreadorId() { return (this.creador != null) ? this.creador.getIdUsuario() : null; }
 
     public Long getDeporteId() { return (this.deporte != null) ? this.deporte.getIdDeporte() : null; }
 

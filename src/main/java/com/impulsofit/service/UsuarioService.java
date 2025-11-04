@@ -19,16 +19,16 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.Optional;
 
+
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor()
 public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final RespuestaRepository respuestaRepository;
 
-    // --- CRUD y lógica avanzada ---
-
     @Transactional
     public UsuarioResponseDTO create(UsuarioRequestDTO usuario) {
+        //Validacion de correo
         if (usuarioRepository.existsByEmailIgnoreCase(usuario.email())) {
             throw new AlreadyExistsException("Ya existe un usuario con el correo: " + usuario.email());
         }
@@ -52,11 +52,13 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioResponseDTO updateInfo(Long id, UsuarioRequestDTO usuario) {
+        //Validaciones
         Usuario usuarioEntity = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No existe el usuario con id " + id));
 
         validarDateyGender(usuario);
 
+        //Sets excepto credenciales
         usuarioEntity.setIdUsuario(id);
         usuarioEntity.setNombres(usuario.nombres());
         usuarioEntity.setApellidoP(usuario.apellido_p());
@@ -69,11 +71,12 @@ public class UsuarioService {
         return mapToResponse(saved);
     }
 
+    //Metodo update para credenciales de usuario (password and email)
     @Transactional
     public UsuarioResponseDTO updateCred(Long id, RecoverRequestDTO usercred) {
         Usuario usuarioEntity = usuarioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No existe el usuario con id " + id));
-        Respuesta resp = respuestaRepository.findByUsuario_IdUsuario(id);
+                .orElseThrow(() -> new ResourceNotFoundException("No existe el usuario con id " + id ));
+        Respuesta resp = respuestaRepository.findByUsuario_IdUsuario(usuarioEntity.getIdUsuario());
 
         if(!usercred.respuesta().equals(resp.getStrRespuesta())){
             throw new BusinessRuleException("La respuesta es incorrecta.");
@@ -103,30 +106,30 @@ public class UsuarioService {
         usuarioRepository.deleteById(id);
     }
 
-    @Transactional(readOnly = true)
-    public Optional<Usuario> obtenerUsuarioPorId(Long id) {
-        return usuarioRepository.findById(id);
-    }
-
     private void validarDateyGender(UsuarioRequestDTO u) {
+        //Fecha no puede estar vacía
         if (u.fecha_nacimiento() == null) {
             throw new BusinessRuleException("La fecha de nacimiento no puede estar vacía.");
         }
+        //Fecha no puede ser del futuro
         if (u.fecha_nacimiento().isAfter(LocalDate.now())) {
             throw new BusinessRuleException(
                     "La fecha de nacimiento no puede ser una fecha futura. " +
                             "Fecha ingresada: " + u.fecha_nacimiento()
             );
         }
+        //Usuario debe tener mínimo 15 años de edad
         int edad = Period.between(u.fecha_nacimiento(), LocalDate.now()).getYears();
         if (edad < 15) {
             throw new BusinessRuleException(
                     "El usuario debe tener al menos 15 años. Edad actual: " + edad
             );
         }
+        //Genero no puede estar vacío
         if (u.genero() == null) {
             throw new BusinessRuleException("Genero no puede estar vacío");
         }
+        //Usuario no puede ser diferente de "M" o "F"
         if (!u.genero().equals("M") && !u.genero().equals("F")) {
             throw new BusinessRuleException("Formato de género inválido. Solo se permite: M o F");
         }
@@ -142,9 +145,12 @@ public class UsuarioService {
                 saved.getContrasena(),
                 saved.getFechaNacimiento(),
                 saved.getGenero(),
-                (saved.getFechaRegistro() == null) ? null : saved.getFechaRegistro().toLocalDate(),
-                saved.getCodPregunta(),
-                "/perfiles/" + saved.getIdUsuario()
+                saved.getFechaRegistro(),
+                saved.getCodPregunta()
         );
+    }
+
+    public Optional<Usuario> obtenerUsuarioPorId(Long id) {
+        return usuarioRepository.findById(id);
     }
 }

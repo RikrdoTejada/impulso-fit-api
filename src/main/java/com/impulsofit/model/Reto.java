@@ -61,13 +61,13 @@ public class Reto {
     }
 
     public Long getIdUsuario() {
-        return (this.creador != null) ? this.creador.getId() : null;
+        return (this.creador != null) ? this.creador.getIdUsuario() : null;
     }
 
     public void setIdUsuario(Long idUsuario) {
         if (idUsuario == null) { this.creador = null; return; }
         if (this.creador == null) this.creador = new Usuario();
-        this.creador.setId(idUsuario);
+        this.creador.setIdUsuario(idUsuario);
     }
 
     @PrePersist

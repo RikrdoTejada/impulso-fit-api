@@ -94,9 +94,8 @@ public class BusquedaService {
                             null,
                             (u != null) ? u.getFechaNacimiento() : null,
                             (u != null) ? u.getGenero() : null,
-                            (u != null && u.getFechaRegistro() != null) ? u.getFechaRegistro().toLocalDate() : null,
-                            (u != null) ? u.getCodPregunta() : null,
-                            "/perfiles/" + p.getIdPerfil()
+                            (u != null && u.getFechaRegistro() != null) ? u.getFechaRegistro() : null,
+                            (u != null) ? u.getCodPregunta() : null
                     );
                 })
                 .collect(Collectors.toList());
