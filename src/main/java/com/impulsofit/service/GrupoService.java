@@ -1,16 +1,18 @@
 package com.impulsofit.service;
 
-import com.impulsofit.dto.request.GrupoRequest;
-import com.impulsofit.dto.response.GrupoResponse;
+import com.impulsofit.dto.request.GrupoRequestDTO;
+import com.impulsofit.dto.response.GrupoResponseDTO;
 import com.impulsofit.exception.ResourceNotFoundException;
 import com.impulsofit.model.Deporte;
 import com.impulsofit.model.Grupo;
 import com.impulsofit.model.Usuario;
 import com.impulsofit.repository.DeporteRepository;
-import com.impulsofit.repository.UsuarioRepository;
 import com.impulsofit.repository.GrupoRepository;
+import com.impulsofit.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -20,34 +22,45 @@ public class GrupoService {
     private final UsuarioRepository usuarioRepository;
     private final DeporteRepository deporteRepository;
 
-    public GrupoResponse create(GrupoRequest grupo){
+    // Listar todos los grupos
+    public List<Grupo> listarGrupos() {
+        return grupoRepository.findAll();
+    }
+
+    // Buscar grupos por nombre o deporte
+    public List<Grupo> buscarPorNombreODeporte(String filtro) {
+        return grupoRepository.buscarPorNombreODeporte(filtro);
+    }
+
+    // Crear un nuevo grupo
+    public GrupoResponseDTO create(GrupoRequestDTO grupo) {
 
         Usuario usuario = usuarioRepository.findById(grupo.id_usuario_creador())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario Creardor no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario creador no encontrado"));
 
         Deporte deporte = deporteRepository.findById(grupo.id_deporte())
                 .orElseThrow(() -> new ResourceNotFoundException("Deporte no encontrado"));
 
         Grupo grupoEntity = new Grupo();
-        grupoEntity.setCreador(usuario);
+        grupoEntity.setCreador(usuario); // Alias para usuarioCreador
         grupoEntity.setDeporte(deporte);
         grupoEntity.setNombre(grupo.nombre());
         grupoEntity.setDescripcion(grupo.descripcion());
         grupoEntity.setUbicacion(grupo.ubicacion());
 
         Grupo saved = grupoRepository.save(grupoEntity);
-        return new GrupoResponse(
+        return new GrupoResponseDTO(
                 saved.getIdGrupo(),
-                saved.getCreador().getNombres(),
-                saved.getDeporte().getNombre(),
                 saved.getNombre(),
+                saved.getDeporte() != null ? saved.getDeporte().getNombre() : null,
                 saved.getDescripcion(),
+                "/grupos/" + saved.getIdGrupo() + "/unirse",
                 saved.getUbicacion(),
-                saved.getFechaCreacion()
+                (saved.getFechaCreacion() == null) ? null : saved.getFechaCreacion().toLocalDate()
         );
-
     }
 
+    // Borrar grupo por id
     public void delete(Long id) {
         if (!grupoRepository.existsById(id)) {
             throw new ResourceNotFoundException("No existe el grupo con el id: " + id);

@@ -2,15 +2,15 @@ package com.impulsofit.dto.response;
 
 import java.time.LocalDate;
 
-public record RetoResponse(
+public record RetoResponseDTO(
     Long id_reto,
     String grupoNombre,
     String creadorNombre,
     String unidad,
-    String nombre,
+    String titulo,
     String descripcion,
-    String objetivo,
+    Double objetivoTotal,
     LocalDate fechaPublicacion,
     LocalDate fecha_inicio,
-    LocalDate fecha_fin) {
-}
+    LocalDate fecha_fin
+) {}

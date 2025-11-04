@@ -1,8 +1,8 @@
 package com.impulsofit.service;
 
-import com.impulsofit.dto.request.RecoverRequest;
-import com.impulsofit.dto.request.UsuarioRequest;
-import com.impulsofit.dto.response.UsuarioResponse;
+import com.impulsofit.dto.request.RecoverRequestDTO;
+import com.impulsofit.dto.request.UsuarioRequestDTO;
+import com.impulsofit.dto.response.UsuarioResponseDTO;
 import com.impulsofit.exception.AlreadyExistsException;
 import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.exception.ResourceNotFoundException;
@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.Optional;
 
 
 @Service
@@ -26,7 +27,7 @@ public class UsuarioService {
     private final RespuestaRepository respuestaRepository;
 
     @Transactional
-    public UsuarioResponse create(UsuarioRequest usuario) {
+    public UsuarioResponseDTO create(UsuarioRequestDTO usuario) {
         //Validacion de correo
         if (usuarioRepository.existsByEmailIgnoreCase(usuario.email())) {
             throw new AlreadyExistsException("Ya existe un usuario con el correo: " + usuario.email());
@@ -46,11 +47,11 @@ public class UsuarioService {
 
         Usuario saved = usuarioRepository.save(usuarioEntity);
 
-       return mapToResponse(saved);
+        return mapToResponse(saved);
     }
 
     @Transactional
-    public UsuarioResponse updateInfo(Long id, UsuarioRequest usuario) {
+    public UsuarioResponseDTO updateInfo(Long id, UsuarioRequestDTO usuario) {
         //Validaciones
         Usuario usuarioEntity = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No existe el usuario con id " + id));
@@ -72,9 +73,9 @@ public class UsuarioService {
 
     //Metodo update para credenciales de usuario (password and email)
     @Transactional
-    public UsuarioResponse updateCred(RecoverRequest usercred) {
-        Usuario usuarioEntity = usuarioRepository.findByEmail(usercred.email())
-                .orElseThrow(() -> new ResourceNotFoundException("No existe el usuario con email " + usercred.email() ));
+    public UsuarioResponseDTO updateCred(Long id, RecoverRequestDTO usercred) {
+        Usuario usuarioEntity = usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No existe el usuario con id " + id ));
         Respuesta resp = respuestaRepository.findByUsuario_IdUsuario(usuarioEntity.getIdUsuario());
 
         if(!usercred.respuesta().equals(resp.getStrRespuesta())){
@@ -105,7 +106,7 @@ public class UsuarioService {
         usuarioRepository.deleteById(id);
     }
 
-    private void validarDateyGender(UsuarioRequest u) {
+    private void validarDateyGender(UsuarioRequestDTO u) {
         //Fecha no puede estar vacía
         if (u.fecha_nacimiento() == null) {
             throw new BusinessRuleException("La fecha de nacimiento no puede estar vacía.");
@@ -134,8 +135,8 @@ public class UsuarioService {
         }
     }
 
-    private UsuarioResponse mapToResponse(Usuario saved) {
-        return new UsuarioResponse(
+    private UsuarioResponseDTO mapToResponse(Usuario saved) {
+        return new UsuarioResponseDTO(
                 saved.getIdUsuario(),
                 saved.getNombres(),
                 saved.getApellidoP(),
@@ -147,5 +148,9 @@ public class UsuarioService {
                 saved.getFechaRegistro(),
                 saved.getCodPregunta()
         );
+    }
+
+    public Optional<Usuario> obtenerUsuarioPorId(Long id) {
+        return usuarioRepository.findById(id);
     }
 }

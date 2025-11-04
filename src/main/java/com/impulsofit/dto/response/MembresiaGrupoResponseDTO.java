@@ -2,7 +2,7 @@ package com.impulsofit.dto.response;
 
 import java.time.LocalDate;
 
-public record MembresiaGrupoResponse(
+public record MembresiaGrupoResponseDTO(
         Long id_membresia,
         String usuarioNombre,
         String grupoNombre,

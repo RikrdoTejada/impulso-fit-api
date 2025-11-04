@@ -12,34 +12,34 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-
-
 public class Reto {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_reto")
     private Long idReto;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_grupo", nullable = false)
     private Grupo grupo;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario_creador", nullable = false)
     private Usuario creador;
 
-    @ManyToOne
-    @JoinColumn(name = "id_unidad", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_unidad")
     private Unidad unidad;
 
-    @Column(name = "nombre", nullable = false)
-    private String nombre;
+    @Column(name = "titulo", length = 255)
+    private String titulo;
 
-    @Column(name = "descripcion")
+    @Column(name = "descripcion", length = 255)
     private String descripcion;
 
-    @Column(name = "objetivo")
-    private String objetivo;
+    // Meta cuantificable
+    @Column(name = "objetivo_total")
+    private Double objetivoTotal;
 
     @Column(name = "fecha_publicacion")
     private LocalDate fechaPublicacion;
@@ -50,8 +50,30 @@ public class Reto {
     @Column(name = "fecha_fin")
     private LocalDate fechaFin;
 
+    public Long getIdGrupo() {
+        return (this.grupo != null) ? this.grupo.getId() : null;
+    }
+
+    public void setIdGrupo(Long idGrupo) {
+        if (idGrupo == null) { this.grupo = null; return; }
+        if (this.grupo == null) this.grupo = new Grupo();
+        this.grupo.setId(idGrupo);
+    }
+
+    public Long getIdUsuario() {
+        return (this.creador != null) ? this.creador.getIdUsuario() : null;
+    }
+
+    public void setIdUsuario(Long idUsuario) {
+        if (idUsuario == null) { this.creador = null; return; }
+        if (this.creador == null) this.creador = new Usuario();
+        this.creador.setIdUsuario(idUsuario);
+    }
+
     @PrePersist
     public void onCreate() {
-        this.fechaPublicacion = LocalDate.now();
+        if (this.fechaPublicacion == null) {
+            this.fechaPublicacion = LocalDate.now();
+        }
     }
 }

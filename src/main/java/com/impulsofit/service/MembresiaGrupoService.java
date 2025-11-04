@@ -1,7 +1,7 @@
 package com.impulsofit.service;
 
-import com.impulsofit.dto.request.MembresiaGrupoRequest;
-import com.impulsofit.dto.response.MembresiaGrupoResponse;
+import com.impulsofit.dto.request.MembresiaGrupoRequestDTO;
+import com.impulsofit.dto.response.MembresiaGrupoResponseDTO;
 import com.impulsofit.exception.ResourceNotFoundException;
 import com.impulsofit.model.Grupo;
 import com.impulsofit.model.MembresiaGrupo;
@@ -12,6 +12,8 @@ import com.impulsofit.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+
 @Service
 @RequiredArgsConstructor
 
@@ -20,7 +22,7 @@ public class MembresiaGrupoService {
     private final UsuarioRepository usuarioRepository;
     private final GrupoRepository grupoRepository;
 
-    public MembresiaGrupoResponse create(MembresiaGrupoRequest membresia) {
+    public MembresiaGrupoResponseDTO create(MembresiaGrupoRequestDTO membresia) {
         Usuario usuario = usuarioRepository.findById(membresia.id_usuario())
                 .orElseThrow(() -> new ResourceNotFoundException("No existe el usuario con el id: " + membresia.id_usuario()));
 
@@ -33,11 +35,13 @@ public class MembresiaGrupoService {
 
         MembresiaGrupo saved = membresiaGrupoRepository.save(membresiaEntity);
 
-        return new MembresiaGrupoResponse(
+        LocalDate fechaUnionLocalDate = (saved.getFechaUnion() == null) ? null : saved.getFechaUnion().toLocalDate();
+
+        return new MembresiaGrupoResponseDTO(
                 saved.getIdMembresia(),
                 saved.getUsuario().getNombres(),
                 saved.getGrupo().getNombre(),
-                saved.getFechaUnion()
+                fechaUnionLocalDate
         );
     }
 

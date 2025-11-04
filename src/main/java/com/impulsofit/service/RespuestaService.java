@@ -1,7 +1,7 @@
 package com.impulsofit.service;
 
-import com.impulsofit.dto.request.RespuestaRequest;
-import com.impulsofit.dto.response.RespuestaResponse;
+import com.impulsofit.dto.request.RespuestaRequestDTO;
+import com.impulsofit.dto.response.RespuestaResponseDTO;
 import com.impulsofit.exception.AlreadyExistsException;
 import com.impulsofit.exception.ResourceNotFoundException;
 import com.impulsofit.model.Respuesta;
@@ -12,8 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.rmi.AlreadyBoundException;
-
 @Service
 @RequiredArgsConstructor
 public class RespuestaService {
@@ -21,7 +19,7 @@ public class RespuestaService {
     private final UsuarioRepository usuarioRepository;
 
     @Transactional
-    public RespuestaResponse create(RespuestaRequest respuesta) {
+    public RespuestaResponseDTO create(RespuestaRequestDTO respuesta) {
         Usuario usuario = usuarioRepository.findById(respuesta.id_usuario())
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
@@ -35,7 +33,7 @@ public class RespuestaService {
 
         Respuesta saved = respuestaRepository.save(respuestaEntity);
 
-        return new RespuestaResponse(
+        return new RespuestaResponseDTO(
                 saved.getIdRespuesta(),
                 saved.getUsuario().getNombres(),
                 saved.getStrRespuesta()

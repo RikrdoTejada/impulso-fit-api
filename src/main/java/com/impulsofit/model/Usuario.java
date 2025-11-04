@@ -1,5 +1,6 @@
 package com.impulsofit.model;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,8 +14,8 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class Usuario {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_usuario")
@@ -59,6 +60,34 @@ public class Usuario {
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comentario> comentarios;
 
+    public Long getId() { return idUsuario; }
+    public void setId(Long id) { this.idUsuario = id; }
+
+    public String getNombres() {
+        StringBuilder sb = new StringBuilder();
+        if (nombres != null) sb.append(nombres);
+        if (apellidoP != null) sb.append(" ").append(apellidoP);
+        if (apellidoM != null) sb.append(" ").append(apellidoM);
+        return sb.toString().trim();
+    }
+
+    public LocalDate getFechaRegistroAsLocalDate() {
+        return this.fechaRegistro != null ? this.fechaRegistro.toLocalDate() : null;
+    }
+
+    public void setFechaRegistro(LocalDate fechaRegistroDate) {
+        if (fechaRegistroDate == null) {
+            this.fechaRegistro = null;
+        } else {
+            this.fechaRegistro = fechaRegistroDate.atStartOfDay();
+        }
+    }
+
+    public boolean isBloqueado() {
+        return Boolean.TRUE.equals(this.bloqueado);
+    }
+
+    // Devuelve la edad calculada a partir de la fecha de nacimiento
     public Integer getEdad() {
         if (this.fechaNacimiento == null) return null;
         return java.time.Period.between(this.fechaNacimiento, java.time.LocalDate.now()).getYears();

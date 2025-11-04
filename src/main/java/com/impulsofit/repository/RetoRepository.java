@@ -1,16 +1,35 @@
 package com.impulsofit.repository;
+
 import com.impulsofit.model.Reto;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 import java.util.List;
 
-public interface RetoRepository extends JpaRepository<Reto,Long> {
-    List<Reto> findAllByGrupo_IdGrupo(Long grupo_id);
+public interface RetoRepository extends JpaRepository<Reto, Long> {
 
-    List<Reto> findAllByCreador_IdUsuario(Long creadorIdUsuario);
+    @Query("SELECT r FROM Reto r WHERE " +
+            "LOWER(r.titulo) LIKE LOWER(CONCAT('%', :term, '%')) " +
+            "OR LOWER(r.descripcion) LIKE LOWER(CONCAT('%', :term, '%'))")
+    List<Reto> searchByTerm(@Param("term") String term);
 
-    List<Reto> findAllByUnidad_IdUnidad(Long unidadIdUnidad);
+    @Query("SELECT r FROM Reto r WHERE r.grupo.deporte.idDeporte = :deporteId")
+    List<Reto> findByDeporteId(@Param("deporteId") Long deporteId);
 
-    boolean existsByNombreIgnoreCaseAndGrupo_IdGrupo(String nombre, Long idGrupo);
+    @Query("SELECT r FROM Reto r WHERE " +
+            "(LOWER(r.titulo) LIKE LOWER(CONCAT('%', :term, '%')) " +
+            "OR LOWER(r.descripcion) LIKE LOWER(CONCAT('%', :term, '%'))) " +
+            "AND r.grupo.deporte.idDeporte = :deporteId")
+    List<Reto> searchByTermAndDeporteId(@Param("term") String term, @Param("deporteId") Long deporteId);
 
-    boolean existsByNombreIgnoreCaseAndGrupo_IdGrupoAndIdRetoNot(String nombre, Long idGrupo, Long idReto);
+    List<Reto> findAllByGrupo_IdGrupo(Long idGrupo);
+
+    List<Reto> findAllByCreador_IdUsuario(Long idUsuario);
+
+    List<Reto> findAllByUnidad_IdUnidad(Long idUnidad);
+
+    // Métodos de existencia basados en título
+    boolean existsByTituloIgnoreCaseAndGrupo_IdGrupo(String titulo, Long idGrupo);
+    boolean existsByTituloIgnoreCaseAndGrupo_IdGrupoAndIdRetoNot(String titulo, Long idGrupo, Long idReto);
 }
