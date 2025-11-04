@@ -59,6 +59,11 @@ public class Usuario {
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comentario> comentarios;
 
+    public Integer getEdad() {
+        if (this.fechaNacimiento == null) return null;
+        return java.time.Period.between(this.fechaNacimiento, java.time.LocalDate.now()).getYears();
+    }
+
     @PrePersist
     public void prePersist() {
         this.fechaRegistro = LocalDateTime.now();
