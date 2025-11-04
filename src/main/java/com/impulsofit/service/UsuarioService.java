@@ -6,7 +6,6 @@ import com.impulsofit.dto.response.UsuarioResponseDTO;
 import com.impulsofit.exception.AlreadyExistsException;
 import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.exception.ResourceNotFoundException;
-import com.impulsofit.model.RecoverType;
 import com.impulsofit.model.Respuesta;
 import com.impulsofit.model.Usuario;
 import com.impulsofit.repository.RespuestaRepository;
@@ -58,7 +57,7 @@ public class UsuarioService {
 
         validarDateyGender(usuario);
 
-        //Sets excepto credenciales
+        //Sets omitiendo credenciales
         usuarioEntity.setIdUsuario(id);
         usuarioEntity.setNombres(usuario.nombres());
         usuarioEntity.setApellidoP(usuario.apellido_p());
@@ -73,29 +72,50 @@ public class UsuarioService {
 
     //Metodo update para credenciales de usuario (password and email)
     @Transactional
-    public UsuarioResponseDTO updateCred(Long id, RecoverRequestDTO usercred) {
-        Usuario usuarioEntity = usuarioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No existe el usuario con id " + id ));
-        Respuesta resp = respuestaRepository.findByUsuario_IdUsuario(usuarioEntity.getIdUsuario());
+    public UsuarioResponseDTO updateCred(Long id, RecoverRequestDTO req) {
+        //Validar usuario por email
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No existe el usuario con id " + id));
 
-        if(!usercred.respuesta().equals(resp.getStrRespuesta())){
+        //Validar respuesta secreta de usuario
+        Respuesta r = respuestaRepository.findByUsuario_IdUsuario(usuario.getIdUsuario());
+        if (r == null) {
+            throw new ResourceNotFoundException("El usuario no tiene respuesta secreta registrada.");
+        }
+        String respIngresada = req.respuesta();
+        if (respIngresada == null ||
+                !respIngresada.trim().equalsIgnoreCase(r.getStrRespuesta().trim())) {
             throw new BusinessRuleException("La respuesta es incorrecta.");
         }
+        boolean huboCambios = false;
 
-        if (usercred.tipo_recover() == RecoverType.PASSWORD) {
-            if (usercred.new_contrasena() == null || usercred.new_contrasena().isBlank())
-                throw new IllegalArgumentException("La nueva contraseña está vacía.");
-            usuarioEntity.setContrasena(usercred.new_contrasena());
-            Usuario saved = usuarioRepository.save(usuarioEntity);
-            return mapToResponse(saved);
-
-        } else {
-            if (usercred.new_email() == null || usercred.new_email().isBlank())
-                throw new IllegalArgumentException("El nuevo email está vacío");
-            usuarioEntity.setEmail(usercred.new_email().toLowerCase());
-            Usuario saved = usuarioRepository.save(usuarioEntity);
-            return mapToResponse(saved);
+        //Actualizar email
+        String newEmail = req.new_email();
+        if (newEmail != null && !newEmail.isBlank()) {
+            String emailNormalizado = newEmail.trim().toLowerCase();
+            // Evitar duplicados
+            if (usuarioRepository.existsByEmailIgnoreCase(req.new_email())) {
+                throw new AlreadyExistsException("Ya existe un usuario con ese correo.");
+            }
+            usuario.setEmail(emailNormalizado);
+            huboCambios = true;
         }
+
+        //Actualizar contraseña
+        String newPass = req.new_contrasena();
+        if (newPass != null && !newPass.isBlank()) {
+            usuario.setContrasena(newPass);
+            huboCambios = true;
+        }
+
+        //Regla de negocio: Debe mandar un campo a actualizar
+        if (!huboCambios) {
+            throw new BusinessRuleException("Debes enviar al menos un campo a actualizar (email y/o contraseña).");
+        }
+
+        // Guardar una sola vez
+        Usuario saved = usuarioRepository.save(usuario);
+        return mapToResponse(saved);
     }
 
     @Transactional
