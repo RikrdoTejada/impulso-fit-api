@@ -20,11 +20,6 @@ public class UsuarioController {
         return ResponseEntity.ok(saved);
     }
 
-    @PutMapping("/update/cred/{id}")
-    public ResponseEntity<UsuarioResponse> updateCred(@PathVariable Long id, @RequestBody RecoverRequest r) {
-        return ResponseEntity.ok(usuarioService.updateCred(id, r));
-    }
-
     @PutMapping("/update/info/{id}")
     public ResponseEntity<UsuarioResponse> updateInfo(@PathVariable Long id, @RequestBody UsuarioRequest u) {
         return ResponseEntity.ok(usuarioService.updateInfo(id, u));

@@ -72,10 +72,10 @@ public class UsuarioService {
 
     //Metodo update para credenciales de usuario (password and email)
     @Transactional
-    public UsuarioResponse updateCred(Long id, RecoverRequest usercred) {
-        Usuario usuarioEntity = usuarioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No existe el usuario con id " + id));
-        Respuesta resp = respuestaRepository.findByUsuario_IdUsuario(id);
+    public UsuarioResponse updateCred(RecoverRequest usercred) {
+        Usuario usuarioEntity = usuarioRepository.findByEmail(usercred.email())
+                .orElseThrow(() -> new ResourceNotFoundException("No existe el usuario con email " + usercred.email() ));
+        Respuesta resp = respuestaRepository.findByUsuario_IdUsuario(usuarioEntity.getIdUsuario());
 
         if(!usercred.respuesta().equals(resp.getStrRespuesta())){
             throw new BusinessRuleException("La respuesta es incorrecta.");
