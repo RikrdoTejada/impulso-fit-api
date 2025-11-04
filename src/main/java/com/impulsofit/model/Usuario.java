@@ -1,5 +1,6 @@
 package com.impulsofit.model;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,7 +14,6 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class Usuario {
 
     @Id
@@ -56,14 +56,6 @@ public class Usuario {
 
     @Column(name = "fecha_bloqueo")
     private LocalDateTime fechaBloqueo;
-
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comentario> comentarios;
-
-    public Integer getEdad() {
-        if (this.fechaNacimiento == null) return null;
-        return java.time.Period.between(this.fechaNacimiento, java.time.LocalDate.now()).getYears();
-    }
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comentario> comentarios;
