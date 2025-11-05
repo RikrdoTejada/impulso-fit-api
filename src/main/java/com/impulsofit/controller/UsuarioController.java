@@ -3,47 +3,42 @@ package com.impulsofit.controller;
 import com.impulsofit.dto.request.UsuarioRequestDTO;
 import com.impulsofit.dto.response.UsuarioResponseDTO;
 import com.impulsofit.service.UsuarioService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/users") // <- usa solo '/users' si tienes context-path=/api/v1
+@RequestMapping("/api/v1/users")
 public class UsuarioController {
 
-    private final UsuarioService usuarioService;
+    private final UsuarioService service;
 
-    public UsuarioController(UsuarioService usuarioService) {
-        this.usuarioService = usuarioService;
+    public UsuarioController(UsuarioService service) {
+        this.service = service;
     }
 
     @PostMapping
-    public ResponseEntity<UsuarioResponseDTO> create(@RequestBody UsuarioRequestDTO u) {
-        return ResponseEntity.status(201).body(usuarioService.create(u));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<UsuarioResponseDTO> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(usuarioService.getById(id));
+    public UsuarioResponseDTO create(@RequestBody UsuarioRequestDTO request) {
+        return service.create(request);
     }
 
     @GetMapping
-    public ResponseEntity<List<UsuarioResponseDTO>> list() {
-        return ResponseEntity.ok(usuarioService.list());
+    public List<UsuarioResponseDTO> list() {
+        return service.list();
     }
 
-    @PutMapping("/{id}")                            // <-- NUEVO
-    public ResponseEntity<UsuarioResponseDTO> update(
-            @PathVariable Long id,
-            @RequestBody UsuarioRequestDTO u
-    ) {
-        return ResponseEntity.ok(usuarioService.update(id, u));
+    @GetMapping("/{id}")
+    public UsuarioResponseDTO getById(@PathVariable Long id) {
+        return service.getById(id);
+    }
+
+    @PutMapping("/{id}")
+    public UsuarioResponseDTO update(@PathVariable Long id, @RequestBody UsuarioRequestDTO request) {
+        return service.update(id, request);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        usuarioService.delete(id);
-        return ResponseEntity.noContent().build();
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
     }
 }
