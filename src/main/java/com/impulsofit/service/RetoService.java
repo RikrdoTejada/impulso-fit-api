@@ -2,32 +2,20 @@ package com.impulsofit.service;
 
 import com.impulsofit.model.*;
 import com.impulsofit.repository.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
-
+@RequiredArgsConstructor
 @Service
 public class RetoService {
 
     private final RetoRepository retoRepository;
     private final ParticipacionRetoRepository participacionRetoRepository;
     private final UsuarioRepository usuarioRepository;
-    private final GrupoRepository grupoRepository;
     private final GrupoMembresiaService grupoMembresiaService;
 
-    public RetoService(RetoRepository retoRepository,
-                       ParticipacionRetoRepository participacionRetoRepository,
-                       UsuarioRepository usuarioRepository,
-                       GrupoRepository grupoRepository,
-                       GrupoMembresiaService grupoMembresiaService) {
-        this.retoRepository = retoRepository;
-        this.participacionRetoRepository = participacionRetoRepository;
-        this.usuarioRepository = usuarioRepository;
-        this.grupoRepository = grupoRepository;
-        this.grupoMembresiaService = grupoMembresiaService;
-    }
 
     // Unirse a reto
     @Transactional
@@ -48,7 +36,9 @@ public class RetoService {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        ParticipacionReto participacion = new ParticipacionReto(reto, usuario);
+        ParticipacionReto participacion = new ParticipacionReto();
+        participacion.setReto(reto);
+        participacion.setUsuario(usuario);
         participacionRetoRepository.save(participacion);
 
         return "Te has unido al reto exitosamente";
@@ -74,23 +64,4 @@ public class RetoService {
         return retoRepository.findByGrupoIdGrupo(idGrupo);
     }
 
-    // Crear reto de prueba
-    @Transactional
-    public String crearRetoDePrueba(Long idGrupo) {
-        Grupo grupo = grupoRepository.findById(idGrupo)
-                .orElseThrow(() -> new RuntimeException("Grupo no encontrado"));
-        Usuario usuario = usuarioRepository.findById(28L) // Usuario por defecto
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        Reto reto = new Reto();
-        reto.setGrupo(grupo);
-        reto.setUsuario(usuario);
-        reto.setTitulo("Reto de 30 días de Fitness");
-        reto.setDescripcion("Completa 30 días consecutivos de ejercicio");
-        reto.setFechaInicio(LocalDate.now());
-        reto.setFechaFin(LocalDate.now().plusDays(30));
-
-        retoRepository.save(reto);
-        return "Reto de prueba creado exitosamente";
-    }
 }

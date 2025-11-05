@@ -18,7 +18,7 @@ import java.util.*;
 public class EstadisticaRetoService {
 
     private final ParticipacionRetoRepository participacionRetoRepository;
-    private final RegistroProgresoRepository registroProgresoRepository;
+    private final RegistroProcesoRepository registroProgresoRepository;
     private final RetoRepository retoRepository;
     private final UsuarioRepository usuarioRepository;
 
@@ -71,11 +71,11 @@ public class EstadisticaRetoService {
 
         // Encontrar mi estadística y ranking
         EstadisticaRetoResponseDTO miEstadistica = estadisticasRankeadas.stream()
-                .filter(e -> Objects.equals(e.getIdUsuario(), idUsuario))
+                .filter(e -> Objects.equals(e.idUsuario(), idUsuario))
                 .findFirst()
                 .orElse(null);
 
-        Integer miRanking = miEstadistica != null ? miEstadistica.getRanking() : null;
+        Integer miRanking = miEstadistica != null ? miEstadistica.ranking() : null;
 
         // Construir respuesta
         return new DashboardRetoResponseDTO(
@@ -119,16 +119,16 @@ public class EstadisticaRetoService {
     private List<EstadisticaRetoResponseDTO> asignarRankings(List<EstadisticaRetoResponseDTO> estadisticas) {
         // Ordenar por porcentaje de cumplimiento (descendente) y luego por puntos
         estadisticas.sort((e1, e2) -> {
-            int cmp = e2.getPorcentajeCumplimiento().compareTo(e1.getPorcentajeCumplimiento());
+            int cmp = e2.porcentajeCumplimiento().compareTo(e1.porcentajeCumplimiento());
             if (cmp == 0) {
-                return e2.getPuntosTotales().compareTo(e1.getPuntosTotales());
+                return e2.puntosTotales().compareTo(e1.puntosTotales());
             }
             return cmp;
         });
 
         // Asignar rankings
         for (int i = 0; i < estadisticas.size(); i++) {
-            estadisticas.get(i).setRanking(i + 1);
+            estadisticas.get(i).ranking(i + 1);
         }
 
         return estadisticas;
@@ -153,9 +153,9 @@ public class EstadisticaRetoService {
         }
 
         // Buscar o crear registro de progreso
-        RegistroProgreso progreso = registroProgresoRepository
+        RegistroProceso progreso = registroProgresoRepository
                 .findByRetoAndUsuarioAndFecha(reto, usuario, fecha)
-                .orElse(new RegistroProgreso());
+                .orElse(new RegistroProceso());
 
         progreso.setReto(reto);
         progreso.setUsuario(usuario);
