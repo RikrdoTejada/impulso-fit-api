@@ -1,33 +1,33 @@
 package com.impulsofit.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "deporte")
-public class Deporte {
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 
+public class Deporte
+{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_deporte")
     private Long idDeporte;
 
+    @Column(name = "nombre", nullable = false)
     private String nombre;
-    private String tipoDeporte;
 
-    // Constructores
-    public Deporte() {}
+    @Column(name = "tipo_deporte")
+    private String tipo;
 
-    public Deporte(String nombre, String tipoDeporte) {
-        this.nombre = nombre;
-        this.tipoDeporte = tipoDeporte;
-    }
+    // Compatibilidad: alias getter/setter para código que espera tipoDeporte
+    public String getTipoDeporte() { return this.tipo; }
+    public void setTipoDeporte(String tipoDeporte) { this.tipo = tipoDeporte; }
 
-    // Getters y Setters
-    public Long getIdDeporte() { return idDeporte; }
-    public void setIdDeporte(Long idDeporte) { this.idDeporte = idDeporte; }
-
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
-
-    public String getTipoDeporte() { return tipoDeporte; }
-    public void setTipoDeporte(String tipoDeporte) { this.tipoDeporte = tipoDeporte; }
+    // Compatibilidad: devolver id como Integer si se usa en DTOs antiguos
+    public Integer getIdDeporteAsInteger() { return this.idDeporte == null ? null : this.idDeporte.intValue(); }
 }
