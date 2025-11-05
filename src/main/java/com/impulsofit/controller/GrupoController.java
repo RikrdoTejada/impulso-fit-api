@@ -1,26 +1,26 @@
 package com.impulsofit.controller;
-
-import com.impulsofit.dto.request.CrearGrupoRequestDTO;
+import com.impulsofit.dto.request.GrupoRequestDTO;
 import com.impulsofit.dto.response.GrupoResponseDTO;
 import com.impulsofit.service.GrupoService;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/groups")
+@RequestMapping("/grupo")
+@RequiredArgsConstructor
 public class GrupoController {
-
-    private final GrupoService service;
-
-    public GrupoController(GrupoService service) {
-        this.service = service;
-    }
+    private final GrupoService grupoService;
 
     @PostMapping
-    public ResponseEntity<GrupoResponseDTO> create(@Valid @RequestBody CrearGrupoRequestDTO req) {
-        GrupoResponseDTO response = service.create(req);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public ResponseEntity<GrupoResponseDTO> create(@RequestBody GrupoRequestDTO g) {
+        GrupoResponseDTO saved = grupoService.create(g);
+        return ResponseEntity.ok(saved);
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        grupoService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

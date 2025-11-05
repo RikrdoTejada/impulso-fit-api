@@ -1,4 +1,8 @@
 package com.impulsofit.model;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import jakarta.persistence.*;
 import java.time.Instant;
@@ -48,12 +52,3 @@ public class Publicacion {
     public void setId(Long id) { this.id = id; }
 
     public void setContenido(String contenido) { this.contenido = contenido; }
-
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
-
-    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
-
-    public void setGrupo(Grupo grupo) { this.grupo = grupo; }
-
-    public void setReto(Reto reto) { this.reto = reto; }
-}
