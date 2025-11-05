@@ -2,16 +2,18 @@ package com.impulsofit.service;
 
 import com.impulsofit.dto.response.DashboardRetoResponseDTO;
 import com.impulsofit.dto.response.EstadisticaRetoResponseDTO;
+import com.impulsofit.exception.BusinessRuleException;
+import com.impulsofit.exception.ResourceNotFoundException;
 import com.impulsofit.model.*;
 import com.impulsofit.repository.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 @Service
 public class EstadisticaRetoService {
 
@@ -19,19 +21,6 @@ public class EstadisticaRetoService {
     private final RegistroProgresoRepository registroProgresoRepository;
     private final RetoRepository retoRepository;
     private final UsuarioRepository usuarioRepository;
-    private final EstadisticaRetoRepository estadisticaRetoRepository;
-
-    public EstadisticaRetoService(ParticipacionRetoRepository participacionRetoRepository,
-                                  RegistroProgresoRepository registroProgresoRepository,
-                                  RetoRepository retoRepository,
-                                  UsuarioRepository usuarioRepository,
-                                  EstadisticaRetoRepository estadisticaRetoRepository) {
-        this.participacionRetoRepository = participacionRetoRepository;
-        this.registroProgresoRepository = registroProgresoRepository;
-        this.retoRepository = retoRepository;
-        this.usuarioRepository = usuarioRepository;
-        this.estadisticaRetoRepository = estadisticaRetoRepository;
-    }
 
     public DashboardRetoResponseDTO obtenerDashboardReto(Long idReto, Long idUsuario) {
         // Verificar si el usuario es participante del reto
@@ -39,7 +28,7 @@ public class EstadisticaRetoService {
 
         // Escenario Alternativo 1: No es participante
         if (!esParticipante) {
-            return new DashboardRetoResponseDTO(false, false, "Debes unirte al reto antes de ver las estadísticas");
+             throw new BusinessRuleException("Debes unirte al reto antes de ver las estadísticas");
         }
 
         // Verificar si hay progresos registrados para este reto
@@ -47,7 +36,7 @@ public class EstadisticaRetoService {
 
         // Escenario Alternativo 2: No hay estadísticas
         if (!tieneEstadisticas) {
-            return new DashboardRetoResponseDTO(true, false, "Aún no hay estadísticas disponibles para este reto");
+            throw new BusinessRuleException("Aún no hay estadísticas disponibles para este reto");
         }
 
         // Escenario Exitoso: Obtener estadísticas completas
@@ -56,36 +45,48 @@ public class EstadisticaRetoService {
 
     private DashboardRetoResponseDTO generarDashboardCompleto(Long idReto, Long idUsuario) {
         Reto reto = retoRepository.findById(idReto)
-                .orElseThrow(() -> new RuntimeException("Reto no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Reto no encontrado"));
 
         // Calcular total de días del reto
         long totalDiasReto = ChronoUnit.DAYS.between(reto.getFechaInicio(), reto.getFechaFin()) + 1;
+        if (totalDiasReto <= 0) {
+            throw new IllegalArgumentException("El intervalo de fechas del reto es inválido.");
+        }
 
         // Obtener participantes del reto
-        List<Long> participantesIds = participacionRetoRepository.findParticipantesByRetoId(idReto);
+        List<Long> participantesIds = Optional
+                .ofNullable(participacionRetoRepository.findParticipantesByRetoId(idReto))
+                .orElseGet(Collections::emptyList)
+                .stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
 
         // Calcular estadísticas para cada participante
-        List<EstadisticaRetoResponseDTO> estadisticas = calcularEstadisticasParticipantes(idReto, participantesIds, totalDiasReto);
+        List<EstadisticaRetoResponseDTO> estadisticas =
+                calcularEstadisticasParticipantes(idReto, participantesIds, totalDiasReto);
 
         // Ordenar por porcentaje de cumplimiento (descendente) y asignar rankings
-        estadisticas = asignarRankings(estadisticas);
+        List<EstadisticaRetoResponseDTO> estadisticasRankeadas = asignarRankings(estadisticas);
 
         // Encontrar mi estadística y ranking
-        EstadisticaRetoResponseDTO miEstadistica = estadisticas.stream()
-                .filter(e -> e.getIdUsuario().equals(idUsuario))
+        EstadisticaRetoResponseDTO miEstadistica = estadisticasRankeadas.stream()
+                .filter(e -> Objects.equals(e.getIdUsuario(), idUsuario))
                 .findFirst()
                 .orElse(null);
 
         Integer miRanking = miEstadistica != null ? miEstadistica.getRanking() : null;
 
         // Construir respuesta
-        DashboardRetoResponseDTO dashboard = new DashboardRetoResponseDTO(true, true, "Estadísticas cargadas exitosamente");
-        dashboard.setEstadisticasParticipantes(estadisticas);
-        dashboard.setMiEstadistica(miEstadistica);
-        dashboard.setMiRanking(miRanking);
-        dashboard.setTotalParticipantes((long) participantesIds.size());
-
-        return dashboard;
+        return new DashboardRetoResponseDTO(
+                true,
+                true,
+                "Estadísticas cargadas exitosamente",
+                estadisticas,
+                miEstadistica,
+                miRanking,
+                (long) participantesIds.size()
+        );
     }
 
     private List<EstadisticaRetoResponseDTO> calcularEstadisticasParticipantes(Long idReto, List<Long> participantesIds, long totalDiasReto) {
@@ -93,7 +94,7 @@ public class EstadisticaRetoService {
 
         for (Long participanteId : participantesIds) {
             Usuario usuario = usuarioRepository.findById(participanteId)
-                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
             // Calcular días completados basado en RegistroProgreso
             Long diasCompletados = registroProgresoRepository.countByRetoIdRetoAndUsuarioIdUsuarioAndCompletadoTrue(idReto, participanteId);
@@ -103,7 +104,7 @@ public class EstadisticaRetoService {
 
             EstadisticaRetoResponseDTO estadistica = new EstadisticaRetoResponseDTO(
                     participanteId,
-                    usuario.getNombre(),
+                    usuario.getNombres(),
                     diasCompletados,
                     totalDiasReto,
                     puntosTotales
@@ -141,10 +142,10 @@ public class EstadisticaRetoService {
         }
 
         Reto reto = retoRepository.findById(idReto)
-                .orElseThrow(() -> new RuntimeException("Reto no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Reto no encontrado"));
 
         Usuario usuario = usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
         // Verificar que la fecha esté dentro del rango del reto
         if (fecha.isBefore(reto.getFechaInicio()) || fecha.isAfter(reto.getFechaFin())) {

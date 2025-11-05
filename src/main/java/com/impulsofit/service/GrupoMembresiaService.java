@@ -2,6 +2,7 @@ package com.impulsofit.service;
 
 import com.impulsofit.dto.response.MembresiaGrupoResponseDTO;
 import com.impulsofit.exception.AlreadyExistsException;
+import com.impulsofit.exception.ResourceNotFoundException;
 import com.impulsofit.model.Grupo;
 import com.impulsofit.model.MembresiaGrupo;
 import com.impulsofit.model.Usuario;
@@ -32,9 +33,9 @@ public class GrupoMembresiaService {
         }
 
         Usuario usuario = usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
         Grupo grupo = grupoRepository.findById(idGrupo)
-                .orElseThrow(() -> new RuntimeException("Grupo no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Grupo no encontrado"));
 
         MembresiaGrupo membresiaEntity = new MembresiaGrupo();
         membresiaEntity.setUsuario(usuario);
@@ -60,13 +61,13 @@ public class GrupoMembresiaService {
     @Transactional
     public void dejarGrupo(Long idUsuario, Long idGrupo) {
         MembresiaGrupo membresia = membresiaGrupoRepository.findByUsuarioIdUsuarioAndGrupoIdGrupo(idUsuario, idGrupo)
-                .orElseThrow(() -> new RuntimeException("No eres miembro de este grupo"));
+                .orElseThrow(() -> new IllegalArgumentException("No eres miembro de este grupo"));
 
         membresiaGrupoRepository.delete(membresia);
 
         // Actualizar contador de miembros
         Grupo grupo = grupoRepository.findById(idGrupo)
-                .orElseThrow(() -> new RuntimeException("Grupo no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Grupo no encontrado"));
         grupo.setCantidadMiembros(Math.max(0, grupo.getCantidadMiembros() - 1));
         grupoRepository.save(grupo);
     }

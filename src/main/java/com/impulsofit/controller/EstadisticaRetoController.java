@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/estadisticas")
+@RequestMapping("estadistica")
 public class EstadisticaRetoController {
 
     private final EstadisticaRetoService estadisticaRetoService;

@@ -1,68 +1,53 @@
 package com.impulsofit.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "comentario")
 public class Comentario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idComentario;
+    @Column(name = "id_comentario")
+    private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "id_publicacion", nullable = false)
-    private Publicacion publicacion; // este nombre es clave para el método del repositorio
+    @Column(name = "contenido", nullable = false, length = 500)
+    private String contenido;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
-    private String contenido;
-    private LocalDateTime fechaComentario;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_publicacion", nullable = false)
+    private Publicacion publicacion;
 
+    @Column(name = "fecha_comentario", nullable = false)
+    private LocalDateTime fechaCreacion;
 
-    public Comentario() {}
+    // Tipo genérico para distinguir origen de la publicación (ej. 'GENERAL' o 'GRUPAL')
+    @Column(name = "tipo", nullable = false, length = 20)
+    private String tipo = "GENERAL";
 
-    // Getters y setters
-    public Long getIdComentario() {
-        return idComentario;
-    }
-
-    public void setIdComentario(Long idComentario) {
-        this.idComentario = idComentario;
-    }
-
-    public Publicacion getPublicacion() {
-        return publicacion;
-    }
-
-    public void setPublicacion(Publicacion publicacion) {
+    // Constructor con campos
+    public Comentario(String contenido, Usuario usuario, Publicacion publicacion) {
+        this.contenido = contenido;
+        this.usuario = usuario;
         this.publicacion = publicacion;
     }
 
-    public Usuario getUsuario() {
-        return usuario;
-    }
-
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
-    }
-
-    public String getContenido() {
-        return contenido;
-    }
-
-    public void setContenido(String contenido) {
-        this.contenido = contenido;
-    }
-
-    public LocalDateTime getFechaComentario() {
-        return fechaComentario;
-    }
-
-    public void setFechaComentario(LocalDateTime fechaComentario) {
-        this.fechaComentario = fechaComentario;
+    @PrePersist
+    protected void onCreate() {
+        if (this.fechaCreacion == null) {
+            this.fechaCreacion = LocalDateTime.now();
+        }
+        if (this.tipo == null) {
+            this.tipo = "GENERAL";
+        }
     }
 }
