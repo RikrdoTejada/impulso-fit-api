@@ -1,45 +1,42 @@
 package com.impulsofit.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "membresia_grupo")
+@Data
+@Table(name = "membresiagrupo",
+        uniqueConstraints = @UniqueConstraint(name = "uq_membresia_usuario_grupo",
+                columnNames = {"id_usuario", "id_grupo"}))
+@AllArgsConstructor
+@NoArgsConstructor
 public class MembresiaGrupo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_membresia")
     private Long idMembresia;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_grupo", nullable = false)
     private Grupo grupo;
 
-    @Column(name = "fecha_union")
-    private LocalDateTime fechaUnion = LocalDateTime.now();
+    @Column(name = "fecha_union", nullable = false)
+    private LocalDateTime fechaUnion;
 
-    // Constructores
-    public MembresiaGrupo() {}
 
-    public MembresiaGrupo(Usuario usuario, Grupo grupo) {
-        this.usuario = usuario;
-        this.grupo = grupo;
+    @PrePersist
+    public void onCreate() {
+        if (this.fechaUnion == null) {
+            this.fechaUnion = LocalDateTime.now();
+        }
     }
-
-    // Getters y Setters
-    public Long getIdMembresia() { return idMembresia; }
-    public void setIdMembresia(Long idMembresia) { this.idMembresia = idMembresia; }
-
-    public Usuario getUsuario() { return usuario; }
-    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
-
-    public Grupo getGrupo() { return grupo; }
-    public void setGrupo(Grupo grupo) { this.grupo = grupo; }
-
-    public LocalDateTime getFechaUnion() { return fechaUnion; }
-    public void setFechaUnion(LocalDateTime fechaUnion) { this.fechaUnion = fechaUnion; }
 }
