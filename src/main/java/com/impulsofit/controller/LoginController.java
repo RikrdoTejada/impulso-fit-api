@@ -5,7 +5,7 @@ import com.impulsofit.dto.request.RecoverRequestDTO;
 import com.impulsofit.dto.response.LoginResponseDTO;
 import com.impulsofit.dto.response.UsuarioResponseDTO;
 import com.impulsofit.service.LoginService;
-import com.impulsofit.service.UsuarioService;
+import com.impulsofit.service.RecoverService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +16,8 @@ public class LoginController {
 
     @Autowired
     private LoginService loginService;
-    private UsuarioService usuarioService;
+    @Autowired
+    private RecoverService  recoverService;
 
     @PostMapping("/login")
     public LoginResponseDTO login(@RequestBody LoginRequestDTO loginDTO) {
@@ -24,7 +25,7 @@ public class LoginController {
     }
 
     @PutMapping("/recover")
-    public ResponseEntity<UsuarioResponseDTO> updateCred(@PathVariable Long id, @RequestBody RecoverRequestDTO r) {
-        return ResponseEntity.ok(usuarioService.updateCred(id, r));
+    public ResponseEntity<UsuarioResponseDTO> updateCred(@RequestBody RecoverRequestDTO r) {
+        return ResponseEntity.ok(recoverService.recoverCred(r));
     }
 }
