@@ -2,13 +2,16 @@ package com.impulsofit.service;
 
 import com.impulsofit.model.*;
 import com.impulsofit.repository.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class RetoService {
 
     private final RetoRepository retoRepository;
@@ -16,18 +19,6 @@ public class RetoService {
     private final UsuarioRepository usuarioRepository;
     private final GrupoRepository grupoRepository;
     private final GrupoMembresiaService grupoMembresiaService;
-
-    public RetoService(RetoRepository retoRepository,
-                       ParticipacionRetoRepository participacionRetoRepository,
-                       UsuarioRepository usuarioRepository,
-                       GrupoRepository grupoRepository,
-                       GrupoMembresiaService grupoMembresiaService) {
-        this.retoRepository = retoRepository;
-        this.participacionRetoRepository = participacionRetoRepository;
-        this.usuarioRepository = usuarioRepository;
-        this.grupoRepository = grupoRepository;
-        this.grupoMembresiaService = grupoMembresiaService;
-    }
 
     // Unirse a reto
     @Transactional
@@ -48,7 +39,12 @@ public class RetoService {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        ParticipacionReto participacion = new ParticipacionReto(reto, usuario);
+        // ✅ NUEVA ESTRUCTURA - Usar IDs directos en lugar de objetos
+        ParticipacionReto participacion = new ParticipacionReto();
+        participacion.setIdReto(reto.getIdReto());
+        participacion.setIdUsuario(usuario.getIdUsuario());
+        participacion.setFechaUnion(LocalDateTime.now());
+
         participacionRetoRepository.save(participacion);
 
         return "Te has unido al reto exitosamente";
@@ -57,6 +53,7 @@ public class RetoService {
     // Abandonar reto
     @Transactional
     public String abandonarReto(Long idUsuario, Long idReto) {
+        // ✅ BUSCAR por IDs directos (nueva estructura)
         ParticipacionReto participacion = participacionRetoRepository.findByRetoIdRetoAndUsuarioIdUsuario(idReto, idUsuario)
                 .orElseThrow(() -> new RuntimeException("No participas en este reto"));
 

@@ -10,24 +10,23 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class EstadisticaRetoService {
 
     private final ParticipacionRetoRepository participacionRetoRepository;
-    private final RegistroProgresoRepository registroProgresoRepository;
+    private final RegistroProcesoRepository registroProcesoRepository;
     private final RetoRepository retoRepository;
     private final UsuarioRepository usuarioRepository;
     private final EstadisticaRetoRepository estadisticaRetoRepository;
 
     public EstadisticaRetoService(ParticipacionRetoRepository participacionRetoRepository,
-                                  RegistroProgresoRepository registroProgresoRepository,
+                                  RegistroProcesoRepository registroProcesoRepository,
                                   RetoRepository retoRepository,
                                   UsuarioRepository usuarioRepository,
                                   EstadisticaRetoRepository estadisticaRetoRepository) {
         this.participacionRetoRepository = participacionRetoRepository;
-        this.registroProgresoRepository = registroProgresoRepository;
+        this.registroProcesoRepository = registroProcesoRepository;
         this.retoRepository = retoRepository;
         this.usuarioRepository = usuarioRepository;
         this.estadisticaRetoRepository = estadisticaRetoRepository;
@@ -43,7 +42,7 @@ public class EstadisticaRetoService {
         }
 
         // Verificar si hay progresos registrados para este reto
-        boolean tieneEstadisticas = registroProgresoRepository.existsByRetoIdReto(idReto);
+        boolean tieneEstadisticas = registroProcesoRepository.existsByRetoIdReto(idReto);
 
         // Escenario Alternativo 2: No hay estadísticas
         if (!tieneEstadisticas) {
@@ -68,19 +67,19 @@ public class EstadisticaRetoService {
         List<EstadisticaRetoResponseDTO> estadisticas = calcularEstadisticasParticipantes(idReto, participantesIds, totalDiasReto);
 
         // Ordenar por porcentaje de cumplimiento (descendente) y asignar rankings
-        estadisticas = asignarRankings(estadisticas);
+        List<EstadisticaRetoResponseDTO> estadisticasRankeadas = asignarRankings(estadisticas);
 
         // Encontrar mi estadística y ranking
-        EstadisticaRetoResponseDTO miEstadistica = estadisticas.stream()
-                .filter(e -> e.getIdUsuario().equals(idUsuario))
+        EstadisticaRetoResponseDTO miEstadistica = estadisticasRankeadas.stream()
+                .filter(e -> Objects.equals(e.idUsuario(), idUsuario))
                 .findFirst()
                 .orElse(null);
 
-        Integer miRanking = miEstadistica != null ? miEstadistica.getRanking() : null;
+        Integer miRanking = miEstadistica != null ? miEstadistica.ranking() : null;
 
         // Construir respuesta
         DashboardRetoResponseDTO dashboard = new DashboardRetoResponseDTO(true, true, "Estadísticas cargadas exitosamente");
-        dashboard.setEstadisticasParticipantes(estadisticas);
+        dashboard.setEstadisticasParticipantes(estadisticasRankeadas);
         dashboard.setMiEstadistica(miEstadistica);
         dashboard.setMiRanking(miRanking);
         dashboard.setTotalParticipantes((long) participantesIds.size());
@@ -95,18 +94,24 @@ public class EstadisticaRetoService {
             Usuario usuario = usuarioRepository.findById(participanteId)
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-            // Calcular días completados basado en RegistroProgreso
-            Long diasCompletados = registroProgresoRepository.countByRetoIdRetoAndUsuarioIdUsuarioAndCompletadoTrue(idReto, participanteId);
+            // Calcular días completados basado en RegistroProceso
+            Long diasCompletados = registroProcesoRepository.countByRetoIdRetoAndUsuarioIdUsuarioAndCompletadoTrue(idReto, participanteId);
 
             // Calcular puntos totales
-            Integer puntosTotales = registroProgresoRepository.sumPuntosByRetoAndUsuario(idReto, participanteId);
+            Integer puntosTotales = registroProcesoRepository.sumPuntosByRetoAndUsuario(idReto, participanteId);
 
+            // Calcular porcentaje
+            Double porcentajeCumplimiento = totalDiasReto > 0 ? (diasCompletados * 100.0) / totalDiasReto : 0.0;
+
+            // Crear el RECORD (no clase)
             EstadisticaRetoResponseDTO estadistica = new EstadisticaRetoResponseDTO(
                     participanteId,
-                    usuario.getNombre(),
+                    usuario.getNombreCompleto(), // Usar el nuevo método
                     diasCompletados,
                     totalDiasReto,
-                    puntosTotales
+                    porcentajeCumplimiento,
+                    puntosTotales != null ? puntosTotales : 0,
+                    null // Ranking se asigna después
             );
 
             estadisticas.add(estadistica);
@@ -118,19 +123,30 @@ public class EstadisticaRetoService {
     private List<EstadisticaRetoResponseDTO> asignarRankings(List<EstadisticaRetoResponseDTO> estadisticas) {
         // Ordenar por porcentaje de cumplimiento (descendente) y luego por puntos
         estadisticas.sort((e1, e2) -> {
-            int cmp = e2.getPorcentajeCumplimiento().compareTo(e1.getPorcentajeCumplimiento());
+            int cmp = e2.porcentajeCumplimiento().compareTo(e1.porcentajeCumplimiento());
             if (cmp == 0) {
-                return e2.getPuntosTotales().compareTo(e1.getPuntosTotales());
+                return e2.puntosTotales().compareTo(e1.puntosTotales());
             }
             return cmp;
         });
 
-        // Asignar rankings
+        // Crear nueva lista con rankings (los records son inmutables)
+        List<EstadisticaRetoResponseDTO> estadisticasRankeadas = new ArrayList<>();
         for (int i = 0; i < estadisticas.size(); i++) {
-            estadisticas.get(i).setRanking(i + 1);
+            EstadisticaRetoResponseDTO original = estadisticas.get(i);
+            EstadisticaRetoResponseDTO conRanking = new EstadisticaRetoResponseDTO(
+                    original.idUsuario(),
+                    original.nombreUsuario(),
+                    original.diasCompletados(),
+                    original.totalDias(),
+                    original.porcentajeCumplimiento(),
+                    original.puntosTotales(),
+                    i + 1 // Asignar ranking
+            );
+            estadisticasRankeadas.add(conRanking);
         }
 
-        return estadisticas;
+        return estadisticasRankeadas;
     }
 
     @Transactional
@@ -151,10 +167,10 @@ public class EstadisticaRetoService {
             return "La fecha está fuera del rango del reto";
         }
 
-        // Buscar o crear registro de progreso
-        RegistroProgreso progreso = registroProgresoRepository
+        // Buscar o crear registro de progreso (usando RegistroProceso)
+        RegistroProceso progreso = registroProcesoRepository
                 .findByRetoAndUsuarioAndFecha(reto, usuario, fecha)
-                .orElse(new RegistroProgreso());
+                .orElse(new RegistroProceso());
 
         progreso.setReto(reto);
         progreso.setUsuario(usuario);
@@ -163,7 +179,7 @@ public class EstadisticaRetoService {
         progreso.setPuntos(puntos != null ? puntos : (completado ? 10 : 0));
         progreso.setFechaRegistro(LocalDate.now());
 
-        registroProgresoRepository.save(progreso);
+        registroProcesoRepository.save(progreso);
 
         return completado ? "Día marcado como completado" : "Progreso registrado";
     }
@@ -177,8 +193,8 @@ public class EstadisticaRetoService {
                 .orElseThrow(() -> new RuntimeException("Reto no encontrado"));
 
         long totalDias = ChronoUnit.DAYS.between(reto.getFechaInicio(), reto.getFechaFin()) + 1;
-        Long diasCompletados = registroProgresoRepository.countByRetoIdRetoAndUsuarioIdUsuarioAndCompletadoTrue(idReto, idUsuario);
-        Integer puntosTotales = registroProgresoRepository.sumPuntosByRetoAndUsuario(idReto, idUsuario);
+        Long diasCompletados = registroProcesoRepository.countByRetoIdRetoAndUsuarioIdUsuarioAndCompletadoTrue(idReto, idUsuario);
+        Integer puntosTotales = registroProcesoRepository.sumPuntosByRetoAndUsuario(idReto, idUsuario);
         double porcentaje = totalDias > 0 ? (diasCompletados * 100.0) / totalDias : 0;
 
         Map<String, Object> progreso = new HashMap<>();

@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-public interface RegistroProgresoRepository extends JpaRepository<RegistroProgreso, Long> {
+public interface RegistroProcesoRepository extends JpaRepository<RegistroProgreso, Long> {
 
     // Encontrar registro específico
     Optional<RegistroProgreso> findByRetoAndUsuarioAndFecha(Reto reto, Usuario usuario, LocalDate fecha);
