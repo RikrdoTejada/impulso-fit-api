@@ -25,6 +25,7 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioResponseDTO create(UsuarioRequestDTO usuario) {
+        //Validacion de correo
         if (usuarioRepository.existsByEmailIgnoreCase(usuario.email())) {
             throw new AlreadyExistsException("Ya existe un usuario con el correo: " + usuario.email());
         }
@@ -45,10 +46,11 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioResponseDTO updateInfo(Long id, UsuarioRequestDTO usuario) {
+        //Validaciones
         Usuario usuarioEntity = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No existe el usuario con id " + id));
         validarDateyGender(usuario);
-
+        //Sets omitiendo credenciales
         usuarioEntity.setIdUsuario(id);
         usuarioEntity.setNombres(usuario.nombres());
         usuarioEntity.setApellidoP(usuario.apellido_p());
@@ -59,25 +61,28 @@ public class UsuarioService {
         return mapToResponse(saved);
     }
 
+    //Metodo update para credenciales de usuario (password and email)
     @Transactional
     public UsuarioResponseDTO updateCred(Long id, RecoverRequestDTO req) {
+        //Validar usuario por email
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No existe el usuario con id " + id));
-
+        //Validar respuesta secreta de usuario
         Respuesta r = respuestaRepository.findByUsuario_IdUsuario(usuario.getIdUsuario());
         if (r == null) {
             throw new ResourceNotFoundException("El usuario no tiene respuesta secreta registrada.");
         }
-
         String respIngresada = req.respuesta();
-        if (respIngresada == null || !respIngresada.trim().equalsIgnoreCase(r.getStrRespuesta().trim())) {
+        if (respIngresada == null ||
+                !respIngresada.trim().equalsIgnoreCase(r.getStrRespuesta().trim())) {
             throw new BusinessRuleException("La respuesta es incorrecta.");
         }
-
         boolean huboCambios = false;
+        //Actualizar email
         String newEmail = req.new_email();
         if (newEmail != null && !newEmail.isBlank()) {
             String emailNormalizado = newEmail.trim().toLowerCase();
+            // Evitar duplicados
             if (usuarioRepository.existsByEmailIgnoreCase(req.new_email())) {
                 throw new AlreadyExistsException("Ya existe un usuario con ese correo.");
             }
@@ -85,16 +90,17 @@ public class UsuarioService {
             huboCambios = true;
         }
 
+        //Actualizar contraseña
         String newPass = req.new_contrasena();
         if (newPass != null && !newPass.isBlank()) {
             usuario.setContrasena(newPass);
             huboCambios = true;
         }
-
+        //Regla de negocio: Debe mandar un campo a actualizar
         if (!huboCambios) {
             throw new BusinessRuleException("Debes enviar al menos un campo a actualizar (email y/o contraseña).");
         }
-
+        // Guardar una sola vez
         Usuario saved = usuarioRepository.save(usuario);
         return mapToResponse(saved);
     }
@@ -108,21 +114,29 @@ public class UsuarioService {
     }
 
     private void validarDateyGender(UsuarioRequestDTO u) {
+        //Fecha no puede estar vacía
         if (u.fecha_nacimiento() == null) {
             throw new BusinessRuleException("La fecha de nacimiento no puede estar vacía.");
         }
+        //Fecha no puede ser del futuro
         if (u.fecha_nacimiento().isAfter(LocalDate.now())) {
-            throw new BusinessRuleException("La fecha de nacimiento no puede ser una fecha futura.");
+            throw new BusinessRuleException(
+                    "La fecha de nacimiento no puede ser una fecha futura. " +
+                            "Fecha ingresada: " + u.fecha_nacimiento()
+            );
         }
-
+        //Usuario debe tener mínimo 15 años de edad
         int edad = Period.between(u.fecha_nacimiento(), LocalDate.now()).getYears();
         if (edad < 15) {
-            throw new BusinessRuleException("El usuario debe tener al menos 15 años. Edad actual: " + edad);
+            throw new BusinessRuleException(
+                    "El usuario debe tener al menos 15 años. Edad actual: " + edad
+            );
         }
-
+        //Genero no puede estar vacío
         if (u.genero() == null) {
             throw new BusinessRuleException("Genero no puede estar vacío");
         }
+        //Usuario no puede ser diferente de "M" o "F"
         if (!u.genero().equals("M") && !u.genero().equals("F")) {
             throw new BusinessRuleException("Formato de género inválido. Solo se permite: M o F");
         }

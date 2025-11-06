@@ -39,7 +39,7 @@ public class RetoService {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // ✅ NUEVA ESTRUCTURA - Usar IDs directos en lugar de objetos
+        // ✅ NUEVA ESTRUCTURA - Usar IDs directos
         ParticipacionReto participacion = new ParticipacionReto();
         participacion.setIdReto(reto.getIdReto());
         participacion.setIdUsuario(usuario.getIdUsuario());
@@ -53,7 +53,6 @@ public class RetoService {
     // Abandonar reto
     @Transactional
     public String abandonarReto(Long idUsuario, Long idReto) {
-        // ✅ BUSCAR por IDs directos (nueva estructura)
         ParticipacionReto participacion = participacionRetoRepository.findByRetoIdRetoAndUsuarioIdUsuario(idReto, idUsuario)
                 .orElseThrow(() -> new RuntimeException("No participas en este reto"));
 

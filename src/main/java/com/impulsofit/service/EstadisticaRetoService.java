@@ -33,23 +33,18 @@ public class EstadisticaRetoService {
     }
 
     public DashboardRetoResponseDTO obtenerDashboardReto(Long idReto, Long idUsuario) {
-        // Verificar si el usuario es participante del reto
         boolean esParticipante = participacionRetoRepository.existsByRetoIdRetoAndUsuarioIdUsuario(idReto, idUsuario);
 
-        // Escenario Alternativo 1: No es participante
         if (!esParticipante) {
             return new DashboardRetoResponseDTO(false, false, "Debes unirte al reto antes de ver las estadísticas");
         }
 
-        // Verificar si hay progresos registrados para este reto
         boolean tieneEstadisticas = registroProcesoRepository.existsByRetoIdReto(idReto);
 
-        // Escenario Alternativo 2: No hay estadísticas
         if (!tieneEstadisticas) {
             return new DashboardRetoResponseDTO(true, false, "Aún no hay estadísticas disponibles para este reto");
         }
 
-        // Escenario Exitoso: Obtener estadísticas completas
         return generarDashboardCompleto(idReto, idUsuario);
     }
 
@@ -57,19 +52,11 @@ public class EstadisticaRetoService {
         Reto reto = retoRepository.findById(idReto)
                 .orElseThrow(() -> new RuntimeException("Reto no encontrado"));
 
-        // Calcular total de días del reto
         long totalDiasReto = ChronoUnit.DAYS.between(reto.getFechaInicio(), reto.getFechaFin()) + 1;
-
-        // Obtener participantes del reto
         List<Long> participantesIds = participacionRetoRepository.findParticipantesByRetoId(idReto);
-
-        // Calcular estadísticas para cada participante
         List<EstadisticaRetoResponseDTO> estadisticas = calcularEstadisticasParticipantes(idReto, participantesIds, totalDiasReto);
-
-        // Ordenar por porcentaje de cumplimiento (descendente) y asignar rankings
         List<EstadisticaRetoResponseDTO> estadisticasRankeadas = asignarRankings(estadisticas);
 
-        // Encontrar mi estadística y ranking
         EstadisticaRetoResponseDTO miEstadistica = estadisticasRankeadas.stream()
                 .filter(e -> Objects.equals(e.idUsuario(), idUsuario))
                 .findFirst()
@@ -77,7 +64,6 @@ public class EstadisticaRetoService {
 
         Integer miRanking = miEstadistica != null ? miEstadistica.ranking() : null;
 
-        // Construir respuesta
         DashboardRetoResponseDTO dashboard = new DashboardRetoResponseDTO(true, true, "Estadísticas cargadas exitosamente");
         dashboard.setEstadisticasParticipantes(estadisticasRankeadas);
         dashboard.setMiEstadistica(miEstadistica);
@@ -94,24 +80,18 @@ public class EstadisticaRetoService {
             Usuario usuario = usuarioRepository.findById(participanteId)
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-            // Calcular días completados basado en RegistroProceso
             Long diasCompletados = registroProcesoRepository.countByRetoIdRetoAndUsuarioIdUsuarioAndCompletadoTrue(idReto, participanteId);
-
-            // Calcular puntos totales
             Integer puntosTotales = registroProcesoRepository.sumPuntosByRetoAndUsuario(idReto, participanteId);
-
-            // Calcular porcentaje
             Double porcentajeCumplimiento = totalDiasReto > 0 ? (diasCompletados * 100.0) / totalDiasReto : 0.0;
 
-            // Crear el RECORD (no clase)
             EstadisticaRetoResponseDTO estadistica = new EstadisticaRetoResponseDTO(
                     participanteId,
-                    usuario.getNombreCompleto(), // Usar el nuevo método
+                    usuario.getNombreCompleto(),
                     diasCompletados,
                     totalDiasReto,
                     porcentajeCumplimiento,
                     puntosTotales != null ? puntosTotales : 0,
-                    null // Ranking se asigna después
+                    null
             );
 
             estadisticas.add(estadistica);
@@ -121,7 +101,6 @@ public class EstadisticaRetoService {
     }
 
     private List<EstadisticaRetoResponseDTO> asignarRankings(List<EstadisticaRetoResponseDTO> estadisticas) {
-        // Ordenar por porcentaje de cumplimiento (descendente) y luego por puntos
         estadisticas.sort((e1, e2) -> {
             int cmp = e2.porcentajeCumplimiento().compareTo(e1.porcentajeCumplimiento());
             if (cmp == 0) {
@@ -130,7 +109,6 @@ public class EstadisticaRetoService {
             return cmp;
         });
 
-        // Crear nueva lista con rankings (los records son inmutables)
         List<EstadisticaRetoResponseDTO> estadisticasRankeadas = new ArrayList<>();
         for (int i = 0; i < estadisticas.size(); i++) {
             EstadisticaRetoResponseDTO original = estadisticas.get(i);
@@ -141,7 +119,7 @@ public class EstadisticaRetoService {
                     original.totalDias(),
                     original.porcentajeCumplimiento(),
                     original.puntosTotales(),
-                    i + 1 // Asignar ranking
+                    i + 1
             );
             estadisticasRankeadas.add(conRanking);
         }
@@ -151,7 +129,6 @@ public class EstadisticaRetoService {
 
     @Transactional
     public String registrarProgresoDiario(Long idReto, Long idUsuario, LocalDate fecha, boolean completado, Integer puntos) {
-        // Verificar participación
         if (!participacionRetoRepository.existsByRetoIdRetoAndUsuarioIdUsuario(idReto, idUsuario)) {
             return "No participas en este reto";
         }
@@ -162,12 +139,10 @@ public class EstadisticaRetoService {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // Verificar que la fecha esté dentro del rango del reto
         if (fecha.isBefore(reto.getFechaInicio()) || fecha.isAfter(reto.getFechaFin())) {
             return "La fecha está fuera del rango del reto";
         }
 
-        // Buscar o crear registro de progreso (usando RegistroProceso)
         RegistroProceso progreso = registroProcesoRepository
                 .findByRetoAndUsuarioAndFecha(reto, usuario, fecha)
                 .orElse(new RegistroProceso());

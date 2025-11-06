@@ -1,72 +1,56 @@
 package com.impulsofit.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDate;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "grupo")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Grupo {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_grupo")
     private Long idGrupo;
 
-    @Column(name = "id_usuario_creador", nullable = false)
-    private Long idUsuarioCreador;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_usuario_creador", nullable = false)
+    private Usuario creador;
 
-    @Column(name = "id_deporte", nullable = false)
-    private Long idDeporte;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_deporte", nullable = false)
+    private Deporte deporte;
 
+    @Column(name = "nombre", nullable = false, length = 100)
     private String nombre;
+
+    @Column(name = "descripcion", columnDefinition = "TEXT", length = 300)
     private String descripcion;
+
+    @Column(name = "ubicacion")
     private String ubicacion;
+
+    @Column(name = "foto_grupo")
     private String fotoGrupo;
 
-    @Column(name = "fecha_creacion", nullable = false)
-    private LocalDate fechaCreacion = LocalDate.now();
+    @Column(name = "fecha_creacion")
+    private LocalDateTime fechaCreacion;
 
-    private Integer cantidadMiembros = 0; // Campo adicional para popularidad
+    private Integer cantidadMiembros = 0;
 
-    // Constructores
-    public Grupo() {}
+    public Long getId() { return this.idGrupo; }
+    public void setId(Long id) { this.idGrupo = id; }
 
-    public Grupo(Long idUsuarioCreador, Long idDeporte, String nombre, String descripcion,
-                 String ubicacion, String fotoGrupo, Integer cantidadMiembros) {
-        this.idUsuarioCreador = idUsuarioCreador;
-        this.idDeporte = idDeporte;
-        this.nombre = nombre;
-        this.descripcion = descripcion;
-        this.ubicacion = ubicacion;
-        this.fotoGrupo = fotoGrupo;
-        this.cantidadMiembros = cantidadMiembros;
-        this.fechaCreacion = LocalDate.now();
+
+    // PrePersist: asegurar fecha por defecto
+    @PrePersist
+    protected void onCreate() {
+        if (this.fechaCreacion == null) {
+            this.fechaCreacion = LocalDateTime.now();
+        }
     }
-
-    // Getters y Setters
-    public Long getIdGrupo() { return idGrupo; }
-    public void setIdGrupo(Long idGrupo) { this.idGrupo = idGrupo; }
-
-    public Long getIdUsuarioCreador() { return idUsuarioCreador; }
-    public void setIdUsuarioCreador(Long idUsuarioCreador) { this.idUsuarioCreador = idUsuarioCreador; }
-
-    public Long getIdDeporte() { return idDeporte; }
-    public void setIdDeporte(Long idDeporte) { this.idDeporte = idDeporte; }
-
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
-
-    public String getDescripcion() { return descripcion; }
-    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
-
-    public String getUbicacion() { return ubicacion; }
-    public void setUbicacion(String ubicacion) { this.ubicacion = ubicacion; }
-
-    public String getFotoGrupo() { return fotoGrupo; }
-    public void setFotoGrupo(String fotoGrupo) { this.fotoGrupo = fotoGrupo; }
-
-    public LocalDate getFechaCreacion() { return fechaCreacion; }
-    public void setFechaCreacion(LocalDate fechaCreacion) { this.fechaCreacion = fechaCreacion; }
-
-    public Integer getCantidadMiembros() { return cantidadMiembros; }
-    public void setCantidadMiembros(Integer cantidadMiembros) { this.cantidadMiembros = cantidadMiembros; }
 }

@@ -1,14 +1,21 @@
 package com.impulsofit.service;
 
+import com.impulsofit.dto.response.MembresiaGrupoResponseDTO;
+import com.impulsofit.exception.AlreadyExistsException;
+import com.impulsofit.exception.ResourceNotFoundException;
 import com.impulsofit.model.Grupo;
 import com.impulsofit.model.MembresiaGrupo;
 import com.impulsofit.model.Usuario;
 import com.impulsofit.repository.GrupoRepository;
 import com.impulsofit.repository.MembresiaGrupoRepository;
 import com.impulsofit.repository.UsuarioRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+
+@RequiredArgsConstructor
 @Service
 public class GrupoMembresiaService {
 
@@ -16,52 +23,53 @@ public class GrupoMembresiaService {
     private final UsuarioRepository usuarioRepository;
     private final GrupoRepository grupoRepository;
 
-    public GrupoMembresiaService(MembresiaGrupoRepository membresiaGrupoRepository,
-                                 UsuarioRepository usuarioRepository,
-                                 GrupoRepository grupoRepository) {
-        this.membresiaGrupoRepository = membresiaGrupoRepository;
-        this.usuarioRepository = usuarioRepository;
-        this.grupoRepository = grupoRepository;
-    }
 
     // Unirse a grupo
     @Transactional
-    public String unirseAGrupo(Long idUsuario, Long idGrupo) {
+    public MembresiaGrupoResponseDTO unirseAGrupo(Long idUsuario, Long idGrupo) {
         // Verificar si ya es miembro
         if (membresiaGrupoRepository.existsByUsuarioIdUsuarioAndGrupoIdGrupo(idUsuario, idGrupo)) {
-            return "Ya eres miembro de este grupo";
+            throw new AlreadyExistsException("El usuario ya pertenece a este grupo.");
         }
 
         Usuario usuario = usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
         Grupo grupo = grupoRepository.findById(idGrupo)
-                .orElseThrow(() -> new RuntimeException("Grupo no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Grupo no encontrado"));
 
-        MembresiaGrupo membresia = new MembresiaGrupo(usuario, grupo);
-        membresiaGrupoRepository.save(membresia);
+        MembresiaGrupo membresiaEntity = new MembresiaGrupo();
+        membresiaEntity.setUsuario(usuario);
+        membresiaEntity.setGrupo(grupo);
+
+        MembresiaGrupo saved = membresiaGrupoRepository.save(membresiaEntity);
+
+        LocalDate fechaUnionLocalDate = (saved.getFechaUnion() == null) ? null : saved.getFechaUnion().toLocalDate();
 
         // Actualizar contador de miembros
         grupo.setCantidadMiembros(grupo.getCantidadMiembros() + 1);
         grupoRepository.save(grupo);
 
-        return "Te has unido al grupo exitosamente";
+        return new MembresiaGrupoResponseDTO(
+                saved.getIdMembresia(),
+                saved.getUsuario().getNombres(),
+                saved.getGrupo().getNombre(),
+                fechaUnionLocalDate
+        );
     }
 
     // Dejar grupo
     @Transactional
-    public String dejarGrupo(Long idUsuario, Long idGrupo) {
+    public void dejarGrupo(Long idUsuario, Long idGrupo) {
         MembresiaGrupo membresia = membresiaGrupoRepository.findByUsuarioIdUsuarioAndGrupoIdGrupo(idUsuario, idGrupo)
-                .orElseThrow(() -> new RuntimeException("No eres miembro de este grupo"));
+                .orElseThrow(() -> new IllegalArgumentException("No eres miembro de este grupo"));
 
         membresiaGrupoRepository.delete(membresia);
 
         // Actualizar contador de miembros
         Grupo grupo = grupoRepository.findById(idGrupo)
-                .orElseThrow(() -> new RuntimeException("Grupo no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Grupo no encontrado"));
         grupo.setCantidadMiembros(Math.max(0, grupo.getCantidadMiembros() - 1));
         grupoRepository.save(grupo);
-
-        return "Has dejado el grupo exitosamente";
     }
 
     // Verificar membresía

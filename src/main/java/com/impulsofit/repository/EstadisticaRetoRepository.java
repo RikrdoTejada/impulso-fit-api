@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
+
 public interface EstadisticaRetoRepository extends JpaRepository<EstadisticaReto, Long> {
 
     // Buscar estadística específica de usuario en reto

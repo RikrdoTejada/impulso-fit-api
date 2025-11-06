@@ -1,75 +1,37 @@
-package com.impulsofit.model;
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+package com.impulsofit.repository;
+
+import com.impulsofit.model.RegistroProceso;
+import com.impulsofit.model.Reto;
+import com.impulsofit.model.Usuario;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.Period;
+import java.util.List;
+import java.util.Optional;
 
-@Entity
-@Table(name = "usuario")
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class Usuario {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_usuario")
-    private Long idUsuario;
+public interface RegistroProcesoRepository extends JpaRepository<RegistroProceso, Long> {
 
-    @Column(name = "nombres", nullable = false)
-    private String nombres;
+    // Encontrar registro específico
+    Optional<RegistroProceso> findByRetoAndUsuarioAndFecha(Reto reto, Usuario usuario, LocalDate fecha);
 
-    @Column(name = "apellido_p", nullable = false)
-    private String apellidoP;
+    // Contar días completados por usuario en reto
+    @Query("SELECT COUNT(r) FROM RegistroProceso r WHERE r.reto.idReto = :idReto AND r.usuario.idUsuario = :idUsuario AND r.completado = true")
+    Long countByRetoIdRetoAndUsuarioIdUsuarioAndCompletadoTrue(@Param("idReto") Long idReto, @Param("idUsuario") Long idUsuario);
 
-    @Column(name = "apellido_m", nullable = false)
-    private String apellidoM;
+    // Sumar puntos por usuario en reto
+    @Query("SELECT COALESCE(SUM(r.puntos), 0) FROM RegistroProceso r WHERE r.reto.idReto = :idReto AND r.usuario.idUsuario = :idUsuario")
+    Integer sumPuntosByRetoAndUsuario(@Param("idReto") Long idReto, @Param("idUsuario") Long idUsuario);
 
-    @Column(name = "email", nullable = false, unique = true)
-    private String email;
+    // Verificar si existen registros para un reto
+    boolean existsByRetoIdReto(Long idReto);
 
-    @Column(name = "contrasena", nullable = false)
-    private String contrasena;
+    // Obtener todos los registros de un reto
+    List<RegistroProceso> findByRetoIdReto(Long idReto);
 
-    @Column(name = "fecha_nacimiento", nullable = false)
-    private LocalDate fechaNacimiento;
+    // Obtener progreso de un usuario en un reto
+    List<RegistroProceso> findByRetoIdRetoAndUsuarioIdUsuario(Long idReto, Long idUsuario);
 
-    @Column(name = "genero", nullable = false)
-    private String genero;
-
-    @Column(name = "fecha_registro", nullable = false)
-    private LocalDateTime fechaRegistro;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "cod_pregunta", nullable = false)
-    private CodPregunta codPregunta;
-
-    @Column(name = "bloqueado", nullable = false)
-    private Boolean bloqueado = false;
-
-    @Column(name = "intentos_fallidos", nullable = false)
-    private Integer intentosFallidos = 0;
-
-    @Column(name = "fecha_bloqueo")
-    private LocalDateTime fechaBloqueo;
-
-    // Método de compatibilidad para calcular edad
-    public Integer getEdad() {
-        if (this.fechaNacimiento == null) return null;
-        return Period.between(this.fechaNacimiento, LocalDate.now()).getYears();
-    }
-
-    // Método para nombre completo (compatibilidad)
-    public String getNombreCompleto() {
-        return String.format("%s %s %s", nombres, apellidoP, apellidoM).trim();
-    }
-
-    @PrePersist
-    public void prePersist() {
-        if (this.fechaRegistro == null) {
-            this.fechaRegistro = LocalDateTime.now();
-        }
-    }
+    // Obtener registros por fecha específica
+    List<RegistroProceso> findByRetoIdRetoAndFecha(Long idReto, LocalDate fecha);
 }
