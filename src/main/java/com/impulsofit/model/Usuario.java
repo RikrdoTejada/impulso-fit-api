@@ -1,73 +1,75 @@
 package com.impulsofit.model;
-
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Period;
 
 @Entity
-@Table(name = "Usuario")
+@Table(name = "usuario")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Usuario {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_usuario")
     private Long idUsuario;
 
-    @Column(nullable = false)
-    private String nombre;
+    @Column(name = "nombres", nullable = false)
+    private String nombres;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "apellido_p", nullable = false)
+    private String apellidoP;
+
+    @Column(name = "apellido_m", nullable = false)
+    private String apellidoM;
+
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     @Column(name = "contrasena", nullable = false)
     private String contrasena;
 
-    private Integer edad;
+    @Column(name = "fecha_nacimiento", nullable = false)
+    private LocalDate fechaNacimiento;
+
+    @Column(name = "genero", nullable = false)
     private String genero;
 
     @Column(name = "fecha_registro", nullable = false)
-    private LocalDate fechaRegistro;
+    private LocalDateTime fechaRegistro;
 
-    public Usuario() {}
+    @Enumerated(EnumType.STRING)
+    @Column(name = "cod_pregunta", nullable = false)
+    private CodPregunta codPregunta;
 
-    public Usuario(String nombre, String email, String contrasena, Integer edad, String genero, LocalDate fechaRegistro) {
-        this.nombre = nombre;
-        this.email = email;
-        this.contrasena = contrasena;
-        this.edad = edad;
-        this.genero = genero;
-        this.fechaRegistro = fechaRegistro;
+    @Column(name = "bloqueado", nullable = false)
+    private Boolean bloqueado = false;
+
+    @Column(name = "intentos_fallidos", nullable = false)
+    private Integer intentosFallidos = 0;
+
+    @Column(name = "fecha_bloqueo")
+    private LocalDateTime fechaBloqueo;
+
+    // Método de compatibilidad para calcular edad
+    public Integer getEdad() {
+        if (this.fechaNacimiento == null) return null;
+        return Period.between(this.fechaNacimiento, LocalDate.now()).getYears();
     }
 
-    public Long getIdUsuario() { return idUsuario; }
-    public void setIdUsuario(Long idUsuario) { this.idUsuario = idUsuario; }
+    // Método para nombre completo (compatibilidad)
+    public String getNombreCompleto() {
+        return String.format("%s %s %s", nombres, apellidoP, apellidoM).trim();
+    }
 
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-
-    public String getContrasena() { return contrasena ; }
-    public void setContrasena(String contrasena) { this.contrasena = contrasena; }
-
-    public Integer getEdad() { return edad; }
-    public void setEdad(Integer edad) { this.edad = edad; }
-
-    public String getGenero() { return genero; }
-    public void setGenero(String genero) { this.genero = genero; }
-
-    public LocalDate getFechaRegistro() { return fechaRegistro; }
-    public void setFechaRegistro(LocalDate fechaRegistro) { this.fechaRegistro = fechaRegistro; }
-
-    @Override
-    public String toString() {
-        return "Usuario{" +
-                "idUsuario=" + idUsuario +
-                ", nombre='" + nombre + '\'' +
-                ", email='" + email + '\'' +
-                ", edad=" + edad +
-                ", genero='" + genero + '\'' +
-                ", fechaRegistro=" + fechaRegistro +
-                '}';
+    @PrePersist
+    public void prePersist() {
+        if (this.fechaRegistro == null) {
+            this.fechaRegistro = LocalDateTime.now();
+        }
     }
 }
