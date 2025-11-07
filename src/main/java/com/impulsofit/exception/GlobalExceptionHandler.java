@@ -1,6 +1,7 @@
 package com.impulsofit.exception;
 
-import org.springframework.http.HttpHeaders;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -16,6 +18,8 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     private Map<String, Object> buildResponse(HttpStatus status, String message, Exception ex) {
         Map<String, Object> body = new HashMap<>();
@@ -90,10 +94,19 @@ public class GlobalExceptionHandler {
                 .body(buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), ex));
     }
 
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Object> handleResponseStatus(ResponseStatusException ex) {
+        int code = ex.getStatusCode().value();
+        HttpStatus status = HttpStatus.resolve(code);
+        if (status == null) status = HttpStatus.INTERNAL_SERVER_ERROR;
+        String message = ex.getReason() != null ? ex.getReason() : ex.getMessage();
+        return ResponseEntity.status(status).body(buildResponse(status, message, ex));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleAll(Exception ex) {
         String message = "Ocurrió un error inesperado en el servidor. Contacte al administrador.";
-        ex.printStackTrace(); // Opcional: para logging en consola
+        logger.error("Unhandled exception caught by GlobalExceptionHandler", ex);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, message, ex));
