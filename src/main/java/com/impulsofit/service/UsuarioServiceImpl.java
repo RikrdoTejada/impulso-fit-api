@@ -8,6 +8,8 @@ import com.impulsofit.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -22,45 +24,58 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public UsuarioResponseDTO create(UsuarioRequestDTO u) {
         Usuario usuario = new Usuario();
-        usuario.setUsername(u.username());
+        // Mapear campos desde el DTO (en español) al modelo
+        usuario.setNombres(u.nombres());
+        usuario.setApellidoP(u.apellido_p());
+        usuario.setApellidoM(u.apellido_m());
         usuario.setEmail(u.email());
-        usuario.setPassword(u.password());
-        if (usuario.getCreatedAt() == null) {
-            usuario.setCreatedAt(Instant.now());
+        usuario.setContrasena(u.contrasena());
+        usuario.setFechaNacimiento(u.fecha_nacimiento());
+        usuario.setGenero(u.genero());
+        usuario.setCodPregunta(u.cod_pregunta());
+
+        // valores por defecto / auditoría
+        if (usuario.getFechaRegistro() == null) {
+            usuario.setFechaRegistro(LocalDateTime.now());
         }
+        if (usuario.getBloqueado() == null) {
+            usuario.setBloqueado(false);
+        }
+        if (usuario.getIntentosFallidos() == null) {
+            usuario.setIntentosFallidos(0);
+        }
+
         Usuario saved = repository.save(usuario);
-        return new UsuarioResponseDTO(
-                saved.getId(),
-                saved.getUsername(),
-                saved.getEmail(),
-                saved.getCreatedAt()
-        );
+        return toResponse(saved);
     }
 
     @Override
     public UsuarioResponseDTO update(Long id, UsuarioRequestDTO u) {
         Usuario usuario = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + id));
 
-        // Para PUT: reemplaza todos los campos
-        usuario.setUsername(u.username());
+        // Para PUT: reemplaza todos los campos (según DTO)
+        usuario.setNombres(u.nombres());
+        usuario.setApellidoP(u.apellido_p());
+        usuario.setApellidoM(u.apellido_m());
         usuario.setEmail(u.email());
-        usuario.setPassword(u.password());
-        // createdAt se mantiene
+        usuario.setContrasena(u.contrasena());
+        usuario.setFechaNacimiento(u.fecha_nacimiento());
+        usuario.setGenero(u.genero());
+        usuario.setCodPregunta(u.cod_pregunta());
+        // fechaRegistro se mantiene (no se pisa)
+        if (usuario.getFechaRegistro() == null) {
+            usuario.setFechaRegistro(LocalDateTime.now());
+        }
 
         Usuario saved = repository.save(usuario);
-        return new UsuarioResponseDTO(
-                saved.getId(),
-                saved.getUsername(),
-                saved.getEmail(),
-                saved.getCreatedAt()
-        );
+        return toResponse(saved);
     }
 
     @Override
     public void delete(Long id) {
         if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException("User not found with id: " + id);
+            throw new ResourceNotFoundException("Usuario no encontrado con id: " + id);
         }
         repository.deleteById(id);
     }
@@ -68,20 +83,62 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public UsuarioResponseDTO getById(Long id) {
         Usuario usuario = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
-        return new UsuarioResponseDTO(
-                usuario.getId(),
-                usuario.getUsername(),
-                usuario.getEmail(),
-                usuario.getCreatedAt()
-        );
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + id));
+        return toResponse(usuario);
     }
 
     @Override
     public List<UsuarioResponseDTO> list() {
         return repository.findAll()
                 .stream()
-                .map(u -> new UsuarioResponseDTO(u.getId(), u.getUsername(), u.getEmail(), u.getCreatedAt()))
+                .map(this::toResponse)
                 .toList();
+    }
+
+    // --------- Helpers ---------
+
+    private UsuarioResponseDTO toResponse(Usuario u) {
+        return new UsuarioResponseDTO(
+                getIdSafe(u),
+                getUsernameSafe(u),
+                u.getEmail(),
+                toInstantSafe(u.getFechaRegistro()),   // createdAt (Instant) derivado de fechaRegistro
+                u.getFechaNacimiento(),                // fecha_Nacimiento
+                u.getGenero(),
+                u.getFechaRegistro(),                  // fecha_creacion (LocalDateTime)
+                u.getCodPregunta()
+        );
+    }
+
+    private Long getIdSafe(Usuario u) {
+        try {
+            return (Long) Usuario.class.getMethod("getId").invoke(u);
+        } catch (Exception e) {
+            try {
+                return (Long) Usuario.class.getMethod("getIdUsuario").invoke(u);
+            } catch (Exception ex) {
+                return null;
+            }
+        }
+    }
+
+    private String getUsernameSafe(Usuario u) {
+        try {
+            // si existe getNombreCompleto() úsalo como "username"
+            Object v = Usuario.class.getMethod("getNombreCompleto").invoke(u);
+            return v == null ? null : v.toString();
+        } catch (Exception ignore) {
+            // fallback: usa solo nombres
+            try {
+                Object v = Usuario.class.getMethod("getNombres").invoke(u);
+                return v == null ? null : v.toString();
+            } catch (Exception e) {
+                return null;
+            }
+        }
+    }
+
+    private Instant toInstantSafe(LocalDateTime ldt) {
+        return ldt == null ? null : ldt.atZone(ZoneId.systemDefault()).toInstant();
     }
 }
