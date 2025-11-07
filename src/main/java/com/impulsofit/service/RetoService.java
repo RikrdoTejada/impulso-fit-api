@@ -26,13 +26,11 @@ public class RetoService {
     private static final Logger logger = LoggerFactory.getLogger(RetoService.class);
 
     private final GrupoRepository grupoRepository;
-    private final RetoRepository retoRepository;
     private final UsuarioRepository usuarioRepository;
     private final UnidadRepository unidadRepository;
     private final RetoRepository retoRepository;
     private final MembresiaGrupoRepository membresiaGrupoRepository;
 
-    private final GrupoRepository grupoRepository;
 
     @Transactional
     public RetoResponseDTO create(RetoRequestDTO reto){
@@ -58,45 +56,12 @@ public class RetoService {
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
-    public RetoService(RetoRepository retoRepository,
-                       UsuarioRepository usuarioRepository,
-                       GrupoRepository grupoRepository) {
-        this.retoRepository = retoRepository;
-        this.usuarioRepository = usuarioRepository;
-        this.grupoRepository = grupoRepository;
-    }
 
     @Transactional
     public RetoResponseDTO update(Long id, RetoRequestDTO reto) {
         Reto retoEntity = retoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No existe el reto con el id: " + id));
 
-        if(reto.descripcion()==null){
-            throw new BusinessRuleException("La descripción no puede estar vacía.");
-    public RetoResponseDTO create(CrearRetoRequestDTO req) {
-        if (req.groupId() == null) {
-            throw new IllegalArgumentException("groupId is required");
-        }
-        if(reto.titulo()==null || reto.titulo().length()<5){
-            throw new BusinessRuleException("El título debe tener al menos 5 caracteres. Longitud actual: " + (reto.titulo()==null?0:reto.titulo().length()));
-        }
-        if(!membresiaGrupoRepository.existsByUsuario_IdUsuarioAndGrupo_IdGrupo(reto.id_usuario_creador(), reto.id_grupo())) {
-            throw new ResourceNotFoundException("El usuario con el id: " + reto.id_usuario_creador() + " no pertenece al grupo con el id: " + reto.id_grupo());
-        }
-        if (retoRepository.existsByTituloIgnoreCaseAndGrupo_IdGrupoAndIdRetoNot(reto.titulo(), reto.id_grupo(), id)) {
-            throw new AlreadyExistsException("Ya existe un reto con el título: "  + reto.titulo());
-        }
-        if (reto.fecha_inicio().isBefore(LocalDate.now())) {
-            throw new BusinessRuleException(
-                    "La fecha de inicio no puede ser anterior a la fecha actual. " +
-                            "Fecha ingresada: " + reto.fecha_inicio()
-            );
-        }
-        if(reto.fecha_fin().isBefore(LocalDate.now())){
-            throw new BusinessRuleException(
-                    "La fecha de fin no puede ser anterior a la fecha actual. " +
-                            "Fecha ingresada: " + reto.fecha_fin());
-        }
         // recuperar y validar referencias (usuario, grupo, unidad) y pertenencia
         RequestContext ctx = resolveReferences(reto);
 
@@ -126,8 +91,6 @@ public class RetoService {
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
-        Usuario createdBy = usuarioRepository.findById(req.createdById())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + req.createdById()));
 
     @Transactional(readOnly = true)
     public List<RetoResponseDTO> findByUnidad_IdUnidad(Long id_unidad) {
@@ -136,8 +99,6 @@ public class RetoService {
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
-        Grupo grupo = grupoRepository.findById(req.groupId())
-                .orElseThrow(() -> new ResourceNotFoundException("Group not found with id: " + req.groupId()));
 
     @Transactional
     public void delete(Long id) {
@@ -146,14 +107,6 @@ public class RetoService {
         }
         retoRepository.deleteById(id);
     }
-        Reto ch = new Reto();
-        ch.setTitle(req.title());
-        ch.setDescription(req.description());
-        ch.setStartDate(req.startDate());
-        ch.setEndDate(req.endDate());
-        ch.setCreatedAt(Instant.now());
-        ch.setCreatedBy(createdBy);
-        ch.setGroup(grupo);
 
     @Transactional(readOnly = true)
     public Optional<Reto> obtenerPorId(Long id) {
@@ -280,14 +233,6 @@ public class RetoService {
                 reto.getFechaPublicacion(),
                 reto.getFechaInicio(),
                 reto.getFechaFin()
-                saved.getId(),
-                saved.getTitle(),
-                saved.getDescription(),
-                saved.getStartDate(),
-                saved.getEndDate(),
-                saved.getCreatedAt(),
-                saved.getCreatedBy().getId(),
-                saved.getGroup().getId()
         );
     }
 
