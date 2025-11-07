@@ -3,6 +3,7 @@ package com.impulsofit.service;
 import com.impulsofit.dto.request.MembresiaGrupoRequestDTO;
 import com.impulsofit.dto.response.MembresiaGrupoResponseDTO;
 import com.impulsofit.exception.ResourceNotFoundException;
+import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.model.Grupo;
 import com.impulsofit.model.MembresiaGrupo;
 import com.impulsofit.model.Usuario;
@@ -50,5 +51,15 @@ public class MembresiaGrupoService {
             throw new ResourceNotFoundException("No existe la membresía con el id: " + id);
         }
         membresiaGrupoRepository.deleteById(id);
+    }
+
+    public void validarUsuarioEsMiembro(Long idUsuario, Long idGrupo) {
+        if (idGrupo == null) {
+            throw new BusinessRuleException("El reto no tiene grupo asociado");
+        }
+        boolean miembro = membresiaGrupoRepository.existsByUsuario_IdUsuarioAndGrupo_IdGrupo(idUsuario, idGrupo);
+        if (!miembro) {
+            throw new BusinessRuleException("El usuario debe ingresar al grupo antes de participar en el reto");
+        }
     }
 }

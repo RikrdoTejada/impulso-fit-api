@@ -5,14 +5,18 @@ import com.impulsofit.model.ParticipacionReto;
 import com.impulsofit.model.RegistroProceso;
 import com.impulsofit.model.Reto;
 import com.impulsofit.model.Usuario;
-import com.impulsofit.repository.MembresiaGrupoRepository;
 import com.impulsofit.repository.ParticipacionRetoRepository;
 import com.impulsofit.repository.RegistroProcesoRepository;
 import com.impulsofit.dto.response.ProgresoResponseDTO;
+import com.impulsofit.dto.request.AddProgresoRequestDTO;
+import com.impulsofit.model.Unidad;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
+import java.text.Normalizer;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,14 +27,14 @@ public class ParticipacionRetoService {
 
     private final RegistroProcesoRepository registroProcesoRepository;
 
-    private final MembresiaGrupoRepository membresiaGrupoRepository;
+    private final MembresiaGrupoService membresiaGrupoService;
 
     public ParticipacionRetoService(ParticipacionRetoRepository participacionRetoRepository,
                                     RegistroProcesoRepository registroProcesoRepository,
-                                    MembresiaGrupoRepository membresiaGrupoRepository) {
+                                    MembresiaGrupoService membresiaGrupoService) {
         this.participacionRetoRepository = participacionRetoRepository;
         this.registroProcesoRepository = registroProcesoRepository;
-        this.membresiaGrupoRepository = membresiaGrupoRepository;
+        this.membresiaGrupoService = membresiaGrupoService;
     }
 
     @Transactional
@@ -61,13 +65,7 @@ public class ParticipacionRetoService {
         // Validar pertenencia al grupo del reto
         Long idUsuario = usuario.getIdUsuario();
         Long idGrupo = Optional.ofNullable(reto.getGrupo()).map(g -> g.getIdGrupo()).orElse(null);
-        if (idGrupo == null) {
-            throw new BusinessRuleException("El reto no tiene grupo asociado");
-        }
-        boolean miembro = membresiaGrupoRepository.existsByUsuario_IdUsuarioAndGrupo_IdGrupo(idUsuario, idGrupo);
-        if (!miembro) {
-            throw new BusinessRuleException("El usuario debe ingresar al grupo antes de participar en el reto");
-        }
+        membresiaGrupoService.validarUsuarioEsMiembro(idUsuario, idGrupo);
 
         Optional<ParticipacionReto> found = participacionRetoRepository.findByRetoAndUsuario(reto, usuario);
         if (found.isPresent()) {
@@ -123,6 +121,139 @@ public class ParticipacionRetoService {
         if (p < 0) p = 0;
         if (p > 100) p = 100;
         return Math.round(p * 100.0) / 100.0; // 2 decimales
+    }
+
+    public void validarCamposSegunUnidad(Unidad unidad, AddProgresoRequestDTO req) {
+        if (unidad == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unidad del reto no definida");
+        }
+        String nombre = normalize(unidad.getNombre());
+        String uso = normalize(unidad.getUso());
+
+        boolean isTiempo = nombre.contains("tiempo") || uso.contains("min");
+        boolean isDistancia = nombre.contains("distancia") || uso.contains("metro") || uso.contains("kil");
+        boolean isPeso = nombre.contains("peso") || uso.contains("kilogr");
+        boolean isEntrenamiento = nombre.contains("entren") || uso.contains("dia");
+        boolean isSeries = uso.contains("repet") || nombre.contains("series") || nombre.contains("serie");
+        boolean isSesiones = uso.contains("sesion") || nombre.contains("sesion") || nombre.contains("sesiones");
+        boolean isPuntos = uso.contains("punto") || nombre.contains("punto") || nombre.contains("puntos");
+
+        if (isTiempo) {
+            boolean tieneCompuesto = req.horas() != null || req.minutos() != null;
+            if (!tieneCompuesto) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Unidad incorrecta: para retos de tiempo envía horas y/o minutos.");
+            }
+            if (req.kilometros() != null || req.metros() != null || req.series() != null || req.sesiones() != null
+                    || req.puntos() != null || req.dias() != null || req.kilogramos() != null || req.cantidad() != null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Campos inválidos: para retos de tiempo solo envía horas y/o minutos.");
+            }
+            return;
+        }
+
+        if (isDistancia) {
+            boolean tieneCompuesto = req.kilometros() != null || req.metros() != null;
+            if (!tieneCompuesto) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Unidad incorrecta: para retos de distancia envía kilometros y/o metros.");
+            }
+            if (req.horas() != null || req.minutos() != null || req.series() != null || req.sesiones() != null
+                    || req.puntos() != null || req.dias() != null || req.kilogramos() != null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Campos inválidos: para retos de distancia solo envía kilometros y/o metros.");
+            }
+            return;
+        }
+
+        if (isPeso) {
+            if (req.kilogramos() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Unidad incorrecta: para retos de peso envía kilogramos.");
+            }
+            if (req.horas() != null || req.minutos() != null || req.kilometros() != null || req.metros() != null
+                    || req.series() != null || req.sesiones() != null || req.puntos() != null || req.dias() != null
+                    || req.cantidad() != null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Campos inválidos: para retos de peso solo envía kilogramos.");
+            }
+            return;
+        }
+
+        if (isSeries) {
+            if (req.series() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Unidad incorrecta: para retos de series envía el campo 'series' (entero).");
+            }
+            if (req.horas() != null || req.minutos() != null || req.kilometros() != null || req.metros() != null
+                    || req.sesiones() != null || req.puntos() != null || req.dias() != null || req.kilogramos() != null
+                    || req.cantidad() != null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Campos inválidos: para retos de series solo envía el campo 'series'.");
+            }
+            return;
+        }
+
+        if (isSesiones) {
+            if (req.sesiones() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Unidad incorrecta: para retos de sesiones envía el campo 'sesiones' (entero).");
+            }
+            return;
+        }
+
+        if (isPuntos) {
+            if (req.puntos() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Unidad incorrecta: para retos de puntos envía el campo 'puntos' (entero).");
+            }
+            return;
+        }
+
+        if (isEntrenamiento) {
+            if (req.dias() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Unidad incorrecta: para retos de entrenamiento envía el campo 'dias' (entero).");
+            }
+            return;
+        }
+
+        // Fallback: permitir avance o cantidad si no se reconoce la unidad
+        if (req.cantidad() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Enviar un valor de avance apropiado para este tipo de reto.");
+        }
+    }
+
+    public boolean unidadRequiereEntero(Unidad unidad) {
+        if (unidad == null) return false;
+        String nombre = normalize(unidad.getNombre());
+        String uso = normalize(unidad.getUso());
+        if (nombre.contains("series") || nombre.contains("serie") || nombre.contains("sesion") || nombre.contains("sesiones")
+                || nombre.contains("punto") || nombre.contains("puntos") || nombre.contains("entrenam")
+                || uso.contains("repet") || uso.contains("sesion") || uso.contains("punto") || uso.contains("dia")) {
+            return true;
+        }
+        return false;
+    }
+
+    public void validarValorEnteroSiCorresponde(Unidad unidad, Double v) {
+        if (unidadRequiereEntero(unidad) && !esEntero(v)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "La unidad del reto no permite valores decimales. Envía un número entero.");
+        }
+    }
+
+    private String normalize(String s) {
+        if (s == null) return "";
+        String n = Normalizer.normalize(s, Normalizer.Form.NFD).replaceAll("\\p{M}", "");
+        return n.toLowerCase();
+    }
+
+    private boolean esEntero(Double v) {
+        if (v == null) return false;
+        double rounded = Math.round(v);
+        return Math.abs(v - rounded) < 1e-9;
     }
 
     public record UsuarioTotal(Long idUsuario, Double total) {}
