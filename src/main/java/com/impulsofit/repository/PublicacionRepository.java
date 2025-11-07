@@ -13,7 +13,8 @@ public interface PublicacionRepository extends JpaRepository<Publicacion,Long> {
 
     List<Publicacion> findAllByGrupo_IdGrupo(Long grupoIdGrupo);
 
-    Page<Publicacion> findByTypeAndGrupoId(PublicacionType type, Long grupoId, Pageable pageable);
+    // por id de usuario (no rompe el LAZY)
+    List<Publicacion> findAllByUsuarioId(Long usuarioId);
 
     Page<Publicacion> findByType(PublicacionType type, Pageable pageable);
 
