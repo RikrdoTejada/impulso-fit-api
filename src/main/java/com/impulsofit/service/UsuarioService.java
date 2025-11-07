@@ -108,19 +108,11 @@ public class UsuarioService {
             huboCambios = true;
         }
 
-import java.util.List;
         //Regla de negocio: Debe mandar un campo a actualizar
         if (!huboCambios) {
             throw new BusinessRuleException("Debes enviar al menos un campo a actualizar (email y/o contraseña).");
         }
 
-public interface UsuarioService {
-    UsuarioResponseDTO create(UsuarioRequestDTO u);
-    UsuarioResponseDTO update(Long id, UsuarioRequestDTO u);      // <-- NUEVO
-    void delete(Long id);
-    UsuarioResponseDTO getById(Long id);
-    List<UsuarioResponseDTO> list();
-}
         // Guardar una sola vez
         Usuario saved = usuarioRepository.save(usuario);
         return mapToResponse(saved);

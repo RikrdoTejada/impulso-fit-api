@@ -9,8 +9,6 @@ import com.impulsofit.model.Usuario;
 import com.impulsofit.model.Unidad;
 import com.impulsofit.service.ParticipacionRetoService;
 import com.impulsofit.service.RetoService;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import com.impulsofit.service.UnidadConverterService;
 import com.impulsofit.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
@@ -35,42 +33,42 @@ public class RetoController {
     private final UnidadConverterService unidadConverter;
 
     @PostMapping
-public ResponseEntity<RetoResponseDTO> create(@Valid @RequestBody CrearRetoRequestDTO req) {
-    RetoResponseDTO response = retoService.create(req);
-    return ResponseEntity.status(HttpStatus.CREATED).body(response);
-}
+    public ResponseEntity<RetoResponseDTO> create(@RequestBody RetoRequestDTO r) {
+        RetoResponseDTO saved = retoService.create(r);
+        return ResponseEntity.ok(saved);
+    }
 
-@GetMapping
-public ResponseEntity<List<RetoResponseDTO>> findAll() {
-    return ResponseEntity.ok(retoService.findAll());
-}
+    @GetMapping
+    public ResponseEntity<List<RetoResponseDTO>> findAll() {
+        return ResponseEntity.ok(retoService.findAll());
+    }
 
-@GetMapping("/busqueda/por-grupo/{id}")
-public ResponseEntity<List<RetoResponseDTO>> findByGrupoId(@PathVariable("id") Long id) {
-    return ResponseEntity.ok(retoService.findByGrupo_Id_grupo(id));
-}
+    @GetMapping("/busqueda/por-grupo/{id}")
+    public ResponseEntity<List<RetoResponseDTO>> findByGrupoId(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(retoService.findByGrupo_Id_grupo(id));
+    }
 
-@GetMapping("/busqueda/por-creador/{id}")
-public ResponseEntity<List<RetoResponseDTO>> findByCreadorId(@PathVariable("id") Long id) {
-    return ResponseEntity.ok(retoService.findByCreador_Id(id));
-}
+    @GetMapping("/busqueda/por-creador/{id}")
+    public ResponseEntity<List<RetoResponseDTO>> findByCreadorId(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(retoService.findByCreador_Id(id));
+    }
 
-@GetMapping("/busqueda/por-unidad/{id}")
-public ResponseEntity<List<RetoResponseDTO>> findByUnitId(@PathVariable("id") Long id) {
-    return ResponseEntity.ok(retoService.findByUnidad_IdUnidad(id));
-}
+    @GetMapping("/busqueda/por-unidad/{id}")
+    public ResponseEntity<List<RetoResponseDTO>> findByUnitId(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(retoService.findByUnidad_IdUnidad(id));
+    }
 
-@PutMapping("{id}")
-public ResponseEntity<RetoResponseDTO> update(@PathVariable Long id, @RequestBody RetoRequestDTO r) {
-    RetoResponseDTO updated = retoService.update(id, r);
-    return ResponseEntity.ok(updated);
-}
+    @PutMapping("{id}")
+    public ResponseEntity<RetoResponseDTO> update(@PathVariable Long id, @RequestBody RetoRequestDTO r) {
+        RetoResponseDTO updated = retoService.update(id, r);
+        return ResponseEntity.ok(updated);
+    }
 
-@DeleteMapping("{id}")
-public ResponseEntity<Void> delete(@PathVariable Long id) {
-    retoService.delete(id);
-    return ResponseEntity.noContent().build();
-}
+    @DeleteMapping("{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        retoService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 
     @PostMapping("/{idReto}/progreso/{idUsuario}")
     public ResponseEntity<ProgresoResponseDTO> agregarProgreso(
@@ -110,10 +108,6 @@ public ResponseEntity<Void> delete(@PathVariable Long id) {
         Double porcentaje = participacionRetoService.calcularPorcentajeForReto(reto, total);
         return ResponseEntity.ok(new ProgresoResponseDTO(idUsuario, idReto, total, porcentaje));
     }
-    Double total = participacionRetoService.agregarProgreso(usuarioOpt.get(), retoOpt.get(), request.avance());
-    Double porcentaje = participacionRetoService.calcularPorcentajeForReto(retoOpt.get(), total);
-    return ResponseEntity.ok(new ProgresoResponseDTO(idUsuario, idReto, total, porcentaje));
-}
 
     // Nuevo endpoint: alterna entre unirse y abandonar un reto
     @PostMapping("/{idReto}/participar/{idUsuario}")
