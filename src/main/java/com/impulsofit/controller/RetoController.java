@@ -22,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import java.text.Normalizer;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/retos")
@@ -113,6 +114,23 @@ public ResponseEntity<Void> delete(@PathVariable Long id) {
     Double porcentaje = participacionRetoService.calcularPorcentajeForReto(retoOpt.get(), total);
     return ResponseEntity.ok(new ProgresoResponseDTO(idUsuario, idReto, total, porcentaje));
 }
+
+    // Nuevo endpoint: alterna entre unirse y abandonar un reto
+    @PostMapping("/{idReto}/participar/{idUsuario}")
+    public ResponseEntity<Object> toggleParticipacion(@PathVariable Long idReto, @PathVariable Long idUsuario) {
+        Optional<Reto> retoOpt = retoService.obtenerPorId(idReto);
+        Optional<Usuario> usuarioOpt = usuarioService.obtenerUsuarioPorId(idUsuario);
+        if (retoOpt.isEmpty() || usuarioOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        boolean joined = participacionRetoService.toggleParticipation(usuarioOpt.get(), retoOpt.get());
+        if (joined) {
+            return ResponseEntity.ok(Map.of("message", "Te has unido al reto"));
+        } else {
+            return ResponseEntity.ok(Map.of("message", "Has abandonado el reto, tu progreso ha sido descartado"));
+        }
+    }
 
     // Valida que el request contenga únicamente y al menos uno de los campos permitidos según la unidad
     private void validarCamposSegunUnidad(Unidad unidad, AddProgresoRequestDTO req) {

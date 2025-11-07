@@ -1,7 +1,7 @@
 package com.impulsofit.model;
 
 public enum CodPregunta {
-    MASCOT,
-    TEACHER,
-    NICKNAME,
+    MASCOT, //Nombre de tu primera mascota?
+    TEACHER, //Nombre de tu profesor favorito?
+    NICKNAME, //Apodo tuyo durante la escuela
 }
