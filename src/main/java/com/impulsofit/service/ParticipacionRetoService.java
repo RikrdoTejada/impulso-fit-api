@@ -1,17 +1,16 @@
 package com.impulsofit.service;
 
+import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.model.ParticipacionReto;
 import com.impulsofit.model.RegistroProceso;
 import com.impulsofit.model.Reto;
 import com.impulsofit.model.Usuario;
+import com.impulsofit.repository.MembresiaGrupoRepository;
 import com.impulsofit.repository.ParticipacionRetoRepository;
 import com.impulsofit.repository.RegistroProcesoRepository;
 import com.impulsofit.dto.response.ProgresoResponseDTO;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -24,20 +23,25 @@ public class ParticipacionRetoService {
 
     private final RegistroProcesoRepository registroProcesoRepository;
 
-    public ParticipacionRetoService(ParticipacionRetoRepository participacionRetoRepository, RegistroProcesoRepository registroProcesoRepository) {
+    private final MembresiaGrupoRepository membresiaGrupoRepository;
+
+    public ParticipacionRetoService(ParticipacionRetoRepository participacionRetoRepository,
+                                    RegistroProcesoRepository registroProcesoRepository,
+                                    MembresiaGrupoRepository membresiaGrupoRepository) {
         this.participacionRetoRepository = participacionRetoRepository;
         this.registroProcesoRepository = registroProcesoRepository;
+        this.membresiaGrupoRepository = membresiaGrupoRepository;
     }
 
     @Transactional
     public Double agregarProgreso(Usuario usuario, Reto reto, Double avance) {
         if (avance == null || avance <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El avance debe ser un número positivo");
+            throw new IllegalArgumentException("El avance debe ser un número positivo");
         }
 
         ParticipacionReto participacion = participacionRetoRepository
                 .findByRetoAndUsuario(reto, usuario)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "El usuario no está participando en el reto"));
+                .orElseThrow(() -> new BusinessRuleException("El usuario no está participando en el reto"));
 
         RegistroProceso registro = new RegistroProceso();
         registro.setParticipacionReto(participacion);
@@ -50,6 +54,41 @@ public class ParticipacionRetoService {
                 .map(RegistroProceso::getAvance)
                 .map(v -> { try { return Double.parseDouble(v); } catch (Exception e) { return 0.0; } })
                 .reduce(0.0, Double::sum);
+    }
+
+    @Transactional
+    public boolean toggleParticipation(Usuario usuario, Reto reto) {
+        // Validar pertenencia al grupo del reto
+        Long idUsuario = usuario.getIdUsuario();
+        Long idGrupo = Optional.ofNullable(reto.getGrupo()).map(g -> g.getIdGrupo()).orElse(null);
+        if (idGrupo == null) {
+            throw new BusinessRuleException("El reto no tiene grupo asociado");
+        }
+        boolean miembro = membresiaGrupoRepository.existsByUsuario_IdUsuarioAndGrupo_IdGrupo(idUsuario, idGrupo);
+        if (!miembro) {
+            throw new BusinessRuleException("El usuario debe ingresar al grupo antes de participar en el reto");
+        }
+
+        Optional<ParticipacionReto> found = participacionRetoRepository.findByRetoAndUsuario(reto, usuario);
+        if (found.isPresent()) {
+            ParticipacionReto p = found.get();
+            // Borrar todos los registros asociados a esta participacion
+            List<RegistroProceso> registros = registroProcesoRepository.findByParticipacionRetoOrderByFechaDesc(p);
+            if (!registros.isEmpty()) {
+                registroProcesoRepository.deleteAll(registros);
+            }
+            participacionRetoRepository.delete(p);
+            return false; // ha abandonado
+        } else {
+            ParticipacionReto p = new ParticipacionReto();
+            p.setIdReto(reto.getIdReto());
+            p.setIdUsuario(usuario.getIdUsuario());
+            p.setUsuario(usuario);
+            p.setReto(reto);
+            p.setFechaUnion(LocalDateTime.now());
+            participacionRetoRepository.save(p);
+            return true; // se unió
+        }
     }
 
     public List<UsuarioTotal> rankingPorReto(Reto reto) {
