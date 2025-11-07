@@ -14,11 +14,6 @@ import org.springframework.web.bind.annotation.*;
 public class UsuarioController {
     private final UsuarioService usuarioService;
 
-    @PostMapping
-    public ResponseEntity<UsuarioResponseDTO> create(@RequestBody UsuarioRequestDTO u) {
-        UsuarioResponseDTO saved = usuarioService.create(u);
-        return ResponseEntity.ok(saved);
-    }
 
     @PutMapping("/update/cred/{id}")
     public ResponseEntity<UsuarioResponseDTO> updateCred(@PathVariable Long id, @RequestBody RecoverRequestDTO r) {
