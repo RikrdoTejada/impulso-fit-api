@@ -25,7 +25,7 @@ public class RecoverService {
 
     @Transactional
     public UsuarioResponseDTO recoverCred(RecoverRequestDTO req) {
-        Usuario usuarioEntity = usuarioRepository.findByEmail(req.email())
+        Usuario usuarioEntity = usuarioRepository.findByEmailIgnoreCase(req.email())
                 .orElseThrow(() -> new ResourceNotFoundException("No existe un usuario registrado con el email:  "
                         + req.email() ));
         Respuesta r = respuestaRepository.findByUsuario_IdUsuario(usuarioEntity.getId());

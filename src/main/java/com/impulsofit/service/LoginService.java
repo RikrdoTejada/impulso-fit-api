@@ -26,7 +26,7 @@ public class LoginService {
 
     @Transactional(noRollbackFor = BusinessRuleException.class)
     public LoginResponseDTO login(LoginRequestDTO loginDTO) {
-        Usuario usuario = usuarioRepository.findByEmail(loginDTO.email())
+        Usuario usuario = usuarioRepository.findByEmailIgnoreCase(loginDTO.email())
                 .orElseThrow(() -> new BusinessRuleException("Usuario no encontrado"));
 
         Long idUsuario = usuario.getIdUsuario();
