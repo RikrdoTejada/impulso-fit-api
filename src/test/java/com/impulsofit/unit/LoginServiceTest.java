@@ -6,6 +6,7 @@ import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.model.Usuario;
 import com.impulsofit.repository.UsuarioRepository;
 import com.impulsofit.service.LoginService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,19 +30,35 @@ class LoginServiceTest {
     @InjectMocks
     private LoginService loginService;
 
+    // Usuarios reutilizables
+    private Usuario mockUserValid;
+    private Usuario mockUserBob;
+    private Usuario mockUserLock;
+
+    @BeforeEach
+    void setUp() {
+        mockUserValid = createMockUser(1L, "test@example.com", "secret", "Test User");
+        mockUserBob = createMockUser(2L, "bob@example.com", "correct", "Bob");
+        mockUserLock = createMockUser(3L, "lock@example.com", "pw", "LockUser");
+    }
+
+    private Usuario createMockUser(Long id, String email, String contrasena, String nombres) {
+        Usuario u = new Usuario();
+        u.setIdUsuario(id);
+        u.setEmail(email);
+        u.setContrasena(contrasena);
+        u.setNombres(nombres);
+        return u;
+    }
+
     @Test
     @DisplayName("Inicio de sesión: credenciales correctas reinician intentos")
     void login_withValidCredentials_shouldReturnResponseAndResetAttempts() {
         // Arrange
-        Usuario u = new Usuario();
-        u.setIdUsuario(1L);
-        u.setEmail("test@example.com");
-        u.setContrasena("secret");
-        u.setNombres("Test User");
-        u.setIntentosFallidos(2);
-        u.setBloqueado(false);
+        mockUserValid.setIntentosFallidos(2);
+        mockUserValid.setBloqueado(false);
 
-        when(usuarioRepository.findByEmailIgnoreCase("test@example.com")).thenReturn(Optional.of(u));
+        when(usuarioRepository.findByEmailIgnoreCase("test@example.com")).thenReturn(Optional.of(mockUserValid));
 
         // Act
         LoginRequestDTO req = new LoginRequestDTO("test@example.com", "secret");
@@ -58,16 +75,12 @@ class LoginServiceTest {
     @DisplayName("Inicio de sesión: contraseña incorrecta incrementa intentos y arroja excepción")
     void login_withWrongPassword_shouldIncrementAttemptsAndThrow() {
         // Arrange
-        Usuario u = new Usuario();
-        u.setIdUsuario(2L);
-        u.setEmail("bob@example.com");
-        u.setContrasena("correct");
-        u.setIntentosFallidos(1);
-        u.setBloqueado(false);
+        mockUserBob.setIntentosFallidos(1);
+        mockUserBob.setBloqueado(false);
 
-        when(usuarioRepository.findByEmailIgnoreCase("bob@example.com")).thenReturn(Optional.of(u));
-        when(usuarioRepository.findById(2L)).thenReturn(Optional.of(u));
-        when(usuarioRepository.save(any())).thenReturn(u);
+        when(usuarioRepository.findByEmailIgnoreCase("bob@example.com")).thenReturn(Optional.of(mockUserBob));
+        when(usuarioRepository.findById(2L)).thenReturn(Optional.of(mockUserBob));
+        when(usuarioRepository.save(any())).thenReturn(mockUserBob);
 
         // Act / Assert
         LoginRequestDTO req = new LoginRequestDTO("bob@example.com", "wrong");
@@ -82,16 +95,12 @@ class LoginServiceTest {
     @DisplayName("Inicio de sesión: bloqueo tras múltiples intentos fallidos")
     void login_shouldBlockUserAfterMultipleFailedAttempts() {
         // Arrange
-        Usuario u = new Usuario();
-        u.setIdUsuario(3L);
-        u.setEmail("lock@example.com");
-        u.setContrasena("pw");
-        u.setIntentosFallidos(6);
-        u.setBloqueado(false);
+        mockUserLock.setIntentosFallidos(6);
+        mockUserLock.setBloqueado(false);
 
-        when(usuarioRepository.findByEmailIgnoreCase("lock@example.com")).thenReturn(Optional.of(u));
-        when(usuarioRepository.findById(3L)).thenReturn(Optional.of(u));
-        when(usuarioRepository.save(any())).thenReturn(u);
+        when(usuarioRepository.findByEmailIgnoreCase("lock@example.com")).thenReturn(Optional.of(mockUserLock));
+        when(usuarioRepository.findById(3L)).thenReturn(Optional.of(mockUserLock));
+        when(usuarioRepository.save(any())).thenReturn(mockUserLock);
 
         // Act / Assert
         LoginRequestDTO req = new LoginRequestDTO("lock@example.com", "bad");

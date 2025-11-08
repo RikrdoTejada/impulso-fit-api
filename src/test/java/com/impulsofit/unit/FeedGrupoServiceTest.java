@@ -5,7 +5,7 @@ import com.impulsofit.model.PublicacionType;
 import com.impulsofit.model.Grupo;
 import com.impulsofit.repository.PublicacionRepository;
 import com.impulsofit.service.FeedGrupoService;
-import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,28 +26,35 @@ class FeedGrupoServiceTest {
     @Mock
     private PublicacionRepository publicacionRepository;
 
-    @Mock
-    private EntityManager em;
-
     @InjectMocks
     private FeedGrupoService feedGrupoService;
+
+    private Publicacion pubGrupo;
+
+    @BeforeEach
+    void setUp() {
+        Grupo grupo2 = new Grupo();
+        grupo2.setIdGrupo(2L);
+        pubGrupo = createMockPublicacion(5L, "Hola grupo", PublicacionType.GROUP, grupo2);
+    }
+
+    private Publicacion createMockPublicacion(Long id, String contenido, PublicacionType type, Grupo grupo) {
+        Publicacion p = new Publicacion();
+        p.setIdPublicacion(id);
+        p.setContenido(contenido);
+        p.setType(type);
+        p.setGrupo(grupo);
+        p.setFechaPublicacion(LocalDateTime.now());
+        return p;
+    }
 
     @Test
     @DisplayName("Feed de grupo: visualización de publicaciones grupales")
     void obtenerFeedPorGrupo_shouldReturnPublicaciones() {
-        Publicacion p = new Publicacion();
-        p.setIdPublicacion(5L);
-        p.setContenido("Hola grupo");
-        p.setType(PublicacionType.GROUP);
-        Grupo g = new Grupo();
-        g.setIdGrupo(2L);
-        p.setGrupo(g);
-        p.setFechaPublicacion(LocalDateTime.now());
-
-        when(publicacionRepository.findAllByTypeAndGrupo_IdGrupo(PublicacionType.GROUP, 2L)).thenReturn(List.of(p));
+        when(publicacionRepository.findAllByTypeAndGrupo_IdGrupo(PublicacionType.GROUP, 2L)).thenReturn(List.of(pubGrupo));
 
         List<Publicacion> res = feedGrupoService.obtenerFeedPorGrupo(2L);
         assertThat(res).isNotEmpty();
-        assertThat(res.get(0).getContenido()).isEqualTo("Hola grupo");
+        assertThat(res).extracting(Publicacion::getContenido).containsExactly("Hola grupo");
     }
 }

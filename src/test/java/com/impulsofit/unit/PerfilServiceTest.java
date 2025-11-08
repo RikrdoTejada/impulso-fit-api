@@ -6,6 +6,7 @@ import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.model.Perfil;
 import com.impulsofit.repository.PerfilRepository;
 import com.impulsofit.service.PerfilService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,15 +30,27 @@ class PerfilServiceTest {
     @InjectMocks
     private PerfilService perfilService;
 
+    private Perfil perfil10;
+    private Perfil perfil11;
+
+    @BeforeEach
+    void setUp() {
+        perfil10 = createMockPerfil(10L, "OldName");
+        perfil11 = createMockPerfil(11L, "Name");
+    }
+
+    private Perfil createMockPerfil(Long id, String nombre) {
+        Perfil p = new Perfil();
+        p.setIdPerfil(id);
+        p.setNombre(nombre);
+        return p;
+    }
+
     @Test
     @DisplayName("Editar perfil: modificar nombre correctamente")
     void actualizarPerfil_withValidName_shouldUpdateAndReturnResponse() {
-        Perfil p = new Perfil();
-        p.setIdPerfil(10L);
-        p.setNombre("OldName");
-
-        when(perfilRepository.findById(10L)).thenReturn(Optional.of(p));
-        when(perfilRepository.save(p)).thenReturn(p);
+        when(perfilRepository.findById(10L)).thenReturn(Optional.of(perfil10));
+        when(perfilRepository.save(perfil10)).thenReturn(perfil10);
 
         PerfilRequestDTO req = new PerfilRequestDTO("  NewName  ", "Apellido", "Bio", "Loc", "pic.jpg");
         PerfilResponseDTO res = perfilService.actualizarPerfil(10L, req);
@@ -50,10 +63,7 @@ class PerfilServiceTest {
     @Test
     @DisplayName("Editar perfil: no permitir dejar nombre vacío")
     void actualizarPerfil_withEmptyName_shouldThrow() {
-        Perfil p = new Perfil();
-        p.setIdPerfil(11L);
-        p.setNombre("Name");
-        when(perfilRepository.findById(11L)).thenReturn(Optional.of(p));
+        when(perfilRepository.findById(11L)).thenReturn(Optional.of(perfil11));
 
         PerfilRequestDTO req = new PerfilRequestDTO("   ", "Apellido", "Bio", "Loc", "pic.jpg");
         BusinessRuleException ex = assertThrows(BusinessRuleException.class, () -> perfilService.actualizarPerfil(11L, req));

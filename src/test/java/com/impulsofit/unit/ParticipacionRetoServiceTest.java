@@ -9,6 +9,7 @@ import com.impulsofit.repository.MembresiaGrupoRepository;
 import com.impulsofit.repository.ParticipacionRetoRepository;
 import com.impulsofit.repository.RegistroProcesoRepository;
 import com.impulsofit.service.ParticipacionRetoService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,40 +38,56 @@ class ParticipacionRetoServiceTest {
     @InjectMocks
     private ParticipacionRetoService service;
 
+    private Usuario u1;
+    private Usuario u2;
+    private Reto r1;
+    private Reto r2;
+
+    @BeforeEach
+    void setUp() {
+        u1 = createMockUser(1L);
+        u2 = createMockUser(2L);
+
+        r1 = createMockReto(1L, createMockGrupo(5L));
+        r2 = createMockReto(2L, createMockGrupo(6L));
+    }
+
+    private Usuario createMockUser(Long id) {
+        Usuario u = new Usuario(); u.setIdUsuario(id); return u;
+    }
+
+    private com.impulsofit.model.Grupo createMockGrupo(Long id) {
+        com.impulsofit.model.Grupo g = new com.impulsofit.model.Grupo(); g.setIdGrupo(id); return g;
+    }
+
+    private Reto createMockReto(Long id, com.impulsofit.model.Grupo grupo) {
+        Reto r = new Reto(); r.setIdReto(id); r.setGrupo(grupo); return r;
+    }
+
     @Test
     @DisplayName("Unirse/Abandonar reto: usuario no miembro debe fallar")
     void toggleParticipation_userNotMember_shouldThrow() {
-        Usuario u = new Usuario(); u.setIdUsuario(1L);
-        Reto r = new Reto();
-        com.impulsofit.model.Grupo g = new com.impulsofit.model.Grupo(); g.setIdGrupo(5L);
-        r.setGrupo(g);
-
         when(membresiaRepo.existsByUsuario_IdUsuarioAndGrupo_IdGrupo(1L, 5L)).thenReturn(false);
 
-        BusinessRuleException ex = assertThrows(BusinessRuleException.class, () -> service.toggleParticipation(u, r));
+        BusinessRuleException ex = assertThrows(BusinessRuleException.class, () -> service.toggleParticipation(u1, r1));
         assertThat(ex.getMessage()).contains("debe ingresar al grupo");
     }
 
     @Test
     @DisplayName("Unirse y abandonar reto: flujo básico")
     void toggleParticipation_joinAndLeave_shouldCreateAndThenDelete() {
-        Usuario u = new Usuario(); u.setIdUsuario(2L);
-        Reto r = new Reto();
-        com.impulsofit.model.Grupo g = new com.impulsofit.model.Grupo(); g.setIdGrupo(6L);
-        r.setGrupo(g);
-
         when(membresiaRepo.existsByUsuario_IdUsuarioAndGrupo_IdGrupo(2L, 6L)).thenReturn(true);
-        when(participacionRetoRepository.findByRetoAndUsuario(r, u)).thenReturn(Optional.empty());
+        when(participacionRetoRepository.findByRetoAndUsuario(r2, u2)).thenReturn(Optional.empty());
 
-        boolean joined = service.toggleParticipation(u, r);
+        boolean joined = service.toggleParticipation(u2, r2);
         assertThat(joined).isTrue();
         verify(participacionRetoRepository).save(any(ParticipacionReto.class));
 
-        ParticipacionReto p = new ParticipacionReto(); p.setIdReto(r.getIdReto()); p.setIdUsuario(u.getIdUsuario());
-        when(participacionRetoRepository.findByRetoAndUsuario(r, u)).thenReturn(Optional.of(p));
+        ParticipacionReto p = new ParticipacionReto(); p.setIdReto(r2.getIdReto()); p.setIdUsuario(u2.getIdUsuario());
+        when(participacionRetoRepository.findByRetoAndUsuario(r2, u2)).thenReturn(Optional.of(p));
         when(registroProcesoRepository.findByParticipacionRetoOrderByFechaDesc(p)).thenReturn(List.of(new RegistroProceso()));
 
-        boolean now = service.toggleParticipation(u, r);
+        boolean now = service.toggleParticipation(u2, r2);
         assertThat(now).isFalse();
         verify(registroProcesoRepository).deleteAll(anyList());
         verify(participacionRetoRepository).delete(p);
@@ -88,9 +105,9 @@ class ParticipacionRetoServiceTest {
         rp2.setParticipacionReto(p2); rp2.setAvance("70");
         when(registroProcesoRepository.findByParticipacionReto_Reto(r)).thenReturn(List.of(rp1, rp2));
 
-        List<com.impulsofit.dto.response.ProgresoResponseDTO> ranking = service.rankingDto(r);
+        var ranking = service.rankingDto(r);
         assertThat(ranking).hasSize(2);
-        assertThat(ranking.get(0).idUsuario()).isEqualTo(11L); // 70 first
+        assertThat(ranking.get(0).idUsuario()).isEqualTo(11L);
         assertThat(ranking.get(1).idUsuario()).isEqualTo(10L);
     }
 }
