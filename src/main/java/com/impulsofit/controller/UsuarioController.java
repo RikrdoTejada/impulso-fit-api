@@ -16,18 +16,6 @@ import java.util.List;
 public class UsuarioController {
     private final UsuarioService usuarioService;
 
-    private final UsuarioService service;
-
-    public UsuarioController(UsuarioService service) {
-        this.service = service;
-    }
-
-    @PostMapping
-public ResponseEntity<UsuarioResponseDTO> create(@RequestBody UsuarioRequestDTO u) {
-    UsuarioResponseDTO saved = usuarioService.create(u);
-    return ResponseEntity.ok(saved);
-}
-    }
 
 @GetMapping
 public List<UsuarioResponseDTO> list() {
