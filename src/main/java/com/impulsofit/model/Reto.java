@@ -24,8 +24,8 @@ public class Reto {
     private Grupo grupo;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_usuario_creador", nullable = false)
-    private Usuario creador;
+    @JoinColumn(name = "id_perfil_creador", nullable = false)
+    private Perfil perfilCreador;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_unidad")
@@ -50,24 +50,15 @@ public class Reto {
     @Column(name = "fecha_fin")
     private LocalDate fechaFin;
 
-    public Long getIdGrupo() {
-        return (this.grupo != null) ? this.grupo.getId() : null;
-    }
-
-    public void setIdGrupo(Long idGrupo) {
-        if (idGrupo == null) { this.grupo = null; return; }
-        if (this.grupo == null) this.grupo = new Grupo();
-        this.grupo.setId(idGrupo);
-    }
 
     public Long getIdUsuario() {
-        return (this.creador != null) ? this.creador.getIdUsuario() : null;
+        return (this.perfilCreador != null) ? this.perfilCreador.getIdPerfil(): null;
     }
 
-    public void setIdUsuario(Long idUsuario) {
-        if (idUsuario == null) { this.creador = null; return; }
-        if (this.creador == null) this.creador = new Usuario();
-        this.creador.setIdUsuario(idUsuario);
+    public void setIdUsuario(Long idP) {
+        if (idP == null) { this.perfilCreador = null; return; }
+        if (this.perfilCreador == null) this.perfilCreador = new Perfil();
+        this.perfilCreador.setIdPerfil(idP);
     }
 
     @PrePersist

@@ -16,11 +16,9 @@ public class Perfil {
     @Column(name = "id_perfil")
     private Long idPerfil;
 
-    @Column(length = 50)
-    private String nombre;
-
-    @Column(length = 50)
-    private String apellido;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_persona")
+    private Persona persona;
 
     @Column(columnDefinition = "TEXT")
     private String biografia;
@@ -30,9 +28,4 @@ public class Perfil {
 
     @Column(name = "foto_perfil", length = 255)
     private String fotoPerfil;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @MapsId
-    @JoinColumn(name = "id_perfil")
-    private Usuario usuario;
 }

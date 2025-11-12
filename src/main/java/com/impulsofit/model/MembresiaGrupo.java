@@ -22,8 +22,8 @@ public class MembresiaGrupo {
     private Long idMembresia;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_usuario", nullable = false)
-    private Usuario usuario;
+    @JoinColumn(name = "id_perfil", nullable = false)
+    private Perfil idPerfil;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_grupo", nullable = false)
@@ -31,9 +31,6 @@ public class MembresiaGrupo {
 
     @Column(name = "fecha_union", nullable = false)
     private LocalDateTime fechaUnion;
-
-    public Long getIdMembresia() { return idMembresia; }
-    public void setIdMembresia(Long idMembresia) { this.idMembresia = idMembresia; }
 
     public Long getId() { return this.idMembresia; }
     public void setId(Long id) { this.idMembresia = id; }

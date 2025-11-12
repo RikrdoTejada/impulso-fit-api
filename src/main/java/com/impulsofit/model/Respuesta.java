@@ -18,8 +18,8 @@ public class Respuesta{
     private Long idRespuesta;
 
     @OneToOne
-    @JoinColumn(name="id_usuario", nullable = false)
-    private Usuario usuario;
+    @JoinColumn(name="id_perfil", nullable = false)
+    private Perfil idPerfil;
 
     @Column(name = "str_respuesta", nullable = false)
     private String strRespuesta;

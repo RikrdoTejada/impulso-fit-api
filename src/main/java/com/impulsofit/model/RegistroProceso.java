@@ -24,7 +24,7 @@ public class RegistroProceso {
     @ManyToOne(optional = false)
     @JoinColumns({
             @JoinColumn(name = "id_reto", referencedColumnName = "id_reto", nullable = false),
-            @JoinColumn(name = "id_usuario", referencedColumnName = "id_usuario", nullable = false)
+            @JoinColumn(name = "id_perfil", referencedColumnName = "id_perfil", nullable = false)
     })
     private ParticipacionReto participacionReto;
 

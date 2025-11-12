@@ -22,8 +22,8 @@ public class Comentario {
     private String contenido;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_usuario", nullable = false)
-    private Usuario usuario;
+    @JoinColumn(name = "id_perfil", nullable = false)
+    private Perfil idPerfil;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_publicacion", nullable = false)
@@ -35,13 +35,6 @@ public class Comentario {
     // Tipo genérico para distinguir origen de la publicación (ej. 'GENERAL' o 'GRUPAL')
     @Column(name = "tipo", nullable = false, length = 20)
     private String tipo = "GENERAL";
-
-    // Constructor con campos
-    public Comentario(String contenido, Usuario usuario, Publicacion publicacion) {
-        this.contenido = contenido;
-        this.usuario = usuario;
-        this.publicacion = publicacion;
-    }
 
     @PrePersist
     protected void onCreate() {

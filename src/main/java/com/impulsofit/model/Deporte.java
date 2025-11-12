@@ -27,7 +27,5 @@ public class Deporte
     // Compatibilidad: alias getter/setter para código que espera tipoDeporte
     public String getTipoDeporte() { return this.tipo; }
     public void setTipoDeporte(String tipoDeporte) { this.tipo = tipoDeporte; }
-
-    // Compatibilidad: devolver id como Integer si se usa en DTOs antiguos
-    public Integer getIdDeporteAsInteger() { return this.idDeporte == null ? null : this.idDeporte.intValue(); }
+    
 }

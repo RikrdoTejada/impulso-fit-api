@@ -18,8 +18,8 @@ public class Publicacion {
     private Long idPublicacion;
 
     @ManyToOne
-    @JoinColumn(name = "id_usuario", nullable = false)
-    private Usuario usuario;
+    @JoinColumn(name = "id_perfil", nullable = false)
+    private Perfil idPerfil;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_publicacion" ,nullable = false)

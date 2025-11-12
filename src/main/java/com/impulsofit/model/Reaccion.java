@@ -24,8 +24,8 @@ public class Reaccion {
     private Publicacion publicacion;
 
     @ManyToOne
-    @JoinColumn(name = "id_usuario", nullable = false)
-    private Usuario usuario;
+    @JoinColumn(name = "id_perfil", nullable = false)
+    private Perfil idPerfil;
 
     @Column(name = "Fecha_Registro")
     private LocalDateTime fechaRegistro;

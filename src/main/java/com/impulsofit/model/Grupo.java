@@ -22,8 +22,8 @@ public class Grupo {
     private Long idGrupo;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_usuario_creador", nullable = false)
-    private Usuario creador;
+    @JoinColumn(name = "id_perfil_creador", nullable = false)
+    private Perfil perfilCreador;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_deporte", nullable = false)
@@ -47,22 +47,7 @@ public class Grupo {
     public Long getId() { return this.idGrupo; }
     public void setId(Long id) { this.idGrupo = id; }
 
-    public Integer getIdGrupoAsInteger() { return (this.idGrupo == null) ? null : this.idGrupo.intValue(); }
-
-    public Usuario getCreador() { return this.creador; }
-    public void setCreador(Usuario creador) { this.creador = creador; }
-
-    public Long getUsuarioCreadorId() { return (this.creador != null) ? this.creador.getIdUsuario() : null; }
-
-    public Long getDeporteId() { return (this.deporte != null) ? this.deporte.getIdDeporte() : null; }
-
-    public LocalDate getFechaCreacionAsLocalDate() { return (this.fechaCreacion == null) ? null : this.fechaCreacion.toLocalDate(); }
-    public void setFechaCreacion(LocalDate date) { this.fechaCreacion = (date == null) ? null : date.atStartOfDay(); }
-
-    public Date getFechaCreacionAsDate() { return (this.fechaCreacion == null) ? null : Date.from(this.fechaCreacion.atZone(ZoneId.systemDefault()).toInstant()); }
-    public void setFechaCreacionAsDate(Date date) { this.fechaCreacion = (date == null) ? null : LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault()); }
-
-    // PrePersist: asegurar fecha por defecto
+      // PrePersist: asegurar fecha por defecto
     @PrePersist
     protected void onCreate() {
         if (this.fechaCreacion == null) {
