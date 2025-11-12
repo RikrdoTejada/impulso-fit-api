@@ -35,8 +35,7 @@ public class UnidadConverterService {
             return cantidad;
         }
         // Otros
-        if (cantidad != null) return cantidad;
-        return null;
+        return cantidad;
     }
 
     public int[] minutosAhorasYMinutos(double minutosTotales) {
