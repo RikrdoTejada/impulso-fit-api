@@ -1,13 +1,10 @@
 package com.impulsofit.model;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "persona")
@@ -23,7 +20,7 @@ public class Persona {
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "id_usuario")
-    private Usuario idUsuario;
+    private Usuario usuario;
 
     @Column(name = "nombres", nullable = false)
     private String nombres;
