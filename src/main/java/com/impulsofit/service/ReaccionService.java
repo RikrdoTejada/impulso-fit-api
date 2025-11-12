@@ -7,7 +7,6 @@ import com.impulsofit.exception.ResourceNotFoundException;
 import com.impulsofit.model.Perfil;
 import com.impulsofit.model.Publicacion;
 import com.impulsofit.model.Reaccion;
-import com.impulsofit.model.Usuario;
 import com.impulsofit.repository.PerfilRepository;
 import com.impulsofit.repository.PublicacionRepository;
 import com.impulsofit.repository.ReaccionRepository;

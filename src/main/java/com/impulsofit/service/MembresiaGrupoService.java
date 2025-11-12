@@ -7,11 +7,9 @@ import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.model.Grupo;
 import com.impulsofit.model.MembresiaGrupo;
 import com.impulsofit.model.Perfil;
-import com.impulsofit.model.Usuario;
 import com.impulsofit.repository.GrupoRepository;
 import com.impulsofit.repository.MembresiaGrupoRepository;
 import com.impulsofit.repository.PerfilRepository;
-import com.impulsofit.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

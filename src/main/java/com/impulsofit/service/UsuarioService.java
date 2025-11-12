@@ -1,7 +1,6 @@
 package com.impulsofit.service;
 
 import com.impulsofit.dto.request.RecoverRequestDTO;
-import com.impulsofit.dto.request.UsuarioRequestDTO;
 import com.impulsofit.dto.response.UsuarioResponseDTO;
 import com.impulsofit.exception.AlreadyExistsException;
 import com.impulsofit.exception.BusinessRuleException;
@@ -12,35 +11,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.Period;
 
 
 @Service
 @RequiredArgsConstructor()
 public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
-
-    @Transactional
-    public UsuarioResponseDTO create(UsuarioRequestDTO usuario) {
-        //Validacion de correo
-        if (usuarioRepository.existsByEmailIgnoreCase(usuario.email())) {
-            throw new AlreadyExistsException("Ya existe un usuario con el correo: " + usuario.email());
-        }
-
-        validarDateyGender(usuario);
-
-        Usuario usuarioEntity = new Usuario();
-        usuarioEntity.setEmail(usuario.email().toLowerCase());
-        usuarioEntity.setContrasena(usuario.contrasena());
-        usuarioEntity.setCodPregunta(usuario.cod_pregunta());
-        usuarioEntity.setRespuesta(usuario.respuesta());
-
-        Usuario saved = usuarioRepository.save(usuarioEntity);
-
-        return mapToResponse(saved);
-    }
-
 
     //Metodo update para credenciales de usuario (password and email)
     @Transactional
@@ -94,34 +70,7 @@ public class UsuarioService {
         usuarioRepository.deleteById(id);
     }
 
-    private void validarDateyGender(UsuarioRequestDTO u) {
-        //Fecha no puede estar vacía
-        if (u.fecha_nacimiento() == null) {
-            throw new BusinessRuleException("La fecha de nacimiento no puede estar vacía.");
-        }
-        //Fecha no puede ser del futuro
-        if (u.fecha_nacimiento().isAfter(LocalDate.now())) {
-            throw new BusinessRuleException(
-                    "La fecha de nacimiento no puede ser una fecha futura. " +
-                            "Fecha ingresada: " + u.fecha_nacimiento()
-            );
-        }
-        //Usuario debe tener mínimo 15 años de edad
-        int edad = Period.between(u.fecha_nacimiento(), LocalDate.now()).getYears();
-        if (edad < 15) {
-            throw new BusinessRuleException(
-                    "El usuario debe tener al menos 15 años. Edad actual: " + edad
-            );
-        }
-        //Genero no puede estar vacío
-        if (u.genero() == null) {
-            throw new BusinessRuleException("Genero no puede estar vacío");
-        }
-        //Usuario no puede ser diferente de "M" o "F"
-        if (!u.genero().equals("M") && !u.genero().equals("F")) {
-            throw new BusinessRuleException("Formato de género inválido. Solo se permite: M o F");
-        }
-    }
+
 
     private UsuarioResponseDTO mapToResponse(Usuario saved) {
         return new UsuarioResponseDTO(

@@ -1,14 +1,13 @@
 package com.impulsofit.service;
 
-import com.impulsofit.dto.request.LoginRequestDTO;
-import com.impulsofit.dto.request.RecoverRequestDTO;
+import com.impulsofit.dto.request.*;
 import com.impulsofit.dto.response.LoginResponseDTO;
 import com.impulsofit.dto.response.UsuarioResponseDTO;
+import com.impulsofit.exception.AlreadyExistsException;
 import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.exception.ResourceNotFoundException;
 import com.impulsofit.model.Persona;
 import com.impulsofit.model.Usuario;
-import com.impulsofit.repository.PerfilRepository;
 import com.impulsofit.repository.PersonaRepository;
 import com.impulsofit.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +16,9 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 
 @RequiredArgsConstructor
 @Service
@@ -27,9 +28,37 @@ public class AuthService {
     private static final long MINUTOS_DESBLOQUEO = 60;
 
     private final UsuarioRepository usuarioRepository;
-    private final PerfilRepository perfilRepository;
     private final PersonaRepository personaRepository;
 
+
+    @Transactional
+    public UsuarioResponseDTO register(RegisterRequestDTO req) {
+        //Validacion de correo
+        if (usuarioRepository.existsByEmailIgnoreCase(req.email())) {
+            throw new AlreadyExistsException("Ya existe un usuario con el correo: " + req.email());
+        }
+
+        validarDateyGender(req);
+
+        //Crear Usuario con credenciales
+        Usuario usuarioEntity = new Usuario();
+        usuarioEntity.setEmail(req.email().toLowerCase());
+        usuarioEntity.setContrasena(req.contrasena());
+        usuarioEntity.setCodPregunta(req.cod_pregunta());
+        usuarioEntity.setRespuesta(req.respuesta());
+
+        Usuario saved = usuarioRepository.save(usuarioEntity);
+
+        //Crear Persona asociada al Usuario
+        Persona personaEntity = new Persona();
+        personaEntity.setNombres(req.nombres());
+        personaEntity.setApellidoP(req.apellido_p());
+        personaEntity.setApellidoM(req.apellido_m());
+        personaEntity.setFechaNacimiento(req.fecha_nacimiento());
+        personaEntity.setGenero(req.genero());
+
+        return mapToResponse(saved);
+    }
 
     @Transactional(noRollbackFor = BusinessRuleException.class)
     public LoginResponseDTO login(LoginRequestDTO loginDTO) {
@@ -112,10 +141,42 @@ public class AuthService {
         }
         Usuario saved = usuarioRepository.save(usuarioEntity);
 
+        return mapToResponse(saved);
+    }
+
+    private void validarDateyGender(RegisterRequestDTO u) {
+        //Fecha no puede estar vacía
+        if (u.fecha_nacimiento() == null) {
+            throw new BusinessRuleException("La fecha de nacimiento no puede estar vacía.");
+        }
+        //Fecha no puede ser del futuro
+        if (u.fecha_nacimiento().isAfter(LocalDate.now())) {
+            throw new BusinessRuleException(
+                    "La fecha de nacimiento no puede ser una fecha futura. " +
+                            "Fecha ingresada: " + u.fecha_nacimiento()
+            );
+        }
+        //Usuario debe tener mínimo 15 años de edad
+        int edad = Period.between(u.fecha_nacimiento(), LocalDate.now()).getYears();
+        if (edad < 15) {
+            throw new BusinessRuleException(
+                    "El usuario debe tener al menos 15 años. Edad actual: " + edad
+            );
+        }
+        //Genero no puede estar vacío
+        if (u.genero() == null) {
+            throw new BusinessRuleException("Genero no puede estar vacío");
+        }
+        //Usuario no puede ser diferente de "M" o "F"
+        if (!u.genero().equals("M") && !u.genero().equals("F")) {
+            throw new BusinessRuleException("Formato de género inválido. Solo se permite: M o F");
+        }
+    }
+
+    private UsuarioResponseDTO mapToResponse(Usuario saved) {
         return new UsuarioResponseDTO(
                 saved.getIdUsuario(),
                 saved.getEmail(),
-                saved.getContrasena(),
                 saved.getFechaRegistro(),
                 saved.getCodPregunta()
         );
