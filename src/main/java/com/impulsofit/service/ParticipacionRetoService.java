@@ -1,15 +1,11 @@
 package com.impulsofit.service;
 
 import com.impulsofit.exception.BusinessRuleException;
-import com.impulsofit.model.ParticipacionReto;
-import com.impulsofit.model.RegistroProceso;
-import com.impulsofit.model.Reto;
-import com.impulsofit.model.Usuario;
+import com.impulsofit.model.*;
 import com.impulsofit.repository.ParticipacionRetoRepository;
 import com.impulsofit.repository.RegistroProcesoRepository;
 import com.impulsofit.dto.response.ProgresoResponseDTO;
 import com.impulsofit.dto.request.AddProgresoRequestDTO;
-import com.impulsofit.model.Unidad;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -38,13 +34,13 @@ public class ParticipacionRetoService {
     }
 
     @Transactional
-    public Double agregarProgreso(Usuario usuario, Reto reto, Double avance) {
+    public Double agregarProgreso(Perfil perfil, Reto reto, Double avance) {
         if (avance == null || avance <= 0) {
             throw new IllegalArgumentException("El avance debe ser un número positivo");
         }
 
         ParticipacionReto participacion = participacionRetoRepository
-                .findByRetoAndUsuario(reto, usuario)
+                .findByRetoAndPerfil(reto, perfil)
                 .orElseThrow(() -> new BusinessRuleException("El usuario no está participando en el reto"));
 
         RegistroProceso registro = new RegistroProceso();
@@ -61,13 +57,13 @@ public class ParticipacionRetoService {
     }
 
     @Transactional
-    public boolean toggleParticipation(Usuario usuario, Reto reto) {
+    public boolean toggleParticipation(Perfil perfil, Reto reto) {
         // Validar pertenencia al grupo del reto
-        Long idUsuario = usuario.getIdUsuario();
-        Long idGrupo = Optional.ofNullable(reto.getGrupo()).map(g -> g.getIdGrupo()).orElse(null);
+        Long idUsuario = perfil.getIdPerfil();
+        Long idGrupo = Optional.ofNullable(reto.getGrupo()).map(Grupo::getIdGrupo).orElse(null);
         membresiaGrupoService.validarUsuarioEsMiembro(idUsuario, idGrupo);
 
-        Optional<ParticipacionReto> found = participacionRetoRepository.findByRetoAndUsuario(reto, usuario);
+        Optional<ParticipacionReto> found = participacionRetoRepository.findByRetoAndPerfil(reto, perfil);
         if (found.isPresent()) {
             ParticipacionReto p = found.get();
             // Borrar todos los registros asociados a esta participacion
@@ -80,8 +76,7 @@ public class ParticipacionRetoService {
         } else {
             ParticipacionReto p = new ParticipacionReto();
             p.setIdReto(reto.getIdReto());
-            p.setIdPerfil(usuario.getIdUsuario());
-            p.setUsuario(usuario);
+            p.setPerfil(perfil);
             p.setReto(reto);
             p.setFechaUnion(LocalDateTime.now());
             participacionRetoRepository.save(p);
@@ -92,11 +87,11 @@ public class ParticipacionRetoService {
     public List<UsuarioTotal> rankingPorReto(Reto reto) {
         Map<Long, Double> sumas = new HashMap<>();
         for (RegistroProceso r : registroProcesoRepository.findByParticipacionReto_Reto(reto)) {
-            Long idUsuario = Optional.ofNullable(r.getParticipacionReto()).map(ParticipacionReto::getIdUsuario).orElse(null);
-            if (idUsuario == null) continue;
+            Long idPerfil = Optional.ofNullable(r.getParticipacionReto()).map(ParticipacionReto::getPerfil).map(Perfil::getIdPerfil).orElse(null);
+            if (idPerfil     == null) continue;
             double val = 0.0;
             try { val = Double.parseDouble(Optional.ofNullable(r.getAvance()).orElse("0")); } catch (Exception ignored) {}
-            sumas.merge(idUsuario, val, Double::sum);
+            sumas.merge(idPerfil, val, Double::sum);
         }
         return sumas.entrySet().stream()
                 .sorted((a,b) -> Double.compare(b.getValue(), a.getValue()))
@@ -227,14 +222,14 @@ public class ParticipacionRetoService {
 
     public boolean unidadRequiereEntero(Unidad unidad) {
         if (unidad == null) return false;
+
         String nombre = normalize(unidad.getNombre());
         String uso = normalize(unidad.getUso());
-        if (nombre.contains("series") || nombre.contains("serie") || nombre.contains("sesion") || nombre.contains("sesiones")
-                || nombre.contains("punto") || nombre.contains("puntos") || nombre.contains("entrenam")
-                || uso.contains("repet") || uso.contains("sesion") || uso.contains("punto") || uso.contains("dia")) {
-            return true;
-        }
-        return false;
+
+        return nombre.contains("series") || nombre.contains("serie") || nombre.contains("sesion")
+                || nombre.contains("sesiones") || nombre.contains("punto") || nombre.contains("puntos")
+                || nombre.contains("entrenam") || uso.contains("repet") || uso.contains("sesion")
+                || uso.contains("punto") || uso.contains("dia");
     }
 
     public void validarValorEnteroSiCorresponde(Unidad unidad, Double v) {

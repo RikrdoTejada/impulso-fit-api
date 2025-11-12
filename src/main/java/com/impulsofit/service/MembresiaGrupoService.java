@@ -6,9 +6,11 @@ import com.impulsofit.exception.ResourceNotFoundException;
 import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.model.Grupo;
 import com.impulsofit.model.MembresiaGrupo;
+import com.impulsofit.model.Perfil;
 import com.impulsofit.model.Usuario;
 import com.impulsofit.repository.GrupoRepository;
 import com.impulsofit.repository.MembresiaGrupoRepository;
+import com.impulsofit.repository.PerfilRepository;
 import com.impulsofit.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,18 +22,18 @@ import java.time.LocalDate;
 
 public class MembresiaGrupoService {
     private final MembresiaGrupoRepository membresiaGrupoRepository;
-    private final UsuarioRepository usuarioRepository;
     private final GrupoRepository grupoRepository;
+    private final PerfilRepository perfilRepository;
 
     public MembresiaGrupoResponseDTO create(MembresiaGrupoRequestDTO membresia) {
-        Usuario usuario = usuarioRepository.findById(membresia.id_usuario())
-                .orElseThrow(() -> new ResourceNotFoundException("No existe el usuario con el id: " + membresia.id_usuario()));
+        Perfil perfil = perfilRepository.findById(membresia.id_perfil())
+                .orElseThrow(() -> new ResourceNotFoundException("No existe el perfil con el id: " + membresia.id_perfil()));
 
         Grupo grupo = grupoRepository.findById(membresia.id_grupo())
                 .orElseThrow(() -> new ResourceNotFoundException("No existe el grupo con el id: " + membresia.id_grupo()));
 
         MembresiaGrupo membresiaEntity = new MembresiaGrupo();
-        membresiaEntity.setUsuario(usuario);
+        membresiaEntity.setPerfil(perfil);
         membresiaEntity.setGrupo(grupo);
 
         MembresiaGrupo saved = membresiaGrupoRepository.save(membresiaEntity);
@@ -40,7 +42,7 @@ public class MembresiaGrupoService {
 
         return new MembresiaGrupoResponseDTO(
                 saved.getIdMembresia(),
-                saved.getUsuario().getNombres(),
+                saved.getPerfil().getPersona().getNombres(),
                 saved.getGrupo().getNombre(),
                 fechaUnionLocalDate
         );
@@ -57,7 +59,7 @@ public class MembresiaGrupoService {
         if (idGrupo == null) {
             throw new BusinessRuleException("El reto no tiene grupo asociado");
         }
-        boolean miembro = membresiaGrupoRepository.existsByUsuario_IdUsuarioAndGrupo_IdGrupo(idUsuario, idGrupo);
+        boolean miembro = membresiaGrupoRepository.existsByPerfil_IdAndGrupo_Id(idUsuario, idGrupo);
         if (!miembro) {
             throw new BusinessRuleException("El usuario debe ingresar al grupo antes de participar en el reto");
         }

@@ -4,14 +4,8 @@ import com.impulsofit.dto.request.PublicacionRequestDTO;
 import com.impulsofit.dto.response.PublicacionResponseDTO;
 import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.exception.ResourceNotFoundException;
-import com.impulsofit.model.Grupo;
-import com.impulsofit.model.Publicacion;
-import com.impulsofit.model.PublicacionType;
-import com.impulsofit.model.Usuario;
-import com.impulsofit.repository.GrupoRepository;
-import com.impulsofit.repository.MembresiaGrupoRepository;
-import com.impulsofit.repository.PublicacionRepository;
-import com.impulsofit.repository.UsuarioRepository;
+import com.impulsofit.model.*;
+import com.impulsofit.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,15 +18,15 @@ import java.util.stream.Collectors;
 
 public class PublicacionService {
     private final PublicacionRepository publicacionRepository;
-    private final UsuarioRepository usuarioRepository;
     private final GrupoRepository grupoRepository;
     private final MembresiaGrupoRepository membresiaGrupoRepository;
+    private final PerfilRepository perfilRepository;
 
     @Transactional
     public PublicacionResponseDTO create(PublicacionRequestDTO publicacion) {
-        //Usuario
-        Usuario usuario = usuarioRepository.findById(publicacion.id_usuario())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+        //Perfil
+        Perfil perfil = perfilRepository.findById(publicacion.id_perfil())
+                .orElseThrow(() -> new ResourceNotFoundException("Perfil no encontrado"));
 
         //Contenido no puede estar vacio
         if(publicacion.contenido()==null){
@@ -45,7 +39,7 @@ public class PublicacionService {
         }
 
         Publicacion publicacionEntity = new Publicacion();
-        publicacionEntity.setUsuario(usuario);
+        publicacionEntity.setPerfil(perfil);
 
         //Grupo y Tipo
         if (publicacion.id_grupo() == null) {
@@ -56,7 +50,7 @@ public class PublicacionService {
                     .orElseThrow(() -> new ResourceNotFoundException("Grupo no encontrado"));
             //Membresia de Grupo
             boolean member = membresiaGrupoRepository.
-                    existsByUsuario_IdUsuarioAndGrupo_IdGrupo(publicacion.id_usuario(), publicacion.id_grupo());
+                    existsByPerfil_IdPerfilAndGrupo_IdGrupo(publicacion.id_perfil(), publicacion.id_grupo());
             if (!member) throw new BusinessRuleException("El usuario no pertenece al grupo");
             publicacionEntity.setGrupo(grupo);
             publicacionEntity.setType(PublicacionType.GROUP);
@@ -79,8 +73,8 @@ public class PublicacionService {
     }
 
     @Transactional(readOnly = true)
-    public List<PublicacionResponseDTO> findByUsuario_IdUsuario(Long id_usuario) {
-        return publicacionRepository.findAllByUsuario_IdUsuario(id_usuario)
+    public List<PublicacionResponseDTO> findByUsuario_IdUsuario(Long id_perfil) {
+        return publicacionRepository.findAllByPerfil_IdPerfil(id_perfil)
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -100,10 +94,10 @@ public class PublicacionService {
                 .orElseThrow(() -> new ResourceNotFoundException("No existe la publicacion con id " + id));
         publicacionEntity.setIdPublicacion(id);
 
-        //Usuario
-        Usuario usuario = usuarioRepository.findById(publicacion.id_usuario())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
-        publicacionEntity.setUsuario(usuario);
+        //Perfil
+        Perfil perfil = perfilRepository.findById(publicacion.id_perfil())
+                .orElseThrow(() -> new ResourceNotFoundException("Perfil no encontrado"));
+        publicacionEntity.setPerfil(perfil);
 
         //Contenido no puede estar vacio
         if(publicacion.contenido()==null || publicacion.contenido().isBlank()){
@@ -125,7 +119,7 @@ public class PublicacionService {
                     .orElseThrow(() -> new ResourceNotFoundException("Grupo no encontrado"));
             //Membresia de Grupo
             boolean member = membresiaGrupoRepository.
-                    existsByUsuario_IdUsuarioAndGrupo_IdGrupo(publicacion.id_usuario(), publicacion.id_grupo());
+                    existsByPerfil_IdPerfilAndGrupo_IdGrupo(publicacion.id_perfil(), publicacion.id_grupo());
             if (!member) throw new BusinessRuleException("El usuario no pertenece al grupo");
             publicacionEntity.setGrupo(grupo);
             publicacionEntity.setType(PublicacionType.GROUP);
@@ -152,7 +146,7 @@ public class PublicacionService {
         String grupoNombre = publica ? null : publicacion.getGrupo().getNombre();
         return new PublicacionResponseDTO(
                 publicacion.getIdPublicacion(),
-                publicacion.getUsuario().getNombres(),
+                publicacion.getPerfil().getPersona().getNombres(),
                 publicacion.getType(),
                 grupoNombre,
                 publicacion.getContenido(),

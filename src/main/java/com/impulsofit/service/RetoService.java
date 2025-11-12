@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -26,10 +27,10 @@ public class RetoService {
     private static final Logger logger = LoggerFactory.getLogger(RetoService.class);
 
     private final GrupoRepository grupoRepository;
-    private final UsuarioRepository usuarioRepository;
     private final UnidadRepository unidadRepository;
     private final RetoRepository retoRepository;
     private final MembresiaGrupoRepository membresiaGrupoRepository;
+    private final PerfilRepository perfilRepository;
 
 
     @Transactional
@@ -86,7 +87,7 @@ public class RetoService {
 
     @Transactional(readOnly = true)
     public List<RetoResponseDTO> findByCreador_Id(Long usuario_creador) {
-        return retoRepository.findAllByCreador_IdUsuario(usuario_creador)
+        return retoRepository.findAllByPerfilCreador_IdPerfil(usuario_creador)
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -114,12 +115,12 @@ public class RetoService {
     }
 
     // Nuevo: record para devolver contexto común
-    private record RequestContext(Usuario usuario, Grupo grupo, Unidad unidad) {}
+    private record RequestContext(Perfil perfil, Grupo grupo, Unidad unidad) {}
 
     // Recupera y valida las referencias comunes a create/update
     private RequestContext resolveReferences(RetoRequestDTO reto) {
-        Usuario usuario = usuarioRepository.findById(reto.id_usuario_creador())
-                .orElseThrow(() -> new ResourceNotFoundException("No existe el usuario con el id: " + reto.id_usuario_creador()));
+        Perfil perfil = perfilRepository.findById(reto.id_perfil_creador())
+                .orElseThrow(() -> new ResourceNotFoundException("Perfil no encontrado"));
 
         Grupo grupo = grupoRepository.findById(reto.id_grupo())
                 .orElseThrow(() -> new ResourceNotFoundException("No existe el grupo con el id: " + reto.id_grupo()));
@@ -131,75 +132,69 @@ public class RetoService {
         validarUnidadPermitidaParaDeporte(grupo.getDeporte(), unidad);
 
         // Validar que el usuario pertenezca al grupo
-        if(!membresiaGrupoRepository.existsByUsuario_IdUsuarioAndGrupo_IdGrupo(reto.id_usuario_creador(), reto.id_grupo())) {
-            throw new ResourceNotFoundException("El usuario con el id: " + reto.id_usuario_creador() + " no pertenece al grupo con el id: " + reto.id_grupo());
+        if(!membresiaGrupoRepository.existsByPerfil_IdAndGrupo_Id(reto.id_perfil_creador(), reto.id_grupo())) {
+            throw new ResourceNotFoundException("El usuario con el id: " + reto.id_perfil_creador() + " no pertenece al grupo con el id: " + reto.id_grupo());
         }
 
-        return new RequestContext(usuario, grupo, unidad);
+        return new RequestContext(perfil, grupo, unidad);
     }
 
     // Verifica que la unidad seleccionada sea válida para el deporte del grupo
     private void validarUnidadPermitidaParaDeporte(Deporte deporte, Unidad unidad) {
-        if (deporte == null || unidad == null) return; // otras validaciones fallarán en su lugar
+        if (deporte == null || unidad == null) return;
+
         String nombreDeporte = deporte.getNombre() == null ? "" : deporte.getNombre();
         String tipoDeporte = (deporte.getTipo() != null ? deporte.getTipo() : deporte.getTipoDeporte());
         String d = (nombreDeporte + " " + (tipoDeporte == null ? "" : tipoDeporte)).toLowerCase();
         Long idUnidad = unidad.getIdUnidad();
 
-        // log inicial
         logger.info("validarUnidadPermitidaParaDeporte: deporte='{}' tipo='{}' combinado='{}' unidadId={} unidadNombre='{}' unidadUso='{}'",
                 nombreDeporte, tipoDeporte, d, idUnidad, unidad.getNombre(), unidad.getUso());
 
-        // Detectar categorías de la unidad por nombre/uso (robusto si los ids no coinciden)
         Set<String> unitCategories = detectUnitCategories(unidad);
 
-        // IDs de unidad permitidos por deporte (fallback)
-        Set<Long> allowedIds;
-        Set<String> allowedCategories;
+        // Siempre inicializados (sin nulls)
+        Set<Long> allowedIds = Collections.emptySet();
+        Set<String> allowedCategories = Collections.emptySet();
+        boolean allowAll = false;
+
         if (equalsOrContains(d, "cardio")) {
-            // Cardio: Distancia / Tiempo
+            // Distancia / Tiempo
             allowedIds = Set.of(3L, 4L, 1L, 2L);
             allowedCategories = Set.of("DISTANCIA", "TIEMPO");
         } else if (equalsOrContains(d, "fuerza")) {
-            // Fuerza: Días / Peso
+            // Días / Peso
             allowedIds = Set.of(5L, 6L);
             allowedCategories = Set.of("DIAS", "PESO");
         } else if (equalsOrContains(d, "resistencia")) {
-            // Resistencia Muscular: Series / Días
+            // Series / Días
             allowedIds = Set.of(7L, 5L);
             allowedCategories = Set.of("SERIES", "DIAS");
         } else if (equalsOrContains(d, "cuerpo") || equalsOrContains(d, "mente") || equalsOrContains(d, "cuerpo y mente")) {
-            // Cuerpo y Mente: Sesiones / Minutos
+            // Sesiones / Minutos
             allowedIds = Set.of(8L, 1L);
             allowedCategories = Set.of("SESIONES", "TIEMPO");
         } else if (equalsOrContains(d, "recreativo")) {
-            // Recreativo: Puntos / Sesiones / Tiempo
+            // Puntos / Sesiones / Tiempo
             allowedIds = Set.of(9L, 8L, 1L, 2L);
             allowedCategories = Set.of("PUNTOS", "SESIONES", "TIEMPO");
         } else {
-            allowedIds = null;
-            allowedCategories = null;
+            // Deporte desconocido → aceptar cualquier unidad
+            allowAll = true;
         }
 
-        boolean ok = false;
-        if (allowedIds == null && allowedCategories == null) {
-            ok = true;
-        } else {
-            if (idUnidad != null && allowedIds != null && allowedIds.contains(idUnidad)) {
-                ok = true;
-            } else if (allowedCategories != null) {
-                for (String c : unitCategories) {
-                    if (allowedCategories.contains(c)) { ok = true; break; }
-                }
-            }
-        }
+        if (allowAll) return;
+
+        boolean ok = (idUnidad != null && allowedIds.contains(idUnidad))
+                || unitCategories.stream().anyMatch(allowedCategories::contains);
 
         if (!ok) {
-            logger.warn("Unidad no permitida: deporte='{}' tipo='{}' -> idUnidad={} unidadCategories={} allowedIds={} allowedCategories={}",
+            logger.warn("Unidad no permitida: deporte='{}' tipo='{}' -> idUnidad={} unitCategories={} allowedIds={} allowedCategories={}",
                     nombreDeporte, tipoDeporte, idUnidad, unitCategories, allowedIds, allowedCategories);
             throw new BusinessRuleException("Unidad ingresada incorrecta");
         }
     }
+
 
     private Set<String> detectUnitCategories(Unidad unidad) {
         String nombre = unidad.getNombre() == null ? "" : unidad.getNombre().toLowerCase();
@@ -225,7 +220,7 @@ public class RetoService {
         return new RetoResponseDTO(
                 reto.getIdReto(),
                 reto.getGrupo() != null ? reto.getGrupo().getNombre() : null,
-                reto.getCreador() != null ? reto.getCreador().getNombres() : null,
+                reto.getPerfilCreador() != null ? reto.getPerfilCreador().getPersona().getNombres() : null,
                 reto.getUnidad() != null ? reto.getUnidad().getNombre() : null,
                 reto.getTitulo(),
                 reto.getDescripcion(),
@@ -267,7 +262,7 @@ public class RetoService {
     // Aplica valores comunes del DTO a la entidad Reto usando el contexto resuelto
     private void applyDtoToEntity(Reto entity, RetoRequestDTO dto, RequestContext ctx) {
         entity.setGrupo(ctx.grupo());
-        entity.setCreador(ctx.usuario());
+        entity.setPerfilCreador(ctx.perfil());
         entity.setUnidad(ctx.unidad());
         entity.setDescripcion(dto.descripcion());
         entity.setTitulo(dto.titulo());

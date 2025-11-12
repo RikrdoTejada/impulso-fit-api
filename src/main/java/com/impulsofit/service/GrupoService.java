@@ -5,10 +5,10 @@ import com.impulsofit.dto.response.GrupoResponseDTO;
 import com.impulsofit.exception.ResourceNotFoundException;
 import com.impulsofit.model.Deporte;
 import com.impulsofit.model.Grupo;
-import com.impulsofit.model.Usuario;
+import com.impulsofit.model.Perfil;
 import com.impulsofit.repository.DeporteRepository;
 import com.impulsofit.repository.GrupoRepository;
-import com.impulsofit.repository.UsuarioRepository;
+import com.impulsofit.repository.PerfilRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,8 +19,8 @@ import java.util.List;
 public class GrupoService {
 
     private final GrupoRepository grupoRepository;
-    private final UsuarioRepository usuarioRepository;
     private final DeporteRepository deporteRepository;
+    private final PerfilRepository perfilRepository;
 
     // Listar todos los grupos
     public List<Grupo> listarGrupos() {
@@ -35,14 +35,14 @@ public class GrupoService {
     // Crear un nuevo grupo
     public GrupoResponseDTO create(GrupoRequestDTO grupo) {
 
-        Usuario usuario = usuarioRepository.findById(grupo.id_usuario_creador())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario creador no encontrado"));
+        Perfil perfil = perfilRepository.findById(grupo.id_usuario_creador())
+                .orElseThrow(() -> new ResourceNotFoundException("Perfil creador no encontrado"));
 
         Deporte deporte = deporteRepository.findById(grupo.id_deporte())
                 .orElseThrow(() -> new ResourceNotFoundException("Deporte no encontrado"));
 
         Grupo grupoEntity = new Grupo();
-        grupoEntity.setCreador(usuario); // Alias para usuarioCreador
+        grupoEntity.setPerfilCreador(perfil); // Alias para usuarioCreador
         grupoEntity.setDeporte(deporte);
         grupoEntity.setNombre(grupo.nombre());
         grupoEntity.setDescripcion(grupo.descripcion());

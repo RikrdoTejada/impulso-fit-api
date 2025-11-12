@@ -27,8 +27,6 @@ public class PerfilService {
         }
 
         // Actualizar campos
-        perfil.setNombre(request.nombre().trim());
-        perfil.setApellido(request.apellido());
         perfil.setBiografia(request.biografia());
         perfil.setUbicacion(request.ubicacion());
         perfil.setFotoPerfil(request.fotoPerfil());
@@ -38,11 +36,8 @@ public class PerfilService {
         // Convertir a Response usando constructor inmutable
         return new PerfilResponseDTO(
                 perfil.getIdPerfil(),
-                perfil.getNombre(),
-                perfil.getApellido(),
-                perfil.getBiografia(),
-                perfil.getUbicacion(),
-                perfil.getFotoPerfil()
+                perfil.getPersona().getNombres(),
+                perfil.getPersona().getGenero()
         );
     }
 }

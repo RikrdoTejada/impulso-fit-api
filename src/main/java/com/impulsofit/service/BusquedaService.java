@@ -1,14 +1,10 @@
 package com.impulsofit.service;
 
-import com.impulsofit.dto.response.GrupoResponseDTO;
-import com.impulsofit.dto.response.RetoResponseDTO;
-import com.impulsofit.dto.response.UsuarioResponseDTO;
-import com.impulsofit.dto.response.BusquedaResponseDTO;
+import com.impulsofit.dto.response.*;
 import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.model.Grupo;
 import com.impulsofit.model.Reto;
 import com.impulsofit.model.Perfil;
-import com.impulsofit.model.Usuario;
 import com.impulsofit.repository.GrupoRepository;
 import com.impulsofit.repository.RetoRepository;
 import com.impulsofit.repository.PerfilRepository;
@@ -82,29 +78,20 @@ public class BusquedaService {
                         (g.getFechaCreacion() == null) ? null : g.getFechaCreacion().toLocalDate()))
                 .collect(Collectors.toList());
 
-        List<UsuarioResponseDTO> usuariosDto = perfiles.stream()
-                .map(p -> {
-                    Usuario u = p.getUsuario();
-                    return new UsuarioResponseDTO(
-                            p.getIdPerfil(),
-                            p.getNombre(),
-                            p.getApellido(),
-                            null,
-                            (u != null) ? u.getEmail() : null,
-                            null,
-                            (u != null) ? u.getFechaNacimiento() : null,
-                            (u != null) ? u.getGenero() : null,
-                            (u != null && u.getFechaRegistro() != null) ? u.getFechaRegistro() : null,
-                            (u != null) ? u.getCodPregunta() : null
-                    );
-                })
+        List<PerfilResponseDTO> perfilesDto = perfiles.stream()
+                .map(p ->  new PerfilResponseDTO(
+                        p.getIdPerfil(),
+                        p.getPersona().getNombres(),
+                        p.getPersona().getGenero()
+                    )
+                )
                 .collect(Collectors.toList());
 
         List<RetoResponseDTO> retosDto = retos.stream()
                 .map(r -> new RetoResponseDTO(
                         r.getIdReto(),
                         r.getGrupo() != null ? r.getGrupo().getNombre() : null,
-                        r.getCreador() != null ? r.getCreador().getNombres() : null,
+                        r.getPerfilCreador() != null ? r.getPerfilCreador().getPersona().getNombres() : null,
                         r.getUnidad() != null ? r.getUnidad().getNombre() : null,
                         r.getTitulo(),
                         r.getDescripcion(),
@@ -115,6 +102,6 @@ public class BusquedaService {
                 ))
                 .collect(Collectors.toList());
 
-        return new BusquedaResponseDTO(gruposDto, usuariosDto, retosDto);
+        return new BusquedaResponseDTO(gruposDto, perfilesDto, retosDto);
     }
 }

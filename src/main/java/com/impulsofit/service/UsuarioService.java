@@ -6,9 +6,7 @@ import com.impulsofit.dto.response.UsuarioResponseDTO;
 import com.impulsofit.exception.AlreadyExistsException;
 import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.exception.ResourceNotFoundException;
-import com.impulsofit.model.Respuesta;
 import com.impulsofit.model.Usuario;
-import com.impulsofit.repository.RespuestaRepository;
 import com.impulsofit.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,14 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.Optional;
 
 
 @Service
 @RequiredArgsConstructor()
 public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
-    private final RespuestaRepository respuestaRepository;
 
     @Transactional
     public UsuarioResponseDTO create(UsuarioRequestDTO usuario) {
@@ -35,40 +31,16 @@ public class UsuarioService {
         validarDateyGender(usuario);
 
         Usuario usuarioEntity = new Usuario();
-        usuarioEntity.setNombres(usuario.nombres());
-        usuarioEntity.setApellidoP(usuario.apellido_p());
-        usuarioEntity.setApellidoM(usuario.apellido_m());
         usuarioEntity.setEmail(usuario.email().toLowerCase());
         usuarioEntity.setContrasena(usuario.contrasena());
-        usuarioEntity.setFechaNacimiento(usuario.fecha_nacimiento());
-        usuarioEntity.setGenero(usuario.genero());
         usuarioEntity.setCodPregunta(usuario.cod_pregunta());
+        usuarioEntity.setRespuesta(usuario.respuesta());
 
         Usuario saved = usuarioRepository.save(usuarioEntity);
 
         return mapToResponse(saved);
     }
 
-    @Transactional
-    public UsuarioResponseDTO updateInfo(Long id, UsuarioRequestDTO usuario) {
-        //Validaciones
-        Usuario usuarioEntity = usuarioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No existe el usuario con id " + id));
-
-        validarDateyGender(usuario);
-
-        //Sets omitiendo credenciales
-        usuarioEntity.setIdUsuario(id);
-        usuarioEntity.setNombres(usuario.nombres());
-        usuarioEntity.setApellidoP(usuario.apellido_p());
-        usuarioEntity.setApellidoM(usuario.apellido_m());
-        usuarioEntity.setFechaNacimiento(usuario.fecha_nacimiento());
-        usuarioEntity.setGenero(usuario.genero());
-
-        Usuario saved = usuarioRepository.save(usuarioEntity);
-
-        return mapToResponse(saved);
-    }
 
     //Metodo update para credenciales de usuario (password and email)
     @Transactional
@@ -78,13 +50,9 @@ public class UsuarioService {
                 .orElseThrow(() -> new ResourceNotFoundException("No existe el usuario con id " + id));
 
         //Validar respuesta secreta de usuario
-        Respuesta r = respuestaRepository.findByUsuario_IdUsuario(usuario.getIdUsuario());
-        if (r == null) {
-            throw new ResourceNotFoundException("El usuario no tiene respuesta secreta registrada.");
-        }
         String respIngresada = req.respuesta();
         if (respIngresada == null ||
-                !respIngresada.trim().equalsIgnoreCase(r.getStrRespuesta().trim())) {
+                !respIngresada.trim().equalsIgnoreCase(usuario.getRespuesta().trim())) {
             throw new BusinessRuleException("La respuesta es incorrecta.");
         }
         boolean huboCambios = false;
@@ -158,19 +126,10 @@ public class UsuarioService {
     private UsuarioResponseDTO mapToResponse(Usuario saved) {
         return new UsuarioResponseDTO(
                 saved.getIdUsuario(),
-                saved.getNombres(),
-                saved.getApellidoP(),
-                saved.getApellidoM(),
                 saved.getEmail(),
-                saved.getContrasena(),
-                saved.getFechaNacimiento(),
-                saved.getGenero(),
                 saved.getFechaRegistro(),
                 saved.getCodPregunta()
         );
     }
 
-    public Optional<Usuario> obtenerUsuarioPorId(Long id) {
-        return usuarioRepository.findById(id);
-    }
 }
