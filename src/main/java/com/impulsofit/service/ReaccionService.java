@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReaccionService {
     private final ReaccionRepository reaccionRepository;
     private final PublicacionRepository publicacionRepository;
-    private final UsuarioRepository usuarioRepository;
     private final PerfilRepository perfilRepository;
 
     @Transactional

@@ -1,6 +1,5 @@
 package com.impulsofit.dto.request;
 
-import com.impulsofit.model.Persona;
 import jakarta.validation.constraints.NotBlank;
 
 

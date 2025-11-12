@@ -3,7 +3,6 @@ package com.impulsofit.repository;
 import com.impulsofit.model.ParticipacionReto;
 import com.impulsofit.model.Perfil;
 import com.impulsofit.model.Reto;
-import com.impulsofit.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

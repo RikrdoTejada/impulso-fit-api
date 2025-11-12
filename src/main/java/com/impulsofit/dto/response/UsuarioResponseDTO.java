@@ -1,8 +1,6 @@
 package com.impulsofit.dto.response;
 
 import com.impulsofit.model.CodPregunta;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public record UsuarioResponseDTO(
