@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "usuario")
@@ -32,9 +31,6 @@ public class Usuario {
 
     @Column(name = "respuesta", nullable = false)
     private String respuesta;
-
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comentario> comentarios;
 
     public Long getId() { return idUsuario; }
     public void setId(Long id) { this.idUsuario = id; }
