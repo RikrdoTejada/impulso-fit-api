@@ -9,11 +9,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface PublicacionRepository extends JpaRepository<Publicacion,Long> {
-    List<Publicacion> findAllByUsuario_IdUsuario(Long usuarioIdUsuario);
+    List<Publicacion> findAllByPerfil_IdPerfil(Long usuarioIdUsuario);
 
     List<Publicacion> findAllByGrupo_IdGrupo(Long grupoIdGrupo);
 
-    Page<Publicacion> findByTypeAndGrupoId(PublicacionType type, Long grupoId, Pageable pageable);
+    Page<Publicacion> findByTypeAndGrupo_IdGrupo(PublicacionType type, Long grupoId, Pageable pageable);
 
     Page<Publicacion> findByType(PublicacionType type, Pageable pageable);
 

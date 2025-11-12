@@ -25,7 +25,7 @@ public interface RetoRepository extends JpaRepository<Reto, Long> {
 
     List<Reto> findAllByGrupo_IdGrupo(Long idGrupo);
 
-    List<Reto> findAllByCreador_IdUsuario(Long idUsuario);
+    List<Reto> findAllByPerfilCreador_IdPerfil(Long perfilCreadorIdPerfil);
 
     List<Reto> findAllByUnidad_IdUnidad(Long idUnidad);
 
