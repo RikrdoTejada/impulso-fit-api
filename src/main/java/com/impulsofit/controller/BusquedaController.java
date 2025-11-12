@@ -19,7 +19,7 @@ public class BusquedaController {
     public ResponseEntity<BusquedaResponseDTO> buscar(@RequestParam String termino, @RequestParam(required = false) Integer deporteId) {
         BusquedaResponseDTO resultados = busquedaService.buscar(termino, deporteId);
         boolean empty = (resultados.grupos() == null || resultados.grupos().isEmpty())
-                && (resultados.usuarios() == null || resultados.usuarios().isEmpty())
+                && (resultados.perfiles() == null || resultados.perfiles().isEmpty())
                 && (resultados.retos() == null || resultados.retos().isEmpty());
         if (empty) {
             return ResponseEntity.ok().header("X-Search-Message", "No se encontraron resultados").body(resultados);

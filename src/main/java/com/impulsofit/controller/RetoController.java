@@ -4,20 +4,15 @@ import com.impulsofit.dto.request.AddProgresoRequestDTO;
 import com.impulsofit.dto.request.RetoRequestDTO;
 import com.impulsofit.dto.response.ProgresoResponseDTO;
 import com.impulsofit.dto.response.RetoResponseDTO;
+import com.impulsofit.model.Perfil;
 import com.impulsofit.model.Reto;
-import com.impulsofit.model.Usuario;
-import com.impulsofit.model.Unidad;
+import com.impulsofit.repository.PerfilRepository;
 import com.impulsofit.service.ParticipacionRetoService;
 import com.impulsofit.service.RetoService;
 import com.impulsofit.service.UnidadConverterService;
-import com.impulsofit.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
-
-import java.text.Normalizer;
 import java.util.List;
 import java.util.Optional;
 import java.util.Map;
@@ -28,9 +23,9 @@ import java.util.Map;
 public class RetoController {
 
     private final RetoService retoService;
-    private final UsuarioService usuarioService;
     private final ParticipacionRetoService participacionRetoService;
     private final UnidadConverterService unidadConverter;
+    private final PerfilRepository perfilRepository;
 
     @PostMapping
     public ResponseEntity<RetoResponseDTO> create(@RequestBody RetoRequestDTO r) {
@@ -70,14 +65,14 @@ public class RetoController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{idReto}/progreso/{idUsuario}")
+    @PostMapping("/{idReto}/progreso/{idPerfil}")
     public ResponseEntity<ProgresoResponseDTO> agregarProgreso(
             @PathVariable Long idReto,
-            @PathVariable Long idUsuario,
+            @PathVariable Long idPerfil,
             @RequestBody AddProgresoRequestDTO request) {
         Optional<Reto> retoOpt = retoService.obtenerPorId(idReto);
-        Optional<Usuario> usuarioOpt = usuarioService.obtenerUsuarioPorId(idUsuario);
-        if (retoOpt.isEmpty() || usuarioOpt.isEmpty()) {
+        Optional<Perfil> perfilOpt = perfilRepository.findById(idPerfil);
+        if (retoOpt.isEmpty() || perfilOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
@@ -102,30 +97,29 @@ public class RetoController {
         // Delegar comprobación de entero al servicio
         participacionRetoService.validarValorEnteroSiCorresponde(reto.getUnidad(), avanceEnBase);
 
-        Double total = participacionRetoService.agregarProgreso(usuarioOpt.get(), reto, avanceEnBase);
+        Double total = participacionRetoService.agregarProgreso(perfilOpt.get(), reto, avanceEnBase);
         Double porcentaje = participacionRetoService.calcularPorcentajeForReto(reto, total);
-        return ResponseEntity.ok(new ProgresoResponseDTO(idUsuario, idReto, total, porcentaje));
+        return ResponseEntity.ok(new ProgresoResponseDTO(idPerfil, idReto, total, porcentaje));
     }
 
-    @PostMapping("/{idReto}/participar/{idUsuario}")
-    public ResponseEntity<Object> toggleParticipacion(@PathVariable Long idReto, @PathVariable Long idUsuario) {
+    @PostMapping("/{idReto}/participar/{idPerfil}")
+    public ResponseEntity<Object> toggleParticipacion(@PathVariable Long idReto, @PathVariable Long idPerfil) {
         Optional<Reto> retoOpt = retoService.obtenerPorId(idReto);
-        Optional<Usuario> usuarioOpt = usuarioService.obtenerUsuarioPorId(idUsuario);
-        if (retoOpt.isEmpty() || usuarioOpt.isEmpty()) {
+        Optional<Perfil> perfilOpt = perfilRepository.findById(idPerfil);
+        if (retoOpt.isEmpty() || perfilOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
-        boolean joined = participacionRetoService.toggleParticipation(usuarioOpt.get(), retoOpt.get());
+        boolean joined = participacionRetoService.toggleParticipation(perfilOpt.get(), retoOpt.get());
         return ResponseEntity.ok(Map.of("message", joined ? "Te has unido al reto" : "Has abandonado el reto, tu progreso ha sido descartado"));
     }
 
 
     @GetMapping("/{idReto}/ranking")
     public ResponseEntity<List<ProgresoResponseDTO>> ranking(@PathVariable Long idReto) {
-        Optional<Reto> retoOpt = retoService.obtenerPorId(idReto);
-        if (retoOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(participacionRetoService.rankingDto(retoOpt.get()));
+        return retoService.obtenerPorId(idReto)
+                .map(reto -> ResponseEntity.ok(participacionRetoService.rankingDto(reto)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
+
 }

@@ -1,7 +1,6 @@
 package com.impulsofit.controller;
 
 import com.impulsofit.dto.request.RecoverRequestDTO;
-import com.impulsofit.dto.request.UsuarioRequestDTO;
 import com.impulsofit.dto.response.UsuarioResponseDTO;
 import com.impulsofit.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
@@ -19,12 +18,6 @@ public class UsuarioController {
     public ResponseEntity<UsuarioResponseDTO> updateCred(@PathVariable Long id, @RequestBody RecoverRequestDTO r) {
         return ResponseEntity.ok(usuarioService.updateCred(id, r));
     }
-
-    @PutMapping("/update/info/{id}")
-    public ResponseEntity<UsuarioResponseDTO> updateInfo(@PathVariable Long id, @RequestBody UsuarioRequestDTO u) {
-        return ResponseEntity.ok(usuarioService.updateInfo(id, u));
-    }
-
 
     @DeleteMapping("{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
