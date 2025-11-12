@@ -25,7 +25,7 @@ public class Reaccion {
 
     @ManyToOne
     @JoinColumn(name = "id_perfil", nullable = false)
-    private Perfil idPerfil;
+    private Perfil perfil;
 
     @Column(name = "Fecha_Registro")
     private LocalDateTime fechaRegistro;

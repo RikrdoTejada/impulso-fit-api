@@ -19,7 +19,7 @@ public class Publicacion {
 
     @ManyToOne
     @JoinColumn(name = "id_perfil", nullable = false)
-    private Perfil idPerfil;
+    private Perfil perfil;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_publicacion" ,nullable = false)

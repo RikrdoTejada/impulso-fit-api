@@ -19,7 +19,7 @@ public class Respuesta{
 
     @OneToOne
     @JoinColumn(name="id_perfil", nullable = false)
-    private Perfil idPerfil;
+    private Perfil perfil;
 
     @Column(name = "str_respuesta", nullable = false)
     private String strRespuesta;

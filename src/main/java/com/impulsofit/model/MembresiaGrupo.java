@@ -23,7 +23,7 @@ public class MembresiaGrupo {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_perfil", nullable = false)
-    private Perfil idPerfil;
+    private Perfil perfil;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_grupo", nullable = false)

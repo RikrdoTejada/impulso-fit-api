@@ -23,13 +23,9 @@ public class ParticipacionReto {
     @Column(name = "id_reto")
     private Long idReto;
 
-    @Id
-    @Column(name = "id_perfil")
-    private Long idPerfil;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_usuario", insertable = false, updatable = false)
-    private Usuario usuario;
+    @JoinColumn(name = "id_perfil", insertable = false, updatable = false)
+    private Perfil perfil;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_reto", insertable = false, updatable = false)
