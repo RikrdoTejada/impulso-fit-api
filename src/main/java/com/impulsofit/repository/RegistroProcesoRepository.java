@@ -10,4 +10,5 @@ import java.util.List;
 public interface RegistroProcesoRepository extends JpaRepository<RegistroProceso, Long> {
     List<RegistroProceso> findByParticipacionRetoOrderByFechaDesc(ParticipacionReto participacionReto);
     List<RegistroProceso> findByParticipacionReto_Reto(Reto reto);
+    List<RegistroProceso> findByParticipacionReto_IdPerfilOrderByFechaDesc(Long idPerfil);
 }
