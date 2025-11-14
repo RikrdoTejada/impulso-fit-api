@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/perfiles")
+@RequestMapping("/follow")
 @RequiredArgsConstructor
 public class SeguidoController {
 
