@@ -58,18 +58,8 @@ public class UsuarioService {
         }
 
         // Guardar una sola vez
-        Usuario saved = usuarioRepository.save(usuario);
-        return mapToResponse(saved);
+        Usuario saved = usuarioRepository.save(usuario);return mapToResponse(saved);
     }
-
-    @Transactional
-    public void delete(Long id) {
-        if (!usuarioRepository.existsById(id)) {
-            throw new ResourceNotFoundException("No existe el usuario con el id: " + id);
-        }
-        usuarioRepository.deleteById(id);
-    }
-
 
 
     private UsuarioResponseDTO mapToResponse(Usuario saved) {

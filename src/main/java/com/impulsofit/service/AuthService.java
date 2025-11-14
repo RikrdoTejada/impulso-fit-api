@@ -8,6 +8,7 @@ import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.exception.ResourceNotFoundException;
 import com.impulsofit.model.Persona;
 import com.impulsofit.model.Usuario;
+import com.impulsofit.repository.PerfilRepository;
 import com.impulsofit.repository.PersonaRepository;
 import com.impulsofit.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,10 +27,8 @@ public class AuthService {
 
     private static final int MAX_INTENTOS = 5;
     private static final long MINUTOS_DESBLOQUEO = 60;
-
     private final UsuarioRepository usuarioRepository;
     private final PersonaRepository personaRepository;
-
 
     @Transactional
     public UsuarioResponseDTO register(RegisterRequestDTO req) {
@@ -56,6 +55,8 @@ public class AuthService {
         personaEntity.setApellidoM(req.apellido_m());
         personaEntity.setFechaNacimiento(req.fecha_nacimiento());
         personaEntity.setGenero(req.genero());
+
+        personaRepository.save(personaEntity);
 
         return mapToResponse(saved);
     }
@@ -142,6 +143,20 @@ public class AuthService {
         Usuario saved = usuarioRepository.save(usuarioEntity);
 
         return mapToResponse(saved);
+    }
+
+    @Transactional
+    public void delete(DeleteRequestDTO req) {
+        //Validacion de correo
+        Usuario usuarioEntity = usuarioRepository.findByEmailIgnoreCase(req.email())
+                .orElseThrow(() -> new ResourceNotFoundException("No existe un usuario registrado con el email:  "
+                        + req.email() ));
+        //borrar post
+        //borrar coments
+        //borrar membresia grupos
+        //borrar perfil
+        //borrar persona
+        usuarioRepository.deleteById(usuarioEntity.getId());
     }
 
     private void validarDateyGender(RegisterRequestDTO u) {

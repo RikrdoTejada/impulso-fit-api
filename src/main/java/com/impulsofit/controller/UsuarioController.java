@@ -2,6 +2,7 @@ package com.impulsofit.controller;
 
 import com.impulsofit.dto.request.RecoverRequestDTO;
 import com.impulsofit.dto.response.UsuarioResponseDTO;
+import com.impulsofit.service.AuthService;
 import com.impulsofit.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UsuarioController {
     private final UsuarioService usuarioService;
+    private final AuthService authService;
 
 
     @PutMapping("/update/cred/{id}")
@@ -21,7 +23,7 @@ public class UsuarioController {
 
     @DeleteMapping("{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        usuarioService.delete(id);
+        //authService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }
