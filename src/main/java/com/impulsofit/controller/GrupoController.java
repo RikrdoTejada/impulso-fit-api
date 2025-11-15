@@ -5,6 +5,9 @@ import com.impulsofit.dto.response.GrupoResponseDTO;
 import com.impulsofit.dto.response.MembresiaGrupoResponseDTO;
 import com.impulsofit.service.GrupoService;
 import com.impulsofit.service.MembresiaGrupoService;
+import com.impulsofit.service.RetoService;
+import com.impulsofit.dto.response.RetoResponseDTO;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class GrupoController {
     private final GrupoService grupoService;
     private final MembresiaGrupoService membresiaGrupoService;
+    private final RetoService retoService;
 
     @PostMapping
     public ResponseEntity<GrupoResponseDTO> create(@RequestBody GrupoRequestDTO g) {
@@ -37,5 +41,10 @@ public class GrupoController {
     public ResponseEntity<Void> dejar_grupo(@PathVariable Long id) {
         membresiaGrupoService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/retos")
+    public ResponseEntity<List<RetoResponseDTO>> obtenerRetosPorGrupo(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(retoService.findByGrupo_Id_grupo(id));
     }
 }

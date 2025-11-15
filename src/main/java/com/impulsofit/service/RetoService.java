@@ -79,8 +79,11 @@ public class RetoService {
 
     @Transactional(readOnly = true)
     public List<RetoResponseDTO> findByGrupo_Id_grupo(Long id_grupo) {
-        return retoRepository.findAllByGrupo_IdGrupo(id_grupo)
-                .stream()
+        List<Reto> retos = retoRepository.findAllByGrupo_IdGrupo(id_grupo);
+        if (retos == null || retos.isEmpty()) {
+            throw new ResourceNotFoundException("Este grupo aun no tiene retos");
+        }
+        return retos.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
