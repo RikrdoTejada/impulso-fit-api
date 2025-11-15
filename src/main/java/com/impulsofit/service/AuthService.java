@@ -6,11 +6,8 @@ import com.impulsofit.dto.response.UsuarioResponseDTO;
 import com.impulsofit.exception.AlreadyExistsException;
 import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.exception.ResourceNotFoundException;
-import com.impulsofit.model.Persona;
-import com.impulsofit.model.Usuario;
-import com.impulsofit.repository.PerfilRepository;
-import com.impulsofit.repository.PersonaRepository;
-import com.impulsofit.repository.UsuarioRepository;
+import com.impulsofit.model.*;
+import com.impulsofit.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -20,6 +17,8 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -29,6 +28,15 @@ public class AuthService {
     private static final long MINUTOS_DESBLOQUEO = 60;
     private final UsuarioRepository usuarioRepository;
     private final PersonaRepository personaRepository;
+    private final PerfilRepository perfilRepository;
+    private final PublicacionRepository publicacionRepository;
+    private final ComentarioRepository comentarioRepository;
+    private final RetoRepository retoRepository;
+    private final ParticipacionRetoRepository participacionRetoRepository;
+    private final RegistroProcesoRepository registroProcesoRepository;
+    private final MembresiaGrupoRepository membresiaGrupoRepository;
+    private final GrupoRepository grupoRepository;
+    private final SeguidoRepository seguidoRepository;
 
     @Transactional
     public UsuarioResponseDTO register(RegisterRequestDTO req) {
@@ -147,15 +155,91 @@ public class AuthService {
 
     @Transactional
     public void delete(DeleteRequestDTO req) {
-        //Validacion de correo
+        if (!req.confirm()) throw new BusinessRuleException("Confirmación requerida para eliminar cuenta");
+
         Usuario usuarioEntity = usuarioRepository.findByEmailIgnoreCase(req.email())
                 .orElseThrow(() -> new ResourceNotFoundException("No existe un usuario registrado con el email:  "
                         + req.email() ));
-        //borrar post
-        //borrar coments
-        //borrar membresia grupos
-        //borrar perfil
-        //borrar persona
+
+        if (req.constrasena() == null || !req.constrasena().equals(usuarioEntity.getContrasena())) {
+            throw new BusinessRuleException("Credenciales incorrectas");
+        }
+
+        Persona persona = personaRepository.findByUsuario(usuarioEntity)
+                .orElseThrow(() -> new BusinessRuleException("Persona no encontrada"));
+
+        // Obtener perfiles asociados a la persona
+        List<Perfil> perfiles = perfilRepository.findAllByPersona_IdPersona(persona.getIdPersona());
+        List<Long> perfilIds = perfiles.stream().map(Perfil::getIdPerfil).collect(Collectors.toList());
+
+        // Comprobar si alguno de estos perfiles es creador de grupos
+        List<Grupo> gruposCreados = grupoRepository.findAll().stream()
+                .filter(g -> g.getPerfilCreador() != null && perfilIds.contains(g.getPerfilCreador().getIdPerfil()))
+                .collect(Collectors.toList());
+
+        if (!gruposCreados.isEmpty()) {
+            throw new BusinessRuleException("No puedes borrar tu cuenta ya que eres el creador de " + gruposCreados.size() + " grupos");
+        }
+
+        // Borrar publicaciones y sus comentarios
+        for (Long pid : perfilIds) {
+            List<Publicacion> pubs = publicacionRepository.findAllByPerfil_IdPerfil(pid);
+            for (Publicacion p : pubs) {
+                List<Comentario> comentarios = comentarioRepository.findByPublicacion_IdPublicacion(p.getIdPublicacion());
+                comentarioRepository.deleteAll(comentarios);
+            }
+            publicacionRepository.deleteAll(pubs);
+        }
+
+        // Borrar retos creados y sus participaciones y registros
+        for (Long pid : perfilIds) {
+            List<Reto> retos = retoRepository.findAllByPerfilCreador_IdPerfil(pid);
+            for (Reto r : retos) {
+                // eliminar registros asociados a participaciones del reto
+                List<RegistroProceso> registros = registroProcesoRepository.findByParticipacionReto_Reto(r);
+                registroProcesoRepository.deleteAll(registros);
+
+                // eliminar participaciones en el reto
+                List<ParticipacionReto> parts = participacionRetoRepository.findAll();
+                List<ParticipacionReto> paraEliminar = parts.stream()
+                        .filter(pr -> pr.getIdReto().equals(r.getIdReto()))
+                        .collect(Collectors.toList());
+                participacionRetoRepository.deleteAll(paraEliminar);
+            }
+            retoRepository.deleteAll(retos);
+        }
+
+        // Borrar membresias de grupo del usuario
+        for (Long pid : perfilIds) {
+            List<MembresiaGrupo> membresias = membresiaGrupoRepository.findAll().stream()
+                    .filter(m -> m.getPerfil() != null && m.getPerfil().getIdPerfil().equals(pid))
+                    .collect(Collectors.toList());
+            membresiaGrupoRepository.deleteAll(membresias);
+        }
+
+        // Borrar seguidos y seguidores relacionados con los perfiles
+        for (Long pid : perfilIds) {
+            // borrar registros donde sea seguidor
+            List<Seguido> seguidos = seguidoRepository.findAllById_IdSeguidorOrderByFechaSeguidoDesc(pid);
+            seguidoRepository.deleteAll(seguidos);
+            // borrar registros donde sea seguido
+            List<Seguido> seguidores = seguidoRepository.findAllById_IdSeguidoOrderByFechaSeguidoDesc(pid);
+            seguidoRepository.deleteAll(seguidores);
+        }
+
+        // Borrar participaciones propias en otros retos y registros asociados
+        for (Long pid : perfilIds) {
+            List<ParticipacionReto> participaciones = participacionRetoRepository.findAllByIdPerfil(pid);
+            for (ParticipacionReto pr : participaciones) {
+                List<RegistroProceso> regs = registroProcesoRepository.findByParticipacionRetoOrderByFechaDesc(pr);
+                registroProcesoRepository.deleteAll(regs);
+            }
+            participacionRetoRepository.deleteAll(participaciones);
+        }
+
+        //borrar perfiles, persona y usuario
+        perfilRepository.deleteAll(perfiles);
+        personaRepository.delete(persona);
         usuarioRepository.deleteById(usuarioEntity.getId());
     }
 

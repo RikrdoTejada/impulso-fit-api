@@ -15,4 +15,6 @@ public interface PerfilRepository extends JpaRepository<Perfil, Long> {
     Optional<Perfil> findByIdPerfil(Long idPerfil);
 
     boolean existsByNombrePerfilIgnoreCase(String nombrePerfil);
+
+    List<Perfil> findAllByPersona_IdPersona(Long idPersona);
 }
