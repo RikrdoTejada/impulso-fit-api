@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 public record MembresiaGrupoResponseDTO(
         Long id_membresia,
-        String usuarioNombre,
+        String perfilNombre,
         String grupoNombre,
         LocalDate fecha_union
 ) {}

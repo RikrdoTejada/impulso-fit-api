@@ -63,6 +63,7 @@ public class AuthService {
         personaEntity.setApellidoM(req.apellido_m());
         personaEntity.setFechaNacimiento(req.fecha_nacimiento());
         personaEntity.setGenero(req.genero());
+        personaEntity.setUsuario(usuarioEntity);
 
         personaRepository.save(personaEntity);
 

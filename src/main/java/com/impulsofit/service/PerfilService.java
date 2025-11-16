@@ -32,10 +32,9 @@ public class PerfilService {
         perfilEntity.setBiografia(req.biografia());
         perfilEntity.setPersona(persona);
         perfilEntity.setUbicacion(req.ubicacion());
-        perfilEntity.setFotoPerfil(req.foto_perfil());
-        perfilRepository.save(perfilEntity);
+        perfilEntity.setFotoPerfil(req.foto_perfil());Perfil saved = perfilRepository.save(perfilEntity);
 
-        return mapToResponse(perfilEntity);
+        return mapToResponse(saved);
     }
 
     @Transactional

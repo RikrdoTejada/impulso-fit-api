@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public record ReaccionResponseDTO(
         Long id_reaccion,
-        Long id_usuario,
+        Long id_perfil,
         Long id_publicacion,
         LocalDateTime fecha_registro
         ) {

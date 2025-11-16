@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -144,13 +145,15 @@ public class PublicacionService {
     private PublicacionResponseDTO mapToResponse(Publicacion publicacion) {
         boolean publica = (publicacion.getType() == PublicacionType.GENERAL);
         String grupoNombre = publica ? null : publicacion.getGrupo().getNombre();
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd MMM yyyy hh:mm:ss");
         return new PublicacionResponseDTO(
                 publicacion.getIdPublicacion(),
                 publicacion.getPerfil().getPersona().getNombres(),
+                publicacion.getPerfil().getNombrePerfil(),
                 publicacion.getType(),
                 grupoNombre,
                 publicacion.getContenido(),
-                publicacion.getFechaPublicacion()
+                dtf.format(publicacion.getFechaPublicacion())
         );
     }
 }
