@@ -16,14 +16,24 @@ public class BusquedaController {
     private final BusquedaService busquedaService;
 
     @GetMapping
-    public ResponseEntity<BusquedaResponseDTO> buscar(@RequestParam String termino, @RequestParam(required = false) Integer deporteId) {
+    public ResponseEntity<BusquedaResponseDTO> buscar(
+            @RequestParam String termino,
+            @RequestParam(required = false) Integer deporteId) {
+
         BusquedaResponseDTO resultados = busquedaService.buscar(termino, deporteId);
-        boolean empty = (resultados.grupos() == null || resultados.grupos().isEmpty())
-                && (resultados.perfiles() == null || resultados.perfiles().isEmpty())
-                && (resultados.retos() == null || resultados.retos().isEmpty());
+
+        boolean empty =
+                (resultados.grupos() == null || resultados.grupos().isEmpty()) &&
+                        (resultados.perfiles() == null || resultados.perfiles().isEmpty()) &&
+                        (resultados.retos() == null || resultados.retos().isEmpty());
+
         if (empty) {
-            return ResponseEntity.ok().header("X-Search-Message", "No se encontraron resultados").body(resultados);
+            return ResponseEntity.ok()
+                    .header("X-Search-Message", "No se encontraron resultados")
+                    .body(resultados);
         }
+
         return ResponseEntity.ok(resultados);
     }
 }
+

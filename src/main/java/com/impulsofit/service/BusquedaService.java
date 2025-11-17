@@ -8,25 +8,20 @@ import com.impulsofit.model.Perfil;
 import com.impulsofit.repository.GrupoRepository;
 import com.impulsofit.repository.RetoRepository;
 import com.impulsofit.repository.PerfilRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class BusquedaService {
 
     private final GrupoRepository grupoRepository;
     private final PerfilRepository perfilRepository;
     private final RetoRepository retoRepository;
-
-    public BusquedaService(GrupoRepository grupoRepository, PerfilRepository perfilRepository, RetoRepository retoRepository) {
-        this.grupoRepository = grupoRepository;
-        this.perfilRepository = perfilRepository;
-        this.retoRepository = retoRepository;
-    }
 
     private void validarTermino(String termino, Integer deporteId) {
         if ((termino == null || termino.trim().isEmpty()) && deporteId == null) {
@@ -50,22 +45,24 @@ public class BusquedaService {
 
         if (deporteId != null) {
             if (term.isEmpty()) {
-                // Solo deporteId, sin término: buscar grupos y retos, NO perfiles
-                grupos = grupoRepository.findByDeporte_IdDeporte(deporteIdLong);
-                retos = retoRepository.findByDeporteId(deporteIdLong);
+                grupos   = grupoRepository.findByDeporte_IdDeporte(deporteIdLong);
+                retos    = retoRepository.findByDeporteId(deporteIdLong);
                 perfiles = Collections.emptyList();
             } else {
-                // Hay deporteId Y término: buscar con ambos filtros
-                grupos = grupoRepository.buscarPorNombreODeporteYDeporteId(term, deporteIdLong);
-                retos = retoRepository.searchByTermAndDeporteId(term, deporteIdLong);
+                grupos   = grupoRepository.buscarPorNombreODeporteYDeporteId(term, deporteIdLong);
+                retos    = retoRepository.searchByTermAndDeporteId(term, deporteIdLong);
                 perfiles = perfilRepository.searchByNombreApellido(term);
             }
         } else {
-            // Solo término, sin deporteId
-            grupos = grupoRepository.buscarPorNombreODeporte(term);
-            retos = retoRepository.searchByTerm(term);
+            grupos   = grupoRepository.buscarPorNombreODeporte(term);
+            retos    = retoRepository.searchByTerm(term);
             perfiles = perfilRepository.searchByNombreApellido(term);
         }
+
+        // Por si repo devolviera null
+        grupos   = (grupos   == null) ? Collections.emptyList() : grupos;
+        retos    = (retos    == null) ? Collections.emptyList() : retos;
+        perfiles = (perfiles == null) ? Collections.emptyList() : perfiles;
 
         List<GrupoResponseDTO> gruposDto = grupos.stream()
                 .map(g -> new GrupoResponseDTO(
@@ -75,17 +72,17 @@ public class BusquedaService {
                         g.getDescripcion(),
                         "/grupos/" + g.getId() + "/unirse",
                         g.getUbicacion(),
-                        (g.getFechaCreacion() == null) ? null : g.getFechaCreacion().toLocalDate()))
-                .collect(Collectors.toList());
+                        g.getFechaCreacion() == null ? null : g.getFechaCreacion().toLocalDate()
+                ))
+                .toList();
 
         List<PerfilResponseDTO> perfilesDto = perfiles.stream()
-                .map(p ->  new PerfilResponseDTO(
+                .map(p -> new PerfilResponseDTO(
                         p.getIdPerfil(),
                         p.getPersona().getNombres(),
                         p.getPersona().getGenero()
-                    )
-                )
-                .collect(Collectors.toList());
+                ))
+                .toList();
 
         List<RetoResponseDTO> retosDto = retos.stream()
                 .map(r -> new RetoResponseDTO(
@@ -100,7 +97,7 @@ public class BusquedaService {
                         r.getFechaInicio(),
                         r.getFechaFin()
                 ))
-                .collect(Collectors.toList());
+                .toList();
 
         return new BusquedaResponseDTO(gruposDto, perfilesDto, retosDto);
     }
