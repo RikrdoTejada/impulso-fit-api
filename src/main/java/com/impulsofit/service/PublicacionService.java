@@ -10,8 +10,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -93,46 +95,61 @@ public class PublicacionService {
     public PublicacionResponseDTO update(Long id, PublicacionRequestDTO publicacion) {
         Publicacion publicacionEntity = publicacionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No existe la publicacion con id " + id));
-        publicacionEntity.setIdPublicacion(id);
 
-        //Perfil
-        Perfil perfil = perfilRepository.findById(publicacion.id_perfil())
-                .orElseThrow(() -> new ResourceNotFoundException("Perfil no encontrado"));
-        publicacionEntity.setPerfil(perfil);
+        Long idPerfilAutor = publicacionEntity.getPerfil().getIdPerfil();
+        Long idPerfilRequest = publicacion.id_perfil();
+        Long grupoOriginalId = publicacionEntity.getGrupo() != null
+                ? publicacionEntity.getGrupo().getIdGrupo()
+                : null;
 
-        //Contenido no puede estar vacio
-        if(publicacion.contenido()==null || publicacion.contenido().isBlank()){
+        // Validar que SOLO el autor pueda editar
+        if (!idPerfilAutor.equals(idPerfilRequest)) {
+            throw new BusinessRuleException("Solo el autor puede actualizar esta publicación.");
+        }
+
+        //Validar que no se cambie de grupo
+        if (!Objects.equals(grupoOriginalId, publicacion.id_grupo())) {
+            throw new BusinessRuleException("No está permitido cambiar el grupo de una publicación existente.");
+        }
+
+        // Contenido no puede estar vacío
+        if (publicacion.contenido() == null || publicacion.contenido().isBlank()) {
             throw new BusinessRuleException("El contenido no puede estar vacio.");
         }
 
-        //Contenido no supera los 500 char
-        if(publicacion.contenido().length()>500){
-            throw new BusinessRuleException("El contenido no puede ser mayor a 500 caracteres. " +
-                    "Longitud actual: " +publicacion.contenido().length());
+        // Contenido no supera los 500 char
+        if (publicacion.contenido().length() > 500) {
+            throw new BusinessRuleException(
+                    "El contenido no puede ser mayor a 500 caracteres. Longitud actual: " + publicacion.contenido().length()
+            );
         }
 
-        //Grupo y Tipo
+        // Grupo y Tipo (y validar membresía del autor)
         if (publicacion.id_grupo() == null) {
             publicacionEntity.setGrupo(null);
             publicacionEntity.setType(PublicacionType.GENERAL);
         } else {
             Grupo grupo = grupoRepository.findById(publicacion.id_grupo())
                     .orElseThrow(() -> new ResourceNotFoundException("Grupo no encontrado"));
-            //Membresia de Grupo
-            boolean member = membresiaGrupoRepository.
-                    existsByPerfil_IdPerfilAndGrupo_IdGrupo(publicacion.id_perfil(), publicacion.id_grupo());
-            if (!member) throw new BusinessRuleException("El usuario no pertenece al grupo");
+
+            boolean member = membresiaGrupoRepository
+                    .existsByPerfil_IdPerfilAndGrupo_IdGrupo(idPerfilAutor, publicacion.id_grupo());
+            if (!member) {
+                throw new BusinessRuleException("El usuario no pertenece al grupo");
+            }
+
             publicacionEntity.setGrupo(grupo);
             publicacionEntity.setType(PublicacionType.GROUP);
         }
 
-        //Contenido
+        // Actualizar contenido y Fecha
         publicacionEntity.setContenido(publicacion.contenido());
+        publicacionEntity.setFechaPublicacion(LocalDateTime.now());
 
         Publicacion saved = publicacionRepository.save(publicacionEntity);
-
         return mapToResponse(saved);
     }
+
 
     @Transactional
     public void delete(Long id) {

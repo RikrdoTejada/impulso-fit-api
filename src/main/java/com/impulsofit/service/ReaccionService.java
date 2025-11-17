@@ -10,7 +10,6 @@ import com.impulsofit.model.Reaccion;
 import com.impulsofit.repository.PerfilRepository;
 import com.impulsofit.repository.PublicacionRepository;
 import com.impulsofit.repository.ReaccionRepository;
-import com.impulsofit.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
