@@ -20,14 +20,14 @@ public class Perfil {
     @Column(name = "id_perfil")
     private Long idPerfil;
 
-    @Column(name = "nombre_perfil")
+    @Column(name = "nombre_perfil", nullable = false)
     private String nombrePerfil;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_persona")
+    @JoinColumn(name = "id_persona", nullable = false)
     private Persona persona;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String biografia;
 
     @Column(length = 100)
