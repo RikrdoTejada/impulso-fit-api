@@ -1,13 +1,19 @@
 package com.impulsofit.service;
 
+import com.impulsofit.dto.request.CredentialsRequestDTO;
 import com.impulsofit.dto.request.PerfilRequestDTO;
+import com.impulsofit.dto.response.AuthResponseDTO;
 import com.impulsofit.dto.response.PerfilResponseDTO;
 import com.impulsofit.exception.AlreadyExistsException;
 import com.impulsofit.exception.BusinessRuleException;
+import com.impulsofit.exception.ResourceNotFoundException;
 import com.impulsofit.model.Perfil;
 import com.impulsofit.model.Persona;
+import com.impulsofit.model.Usuario;
 import com.impulsofit.repository.PerfilRepository;
 import com.impulsofit.repository.PersonaRepository;
+import com.impulsofit.repository.UsuarioRepository;
+import com.impulsofit.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +24,8 @@ public class PerfilService {
 
     private final PerfilRepository perfilRepository;
     private final PersonaRepository personaRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final JwtUtil jwtUtil;
 
     @Transactional
     public PerfilResponseDTO crearPerfil(PerfilRequestDTO req) {
@@ -55,6 +63,51 @@ public class PerfilService {
 
         // Convertir a Response usando constructor inmutable
         return mapToResponse(perfil);
+    }
+
+    @Transactional
+    public AuthResponseDTO actualizarCred(CredentialsRequestDTO req) {
+        // Buscar usuario por email
+        Usuario usuario = usuarioRepository.findByEmailIgnoreCase(req.email())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No existe un usuario registrado con el email: " + req.email()
+                ));
+
+        // Validar respuesta secreta
+        String respIngresada = req.respuesta();
+        String respGuardada = usuario.getRespuesta();
+
+        if (respIngresada == null || respIngresada.trim().isEmpty()
+                || respGuardada == null
+                || !respIngresada.trim().equalsIgnoreCase(respGuardada.trim())) {
+            throw new BusinessRuleException("La respuesta es incorrecta.");
+        }
+
+        // Validar nueva contraseña
+        String newPass = req.new_contrasena();
+        if (newPass == null || newPass.isBlank()) {
+            throw new BusinessRuleException("La nueva contraseña no puede estar vacía.");
+        }
+
+        // Actualizar contraseña y resetear bloqueo / intentos
+        usuario.setContrasena(newPass);
+        usuario.setIntentosFallidos(0);
+        usuario.setBloqueado(false);
+        usuario.setFechaBloqueo(null);
+
+        usuarioRepository.save(usuario);
+
+        // Obtener Persona y generar nuevo JWT
+        Persona persona = personaRepository.findByUsuario(usuario)
+                .orElseThrow(() -> new BusinessRuleException("Persona no encontrada"));
+
+        String token = jwtUtil.generateToken(
+                usuario.getEmail(),
+                persona.getNombres(),
+                persona.getIdPersona().toString()
+        );
+
+        return new AuthResponseDTO(token, usuario.getEmail(), persona.getNombres());
     }
 
     private PerfilResponseDTO mapToResponse(Perfil perfil) {
