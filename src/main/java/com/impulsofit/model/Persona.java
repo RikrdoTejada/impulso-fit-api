@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "persona")
@@ -18,8 +17,8 @@ public class Persona {
     @Column(name = "id_persona")
     private Long idPersona;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "id_usuario")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
     @Column(name = "nombres", nullable = false)
@@ -36,15 +35,6 @@ public class Persona {
 
     @Column(name = "genero", nullable = false)
     private String genero;
-
-    @Column(name = "bloqueado", nullable = false)
-    private Boolean bloqueado = false;
-
-    @Column(name = "intentos_fallidos", nullable = false)
-    private Integer intentosFallidos = 0;
-
-    @Column(name = "fecha_bloqueo")
-    private LocalDateTime fechaBloqueo;
 
     public String getNombres() {
         StringBuilder sb = new StringBuilder();

@@ -32,6 +32,19 @@ public class Usuario {
     @Column(name = "respuesta", nullable = false)
     private String respuesta;
 
+    @Column(name = "bloqueado", nullable = false)
+    private Boolean bloqueado = false;
+
+    @Column(name = "intentos_fallidos", nullable = false)
+    private Integer intentosFallidos = 0;
+
+    @Column(name = "fecha_bloqueo")
+    private LocalDateTime fechaBloqueo;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_role", nullable = false)
+    private Role role;
+
     public Long getId() { return idUsuario; }
     public void setId(Long id) { this.idUsuario = id; }
 
