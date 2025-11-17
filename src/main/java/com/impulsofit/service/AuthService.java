@@ -1,14 +1,17 @@
 package com.impulsofit.service;
 
 import com.impulsofit.dto.request.*;
-import com.impulsofit.dto.response.LoginResponseDTO;
-import com.impulsofit.dto.response.UsuarioResponseDTO;
+import com.impulsofit.dto.response.AuthResponseDTO;
 import com.impulsofit.exception.AlreadyExistsException;
 import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.exception.ResourceNotFoundException;
 import com.impulsofit.model.*;
 import com.impulsofit.repository.*;
+import com.impulsofit.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,9 +40,13 @@ public class AuthService {
     private final MembresiaGrupoRepository membresiaGrupoRepository;
     private final GrupoRepository grupoRepository;
     private final SeguidoRepository seguidoRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
+    private final AuthenticationManager authenticationManager;
 
     @Transactional
-    public UsuarioResponseDTO register(RegisterRequestDTO req) {
+    public AuthResponseDTO register(RegisterRequestDTO req) {
         //Validacion de correo
         if (usuarioRepository.existsByEmailIgnoreCase(req.email())) {
             throw new AlreadyExistsException("Ya existe un usuario con el correo: " + req.email());
@@ -50,9 +57,13 @@ public class AuthService {
         //Crear Usuario con credenciales
         Usuario usuarioEntity = new Usuario();
         usuarioEntity.setEmail(req.email().toLowerCase());
-        usuarioEntity.setContrasena(req.contrasena());
+        usuarioEntity.setContrasena(passwordEncoder.encode(req.contrasena()));
         usuarioEntity.setCodPregunta(req.cod_pregunta());
         usuarioEntity.setRespuesta(req.respuesta());
+
+        Role userRole = roleRepository.findByNombre(RoleType.ROLE_USER)
+                .orElseThrow(() -> new ResourceNotFoundException("Role ROLE_USER not found"));
+        usuarioEntity.setRole(userRole);
 
         Usuario saved = usuarioRepository.save(usuarioEntity);
 
@@ -67,26 +78,35 @@ public class AuthService {
 
         personaRepository.save(personaEntity);
 
-        return mapToResponse(saved);
+        // Generar JWT con email, nombre y customerId
+        String token = jwtUtil.generateToken(
+                saved.getEmail(),
+                personaEntity.getNombres(),
+                personaEntity.getIdPersona().toString()
+        );
+
+        return new AuthResponseDTO(token, usuarioEntity.getEmail(), personaEntity.getNombres());
     }
 
-    @Transactional(noRollbackFor = BusinessRuleException.class)
-    public LoginResponseDTO login(LoginRequestDTO loginDTO) {
+    @Transactional
+    public AuthResponseDTO login(LoginRequestDTO loginDTO) {
         Usuario usuario = usuarioRepository.findByEmailIgnoreCase(loginDTO.email())
                 .orElseThrow(() -> new BusinessRuleException("Usuario no encontrado"));
 
         Persona persona = personaRepository.findByUsuario(usuario)
                 .orElseThrow(() -> new BusinessRuleException("Persona no encontrada"));
 
-        if (persona.getBloqueado() != null && persona.getBloqueado()) {
-            LocalDateTime fechaBloqueo = persona.getFechaBloqueo();
+        //Verificar si el usuario está bloqueado y si corresponde desbloquearlo
+        if (Boolean.TRUE.equals(usuario.getBloqueado())) {
+            LocalDateTime fechaBloqueo = usuario.getFechaBloqueo();
             if (fechaBloqueo != null) {
                 LocalDateTime ahora = LocalDateTime.now();
                 if (Duration.between(fechaBloqueo, ahora).toMinutes() >= MINUTOS_DESBLOQUEO) {
-                    persona.setBloqueado(false);
-                    persona.setIntentosFallidos(0);
-                    persona.setFechaBloqueo(null);
-                    personaRepository.save(persona);
+                    //Se cumplió el tiempo de bloqueo -> desbloqueamos y reseteamos intentos
+                    usuario.setBloqueado(false);
+                    usuario.setIntentosFallidos(0);
+                    usuario.setFechaBloqueo(null);
+                    usuarioRepository.save(usuario);
                 } else {
                     throw new BusinessRuleException("Usuario bloqueado por múltiples intentos fallidos");
                 }
@@ -95,63 +115,99 @@ public class AuthService {
             }
         }
 
-        // Validar contraseña
-        if (!usuario.getContrasena().equals(loginDTO.contrasena())) {
-            int intentos = persona.getIntentosFallidos() == null ? 1 : persona.getIntentosFallidos() + 1;
-            persona.setIntentosFallidos(intentos);
+        // Autenticar con Spring Security y actualizar contador de intentos
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginDTO.email(),
+                            loginDTO.contrasena()
+                    )
+            );
+        } catch (org.springframework.security.authentication.BadCredentialsException ex) {
+            // Credenciales incorrectas: aumentar intentos
+            int intentos = (usuario.getIntentosFallidos() == null)
+                    ? 1
+                    : usuario.getIntentosFallidos() + 1;
 
             boolean bloquear = false;
-            if (intentos > MAX_INTENTOS) {
-                // En el sexto intento se bloquea
-                persona.setBloqueado(true);
-                persona.setFechaBloqueo(LocalDateTime.now());
+            if (intentos > MAX_INTENTOS) {      // en el 6to intento
                 bloquear = true;
             }
 
-            persistirIntentosYBloqueo(persona.getIdPersona(), intentos, bloquear);
+            persistirIntentosYBloqueo(usuario.getIdUsuario(), intentos, bloquear);
             throw new BusinessRuleException("Credenciales incorrectas");
+        } catch (org.springframework.security.core.AuthenticationException ex) {
+            // Otras razones de fallo (cuenta deshabilitada, etc.)
+            throw new BusinessRuleException("No se pudo autenticar al usuario");
         }
 
-        // Login exitoso: resetear intentos fallidos
-        persona.setIntentosFallidos(0);
-        persona.setBloqueado(false);
-        persona.setFechaBloqueo(null);
-        usuarioRepository.save(usuario);
+        // Login exitoso: resetear intentos y bloqueo
+        persistirIntentosYBloqueo(usuario.getIdUsuario(), 0, false);
 
-        return new LoginResponseDTO(
+        // Generar JWT con email, nombres e idPersona
+        String token = jwtUtil.generateToken(
                 usuario.getEmail(),
-                persona.getNombres()
+                persona.getNombres(),
+                persona.getIdPersona().toString()
         );
+
+        return new AuthResponseDTO(token, usuario.getEmail(), persona.getNombres());
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void persistirIntentosYBloqueo(Long idpersona, int intentos, boolean bloquear) {
-        Persona u = personaRepository.findById(idpersona).orElse(null);
+    public void persistirIntentosYBloqueo(Long idusuario, int intentos, boolean bloquear) {
+        Usuario u = usuarioRepository.findById(idusuario).orElse(null);
         if (u == null) return;
         u.setIntentosFallidos(intentos);
         if (bloquear) u.setBloqueado(true);
         if (bloquear) u.setFechaBloqueo(LocalDateTime.now());
         if (!bloquear) u.setFechaBloqueo(null);
-        personaRepository.save(u);
+        usuarioRepository.save(u);
     }
 
     @Transactional
-    public UsuarioResponseDTO recoverCred(RecoverRequestDTO req) {
-        Usuario usuarioEntity = usuarioRepository.findByEmailIgnoreCase(req.email())
-                .orElseThrow(() -> new ResourceNotFoundException("No existe un usuario registrado con el email:  "
-                        + req.email() ));
+    public AuthResponseDTO recoverCred(CredentialsRequestDTO req) {
+        // Buscar usuario por email
+        Usuario usuario = usuarioRepository.findByEmailIgnoreCase(req.email())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No existe un usuario registrado con el email: " + req.email()
+                ));
+
+        // Validar respuesta secreta
         String respIngresada = req.respuesta();
-        if (respIngresada == null ||
-                !respIngresada.trim().equalsIgnoreCase(usuarioEntity.getRespuesta().trim())) {
+        String respGuardada = usuario.getRespuesta();
+
+        if (respIngresada == null || respIngresada.trim().isEmpty()
+                || respGuardada == null
+                || !respIngresada.trim().equalsIgnoreCase(respGuardada.trim())) {
             throw new BusinessRuleException("La respuesta es incorrecta.");
         }
-        String newPass = req.new_contrasena();
-        if (newPass != null && !newPass.isBlank()) {
-            usuarioEntity.setContrasena(newPass);
-        }
-        Usuario saved = usuarioRepository.save(usuarioEntity);
 
-        return mapToResponse(saved);
+        // Validar nueva contraseña
+        String newPass = req.new_contrasena();
+        if (newPass == null || newPass.isBlank()) {
+            throw new BusinessRuleException("La nueva contraseña no puede estar vacía.");
+        }
+
+        // Actualizar contraseña y resetear bloqueo / intentos
+        usuario.setContrasena(newPass);
+        usuario.setIntentosFallidos(0);
+        usuario.setBloqueado(false);
+        usuario.setFechaBloqueo(null);
+
+        usuarioRepository.save(usuario);
+
+        // Obtener Persona y generar nuevo JWT
+        Persona persona = personaRepository.findByUsuario(usuario)
+                .orElseThrow(() -> new BusinessRuleException("Persona no encontrada"));
+
+        String token = jwtUtil.generateToken(
+                usuario.getEmail(),
+                persona.getNombres(),
+                persona.getIdPersona().toString()
+        );
+
+        return new AuthResponseDTO(token, usuario.getEmail(), persona.getNombres());
     }
 
     @Transactional
@@ -238,7 +294,7 @@ public class AuthService {
             participacionRetoRepository.deleteAll(participaciones);
         }
 
-        //borrar perfiles, persona y usuario
+        //Borrar perfiles, persona y usuario
         perfilRepository.deleteAll(perfiles);
         personaRepository.delete(persona);
         usuarioRepository.deleteById(usuarioEntity.getId());
@@ -271,14 +327,5 @@ public class AuthService {
         if (!u.genero().equals("M") && !u.genero().equals("F")) {
             throw new BusinessRuleException("Formato de género inválido. Solo se permite: M o F");
         }
-    }
-
-    private UsuarioResponseDTO mapToResponse(Usuario saved) {
-        return new UsuarioResponseDTO(
-                saved.getIdUsuario(),
-                saved.getEmail(),
-                saved.getFechaRegistro(),
-                saved.getCodPregunta()
-        );
     }
 }
