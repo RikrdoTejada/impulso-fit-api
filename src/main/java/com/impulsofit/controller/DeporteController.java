@@ -5,6 +5,7 @@ import com.impulsofit.dto.response.DeporteResponseDTO;
 import com.impulsofit.service.DeporteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/deportes")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class DeporteController {
     private final DeporteService deporteService;
 

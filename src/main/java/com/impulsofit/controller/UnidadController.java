@@ -6,11 +6,13 @@ import com.impulsofit.dto.response.UnidadResponseDTO;
 import com.impulsofit.service.UnidadService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/unidad")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class UnidadController {
     private final UnidadService unidadService;
 

@@ -2,18 +2,18 @@ package com.impulsofit.controller;
 
 import com.impulsofit.dto.response.BusquedaResponseDTO;
 import com.impulsofit.service.BusquedaService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/buscar")
+@PreAuthorize("hasRole('USER')")
 public class BusquedaController {
 
     private final BusquedaService busquedaService;
-
-    public BusquedaController(BusquedaService busquedaService) {
-        this.busquedaService = busquedaService;
-    }
 
     @GetMapping
     public ResponseEntity<BusquedaResponseDTO> buscar(@RequestParam String termino, @RequestParam(required = false) Integer deporteId) {

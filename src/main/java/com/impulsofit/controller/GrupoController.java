@@ -10,11 +10,13 @@ import com.impulsofit.dto.response.RetoResponseDTO;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/grupo")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('USER')")
 public class GrupoController {
     private final GrupoService grupoService;
     private final MembresiaGrupoService membresiaGrupoService;

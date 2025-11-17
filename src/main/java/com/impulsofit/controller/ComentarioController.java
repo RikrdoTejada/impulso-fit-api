@@ -4,18 +4,18 @@ import com.impulsofit.dto.request.ComentarioRequestDTO;
 import com.impulsofit.dto.response.ComentarioResponseDTO;
 import com.impulsofit.model.Comentario;
 import com.impulsofit.service.ComentarioService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/comentarios")
+@PreAuthorize("hasRole('USER')")
 public class ComentarioController {
 
     private final ComentarioService comentarioService;
-
-    public ComentarioController(ComentarioService comentarioService) {
-        this.comentarioService = comentarioService;
-    }
 
     @GetMapping("/publicacion/{id}")
     public List<ComentarioResponseDTO> listarPorPublicacion(@PathVariable Long id) {
