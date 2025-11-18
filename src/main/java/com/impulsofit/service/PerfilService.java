@@ -17,6 +17,11 @@ import com.impulsofit.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -32,8 +37,32 @@ public class PerfilService {
         if(perfilRepository.existsByNombrePerfilIgnoreCase((req.nombre_perfil()))) {
             throw new AlreadyExistsException("Ya existe un perfil con el nombre: " + req.nombre_perfil());
         }
-        Persona persona = personaRepository.findById(req.id_persona())
-                .orElseThrow(() -> new BusinessRuleException("No existe un persona con el id: " + req.id_persona()));
+
+        // Obtener email del usuario autenticado
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new BusinessRuleException("Usuario no autenticado");
+        }
+
+        Object principal = authentication.getPrincipal();
+        String email;
+        if (principal instanceof UserDetails ud) {
+            email = ud.getUsername();
+        } else {
+            email = authentication.getName();
+        }
+
+        Usuario usuario = usuarioRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new ResourceNotFoundException("No existe un usuario registrado con el email: " + email));
+
+        Persona persona = personaRepository.findByUsuario(usuario)
+                .orElseThrow(() -> new BusinessRuleException("Persona no encontrada para el usuario: " + email));
+
+        // Una sola instancia de Perfil por Persona
+        List<Perfil> existentes = perfilRepository.findAllByPersona_IdPersona(persona.getIdPersona());
+        if (existentes != null && !existentes.isEmpty()) {
+            throw new AlreadyExistsException("Ya existe un perfil asociado a esta persona");
+        }
 
         Perfil perfilEntity = new Perfil();
         perfilEntity.setNombrePerfil(req.nombre_perfil());

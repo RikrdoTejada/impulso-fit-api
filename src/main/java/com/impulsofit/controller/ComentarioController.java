@@ -11,41 +11,41 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/comentarios")
+@RequestMapping("/publicacion/{publicacionId}/comentarios")
 @PreAuthorize("hasRole('USER')")
 public class ComentarioController {
 
     private final ComentarioService comentarioService;
 
-    @GetMapping("/publicacion/{id}")
-    public List<ComentarioResponseDTO> listarPorPublicacion(@PathVariable Long id) {
-        return comentarioService.listarPorPublicacionDTO(id);
+    @GetMapping
+    public List<ComentarioResponseDTO> listarPorPublicacion(@PathVariable Long publicacionId) {
+        return comentarioService.listarPorPublicacionDTO(publicacionId);
     }
 
-    @GetMapping("/general/{publicacionId}")
+    @GetMapping("/general")
     public List<ComentarioResponseDTO> listarGeneral(@PathVariable Long publicacionId) {
         return comentarioService.listarPorPublicacionGeneralDTO(publicacionId);
     }
 
-    @GetMapping("/grupal/{publicacionId}")
+    @GetMapping("/grupal")
     public List<ComentarioResponseDTO> listarGrupal(@PathVariable Long publicacionId) {
         return comentarioService.listarPorPublicacionGrupoDTO(publicacionId);
     }
 
     @PostMapping("/general")
-    public ComentarioResponseDTO crearEnGeneral(@RequestBody ComentarioRequestDTO dto) {
-        Comentario guardado = comentarioService.crearComentarioEnPublicacionGeneral(dto.usuarioId(), dto.publicacionId(), dto.contenido());
+    public ComentarioResponseDTO crearEnGeneral(@PathVariable Long publicacionId, @RequestBody ComentarioRequestDTO dto) {
+        Comentario guardado = comentarioService.crearComentarioEnPublicacionGeneral(dto.usuarioId(), publicacionId, dto.contenido());
         return comentarioService.obtenerComentarioDTOPorId(guardado.getId());
     }
 
     @PostMapping("/grupal")
-    public ComentarioResponseDTO crearEnGrupal(@RequestBody ComentarioRequestDTO dto) {
-        Comentario guardado = comentarioService.crearComentarioEnPublicacionGrupo(dto.usuarioId(), dto.publicacionId(), dto.contenido());
+    public ComentarioResponseDTO crearEnGrupal(@PathVariable Long publicacionId, @RequestBody ComentarioRequestDTO dto) {
+        Comentario guardado = comentarioService.crearComentarioEnPublicacionGrupo(dto.usuarioId(), publicacionId, dto.contenido());
         return comentarioService.obtenerComentarioDTOPorId(guardado.getId());
     }
 
     @DeleteMapping("/{id}")
-    public void eliminarComentario(@PathVariable Long id) {
+    public void eliminarComentario(@PathVariable Long publicacionId, @PathVariable Long id) {
         comentarioService.eliminarComentario(id);
     }
 }

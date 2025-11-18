@@ -10,4 +10,7 @@ public interface MembresiaGrupoRepository extends JpaRepository<MembresiaGrupo, 
     default boolean existsByPerfil_IdAndGrupo_Id(Long idUsuario, Long idGrupo) {
         return existsByPerfil_IdPerfilAndGrupo_IdGrupo(idUsuario, idGrupo);
     }
+
+    // Contar miembros (seguidores) de un grupo
+    long countByGrupo_IdGrupo(Long grupoId);
 }

@@ -218,7 +218,7 @@ public class AuthService {
                 .orElseThrow(() -> new ResourceNotFoundException("No existe un usuario registrado con el email:  "
                         + req.email() ));
 
-        if (req.constrasena() == null || !req.constrasena().equals(usuarioEntity.getContrasena())) {
+        if (req.contrasena() == null || !req.contrasena().equals(usuarioEntity.getContrasena())) {
             throw new BusinessRuleException("Credenciales incorrectas");
         }
 

@@ -9,5 +9,6 @@ public record GrupoResponseDTO(
     String descripcion,
     String accionUnirseUrl,
     String ubicacion,
-    LocalDate fecha_creacion
+    LocalDate fecha_creacion,
+    Long nroSeguidores
 ) {}

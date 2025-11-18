@@ -59,6 +59,7 @@ public class GrupoService {
         memb.setGrupo(saved);
         membresiaGrupoRepository.save(memb);
 
+        long nro = membresiaGrupoRepository.countByGrupo_IdGrupo(saved.getIdGrupo());
         return new GrupoResponseDTO(
                 saved.getIdGrupo(),
                 saved.getNombre(),
@@ -66,7 +67,8 @@ public class GrupoService {
                 saved.getDescripcion(),
                 "/grupos/" + saved.getIdGrupo() + "/unirse",
                 saved.getUbicacion(),
-                (saved.getFechaCreacion() == null) ? null : saved.getFechaCreacion().toLocalDate()
+                (saved.getFechaCreacion() == null) ? null : saved.getFechaCreacion().toLocalDate(),
+                nro
         );
     }
 

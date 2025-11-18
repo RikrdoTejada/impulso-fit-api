@@ -2,7 +2,7 @@ package com.impulsofit.dto.request;
 
 public record DeleteRequestDTO(
         String email,
-        String constrasena,
+        String contrasena,
         boolean confirm
 ) {
 }

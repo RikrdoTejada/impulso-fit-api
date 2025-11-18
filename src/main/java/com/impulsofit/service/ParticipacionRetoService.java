@@ -76,6 +76,7 @@ public class ParticipacionRetoService {
         } else {
             ParticipacionReto p = new ParticipacionReto();
             p.setIdReto(reto.getIdReto());
+            p.setIdPerfil(perfil.getIdPerfil());
             p.setPerfil(perfil);
             p.setReto(reto);
             p.setFechaUnion(LocalDateTime.now());

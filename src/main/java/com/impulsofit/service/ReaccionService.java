@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor()
 public class ReaccionService {
@@ -29,13 +31,18 @@ public class ReaccionService {
         Publicacion publicacion = publicacionRepository.findById(reaccion.id_publicacion())
                 .orElseThrow(() -> new ResourceNotFoundException("Publicacion no encontrada"));
 
-        //Solo se puede reaccionar una vez a una publicacion
-        if (reaccionRepository.existsReaccionByPerfilAndPublicacion(perfil, publicacion)) {
-            throw new AlreadyExistsException("El usuario ya reaccionó a esta publicacion");
+        // Si ya existe -> borrar y devolver info; si no existe -> crear
+        var opt = reaccionRepository.findByPerfilAndPublicacion(perfil, publicacion);
+        if (opt.isPresent()) {
+            Reaccion existing = opt.get();
+            reaccionRepository.delete(existing);
+            return new ReaccionResponseDTO(null, perfil.getIdPerfil(), publicacion.getIdPublicacion(), existing.getFechaRegistro());
         }
+
         Reaccion reaccionEntity = new Reaccion();
         reaccionEntity.setPerfil(perfil);
         reaccionEntity.setPublicacion(publicacion);
+        reaccionEntity.setFechaRegistro(LocalDateTime.now());
 
         Reaccion saved = reaccionRepository.save(reaccionEntity);
 
