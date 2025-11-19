@@ -2,7 +2,6 @@ package com.impulsofit.service;
 
 import com.impulsofit.dto.request.ReaccionRequestDTO;
 import com.impulsofit.dto.response.ReaccionResponseDTO;
-import com.impulsofit.exception.AlreadyExistsException;
 import com.impulsofit.exception.ResourceNotFoundException;
 import com.impulsofit.model.Perfil;
 import com.impulsofit.model.Publicacion;
