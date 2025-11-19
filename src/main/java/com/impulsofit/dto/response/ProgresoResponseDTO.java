@@ -1,7 +1,7 @@
 package com.impulsofit.dto.response;
 
 public record ProgresoResponseDTO(
-    Long idUsuario,
+    Long idPerfil,
     Long idReto,
     Double total,
     Double porcentaje

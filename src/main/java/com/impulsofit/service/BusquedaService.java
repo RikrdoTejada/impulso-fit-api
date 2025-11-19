@@ -5,10 +5,7 @@ import com.impulsofit.exception.BusinessRuleException;
 import com.impulsofit.model.Grupo;
 import com.impulsofit.model.Reto;
 import com.impulsofit.model.Perfil;
-import com.impulsofit.repository.GrupoRepository;
-import com.impulsofit.repository.RetoRepository;
-import com.impulsofit.repository.PerfilRepository;
-import com.impulsofit.repository.MembresiaGrupoRepository;
+import com.impulsofit.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +21,7 @@ public class BusquedaService {
     private final PerfilRepository perfilRepository;
     private final RetoRepository retoRepository;
     private final MembresiaGrupoRepository membresiaGrupoRepository;
+    private final ParticipacionRetoRepository participacionRetoRepository;
 
     private void validarTermino(String termino, Integer deporteId) {
         if ((termino == null || termino.trim().isEmpty()) && deporteId == null) {
@@ -98,7 +96,8 @@ public class BusquedaService {
                         r.getObjetivoTotal(),
                         r.getFechaPublicacion(),
                         r.getFechaInicio(),
-                        r.getFechaFin()
+                        r.getFechaFin(),
+                        participacionRetoRepository.countByIdReto(r.getIdReto())
                 ))
                 .toList();
 

@@ -23,23 +23,6 @@ public class PublicacionController {
         return ResponseEntity.ok(saved);
     }
 
-    @GetMapping({"busqueda/"})
-    public ResponseEntity<List<PublicacionResponseDTO>> findAll() {
-        return ResponseEntity.ok(publicacionService.findAll());
-    }
-
-    @GetMapping({"busqueda/por-group/{id}"})
-    public ResponseEntity<List<PublicacionResponseDTO>> findAllByGrupo_IdGrupo(@PathVariable Long id)
-    {
-        return ResponseEntity.ok(publicacionService.findByGrupo_IdGrupo(id));
-    }
-
-    @GetMapping({"busqueda/por-usuario/{id}"})
-    public ResponseEntity<List<PublicacionResponseDTO>> findAllByUser_Id(@PathVariable Long id)
-    {
-        return ResponseEntity.ok(publicacionService.findByUsuario_IdUsuario(id));
-    }
-
     @PutMapping("{id}")
     public ResponseEntity<PublicacionResponseDTO> update(@PathVariable Long id, @RequestBody PublicacionRequestDTO p) {
         return ResponseEntity.ok(publicacionService.update(id, p));

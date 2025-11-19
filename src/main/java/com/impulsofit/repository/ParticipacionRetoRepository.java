@@ -12,4 +12,6 @@ public interface ParticipacionRetoRepository extends JpaRepository<Participacion
     Optional<ParticipacionReto> findByRetoAndPerfil(Reto reto, Perfil perfil);
 
     List<ParticipacionReto> findAllByIdPerfil(Long idPerfil);
+
+    long countByIdReto(Long idPerfil);
 }

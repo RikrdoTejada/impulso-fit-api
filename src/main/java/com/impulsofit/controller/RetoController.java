@@ -35,25 +35,6 @@ public class RetoController {
         return ResponseEntity.ok(saved);
     }
 
-    @GetMapping
-    public ResponseEntity<List<RetoResponseDTO>> findAll() {
-        return ResponseEntity.ok(retoService.findAll());
-    }
-
-    @GetMapping("/busqueda/por-grupo/{id}")
-    public ResponseEntity<List<RetoResponseDTO>> findByGrupoId(@PathVariable("id") Long id) {
-        return ResponseEntity.ok(retoService.findByGrupo_Id_grupo(id));
-    }
-
-    @GetMapping("/busqueda/por-creador/{id}")
-    public ResponseEntity<List<RetoResponseDTO>> findByCreadorId(@PathVariable("id") Long id) {
-        return ResponseEntity.ok(retoService.findByCreador_Id(id));
-    }
-
-    @GetMapping("/busqueda/por-unidad/{id}")
-    public ResponseEntity<List<RetoResponseDTO>> findByUnitId(@PathVariable("id") Long id) {
-        return ResponseEntity.ok(retoService.findByUnidad_IdUnidad(id));
-    }
 
     @PutMapping("{id}")
     public ResponseEntity<RetoResponseDTO> update(@PathVariable Long id, @RequestBody RetoRequestDTO r) {
@@ -83,13 +64,15 @@ public class RetoController {
         // Delegar validación al servicio
         participacionRetoService.validarCamposSegunUnidad(reto.getUnidad(), request);
 
+        Double cantidad = getCantidad(request, reto);
+
         Double avanceEnBase = unidadConverter.convertirAUnidadBase(
                 reto.getUnidad(),
                 request.horas(),
                 request.minutos(),
                 request.kilometros(),
                 request.metros(),
-                request.cantidad()
+                cantidad
         );
 
         if (avanceEnBase == null || avanceEnBase <= 0) {
@@ -102,6 +85,21 @@ public class RetoController {
         Double total = participacionRetoService.agregarProgreso(perfilOpt.get(), reto, avanceEnBase);
         Double porcentaje = participacionRetoService.calcularPorcentajeForReto(reto, total);
         return ResponseEntity.ok(new ProgresoResponseDTO(idPerfil, idReto, total, porcentaje));
+    }
+
+    private static Double getCantidad(AddProgresoRequestDTO request, Reto reto) {
+        Double cantidad = request.cantidad();
+
+        String nombreUnidad = reto.getUnidad().getNombre().toLowerCase();
+
+        if (nombreUnidad.contains("sesion") || nombreUnidad.contains("sesión")) {
+            cantidad = request.sesiones() != null ? request.sesiones().doubleValue() : null;
+        } else if (nombreUnidad.contains("punto")) {
+            cantidad = request.puntos() != null ? request.puntos().doubleValue() : null;
+        } else if (nombreUnidad.contains("kilo") || nombreUnidad.contains("kg")) {
+            cantidad = request.kilogramos();
+        }
+        return cantidad;
     }
 
     @PostMapping("/{idReto}/participar/{idPerfil}")

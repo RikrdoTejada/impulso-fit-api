@@ -12,5 +12,6 @@ public record RetoResponseDTO(
     Double objetivoTotal,
     LocalDate fechaPublicacion,
     LocalDate fecha_inicio,
-    LocalDate fecha_fin
+    LocalDate fecha_fin,
+    Long nroSeguidores
 ) {}

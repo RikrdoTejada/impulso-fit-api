@@ -16,16 +16,8 @@ public class ReaccionController {
     private final ReaccionService reaccionService;
 
     @PostMapping
-    public ResponseEntity<ReaccionResponseDTO> create(@RequestBody ReaccionRequestDTO r) {
+    public ResponseEntity<ReaccionResponseDTO> reaccionar(@RequestBody ReaccionRequestDTO r) {
         ReaccionResponseDTO saved = reaccionService.create(r);
         return ResponseEntity.ok(saved);
     }
-
-    @DeleteMapping("{id}")
-    public ResponseEntity<ReaccionResponseDTO> delete(@PathVariable Long id) {
-        reaccionService.delete(id);
-        return ResponseEntity.noContent().build();
-    }
-
-
 }

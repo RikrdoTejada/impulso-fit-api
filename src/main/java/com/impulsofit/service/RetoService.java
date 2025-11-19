@@ -31,6 +31,7 @@ public class RetoService {
     private final RetoRepository retoRepository;
     private final MembresiaGrupoRepository membresiaGrupoRepository;
     private final PerfilRepository perfilRepository;
+    private final ParticipacionRetoRepository participacionRetoRepository;
 
 
     @Transactional
@@ -220,6 +221,7 @@ public class RetoService {
     }
 
     private RetoResponseDTO mapToResponse(Reto reto) {
+        long nro = participacionRetoRepository.countByIdReto(reto.getIdReto());
         return new RetoResponseDTO(
                 reto.getIdReto(),
                 reto.getGrupo() != null ? reto.getGrupo().getNombre() : null,
@@ -230,7 +232,8 @@ public class RetoService {
                 reto.getObjetivoTotal(),
                 reto.getFechaPublicacion(),
                 reto.getFechaInicio(),
-                reto.getFechaFin()
+                reto.getFechaFin(),
+                nro
         );
     }
 

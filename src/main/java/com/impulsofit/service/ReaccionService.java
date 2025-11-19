@@ -53,14 +53,4 @@ public class ReaccionService {
                 saved.getFechaRegistro()
         );
     }
-
-    @Transactional
-    public void delete(Long id) {
-        if (!reaccionRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Reaccion no existe con el id: " + id);
-        }
-        reaccionRepository.deleteById(id);
-    }
-
-
 }

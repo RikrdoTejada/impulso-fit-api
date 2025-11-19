@@ -45,7 +45,7 @@ public class ComentarioController {
     }
 
     @DeleteMapping("/{id}")
-    public void eliminarComentario(@PathVariable Long publicacionId, @PathVariable Long id) {
+    public void eliminar(@PathVariable Long publicacionId, @PathVariable Long id) {
         comentarioService.eliminarComentario(id);
     }
 }
