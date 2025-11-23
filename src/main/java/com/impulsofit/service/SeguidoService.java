@@ -70,7 +70,10 @@ public class SeguidoService {
         Map<Long, Perfil> map = perfiles.stream().collect(Collectors.toMap(Perfil::getIdPerfil, p -> p));
         return ids.stream().map(id -> {
             Perfil p = map.get(id);
-            return new PerfilResponseDTO(p.getIdPerfil(), p.getPersona() != null ? p.getPersona().getNombres() : null, p.getPersona() != null ? p.getPersona().getGenero() : null);
+            return new PerfilResponseDTO(p.getIdPerfil(),  p.getPersona() != null ? p.getPersona().getUsuario().getEmail() : null,
+                    p.getPersona() != null ? p.getPersona().getNombres() : null,
+                    p.getPersona() != null ? p.getPersona().getUsuario().getRole().getNombre() : null,
+                    p.getPersona() != null ? p.getPersona().getUsuario().getBloqueado() : null);
         }).collect(Collectors.toList());
     }
 
@@ -83,7 +86,10 @@ public class SeguidoService {
         Map<Long, Perfil> map = perfiles.stream().collect(Collectors.toMap(Perfil::getIdPerfil, p -> p));
         return ids.stream().map(id -> {
             Perfil p = map.get(id);
-            return new PerfilResponseDTO(p.getIdPerfil(), p.getPersona() != null ? p.getPersona().getNombres() : null, p.getPersona() != null ? p.getPersona().getGenero() : null);
+            return new PerfilResponseDTO(p.getIdPerfil(),  p.getPersona() != null ? p.getPersona().getUsuario().getEmail() : null,
+                    p.getPersona() != null ? p.getPersona().getNombres() : null,
+                    p.getPersona() != null ? p.getPersona().getUsuario().getRole().getNombre() : null,
+                    p.getPersona() != null ? p.getPersona().getUsuario().getBloqueado() : null);
         }).collect(Collectors.toList());
     }
 }

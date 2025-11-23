@@ -142,8 +142,10 @@ public class PerfilService {
     private PerfilResponseDTO mapToResponse(Perfil perfil) {
         return new PerfilResponseDTO(
                 perfil.getIdPerfil(),
+                perfil.getPersona().getUsuario().getEmail(),
                 perfil.getPersona().getNombres(),
-                perfil.getPersona().getGenero()
+                perfil.getPersona().getUsuario().getRole().getNombre(),
+                perfil.getPersona().getUsuario().getBloqueado()
         );
     }
 }
