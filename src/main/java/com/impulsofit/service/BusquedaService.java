@@ -78,10 +78,12 @@ public class BusquedaService {
                 .toList();
 
         List<PerfilResponseDTO> perfilesDto = perfiles.stream()
-                .map(p -> new PerfilResponseDTO(
-                        p.getIdPerfil(),
-                        p.getPersona().getNombres(),
-                        p.getPersona().getGenero()
+                .map(perfil -> new PerfilResponseDTO(
+                        perfil.getIdPerfil(),
+                        perfil.getPersona().getUsuario().getEmail(),
+                        perfil.getPersona().getNombres(),
+                        perfil.getPersona().getUsuario().getRole().getNombre(),
+                        perfil.getPersona().getUsuario().getBloqueado()
                 ))
                 .toList();
 
